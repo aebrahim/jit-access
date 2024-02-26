@@ -1,6 +1,5 @@
 package com.google.solutions.jitaccess.core.catalog.group;
 
-import autovalue.shaded.org.jetbrains.annotations.NotNull;
 import com.google.common.base.Preconditions;
 import com.google.solutions.jitaccess.core.AccessException;
 import com.google.solutions.jitaccess.core.OrganizationId;
@@ -9,6 +8,7 @@ import com.google.solutions.jitaccess.core.catalog.ActivationRequest;
 import com.google.solutions.jitaccess.core.catalog.EntitlementCatalog;
 import com.google.solutions.jitaccess.core.catalog.EntitlementSet;
 import com.google.solutions.jitaccess.core.catalog.MpaActivationRequest;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
