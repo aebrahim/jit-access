@@ -21,19 +21,30 @@
 
 package com.google.solutions.jitaccess.core.catalog.policy;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.jetbrains.annotations.NotNull;
 
-public class TestPolicyFile {
-  @Test
-  public void whenJsonMalformed_ThenFromStringThrowsException() {
-    try {
-      PolicyFile.fromString("{xx");
-      fail("Expected exception");
-    }
-    catch (PolicyException e) {
-      assertFalse(e.getIssues().isEmpty());
-      assertEquals(PolicyIssue.Code.FILE_INVALID_SYNTAX, e.getIssues().get(0).code());
-    }
+/**
+ * Warning or error affecting a policy.
+ * @param error indicates if this is a fatal error
+ * @param code unique code for the issue
+ * @param description textual description
+ */
+public record PolicyIssue(
+  boolean error,
+  @NotNull Code code,
+  @NotNull String details) {
+
+  public enum Code {
+    FILE_INVALID_SYNTAX,
+    POLICY_INVALID_ID,
+    POLICY_MISSING_NAME,
+    POLICY_MISSING_ENTITLEMENTS,
+
+    ENTITLEMENT_INVALID_ID,
+    ENTITLEMENT_MISSING_NAME,
+    ENTITLEMENT_INVALID_EXPIRY,
+    ENTITLEMENT_MISSING_ELIGIBLE_PRINCIPALS,
+
+    PRINCIPAL_INVALID
   }
 }

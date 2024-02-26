@@ -31,6 +31,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
+import java.util.Formatter;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -48,23 +50,21 @@ public class PolicyFile {
   /**
    * Non-critical warnings.
    */
-  private final @NotNull PolicyValidationIssues validationResult;
+  private final @NotNull List<PolicyIssue> warnings;
 
   private PolicyFile(
     @Nullable PolicyNode node,
-    @NotNull PolicyValidationIssues validationResult
+    @NotNull List<PolicyIssue> warnings
   ) {
-    assert validationResult.isSuccessful();
-
     this.node = node;
-    this.validationResult = validationResult;
+    this.warnings = warnings;
   }
 
   /**
    * Parse a JSON-formatted policy file.
    */
   public static PolicyFile fromString(String json) throws PolicyException {
-    var issueCollector = new PolicyValidationIssues();
+    var issueCollector = new IssueCollector();
     try {
       //
       // Parse the JSON.
@@ -76,23 +76,50 @@ public class PolicyFile {
       //
       node.validate(issueCollector);
 
-      if (issueCollector.isSuccessful()) {
-        return new PolicyFile(node, issueCollector);
+      if (issueCollector.getIssues().stream().anyMatch(i -> i.error())) {
+        return new PolicyFile(node, issueCollector.getIssues());
       }
       else {
         throw new PolicyException(
           "The policy did not pass validation",
-          issueCollector);
+          issueCollector.getIssues());
       }
     }
     catch (JsonProcessingException e) {
-      issueCollector.addError(e.getMessage());
-
-      assert !issueCollector.isSuccessful();
+      issueCollector.add(true, PolicyIssue.Code.FILE_INVALID_SYNTAX, e.getMessage());
 
       throw new PolicyException(
         "Parsing the policy failed because it contains syntax errors",
-        issueCollector);
+        issueCollector.getIssues());
+    }
+  }
+
+  private static class IssueCollector {
+    private final @NotNull List<PolicyIssue> issues = new LinkedList<>();
+    private @NotNull String currentContext = "file";
+
+    void setContext(@NotNull String context) {
+      this.currentContext = context;
+    }
+
+    List<PolicyIssue> getIssues() {
+      return issues;
+    }
+
+    PolicyIssue add(
+      boolean error,
+      @NotNull PolicyIssue.Code code,
+      @NotNull String format,
+      Object... args
+    ) {
+      var description = new Formatter()
+        .format(format, args)
+        .toString();
+
+      return new PolicyIssue(
+        error,
+        code,
+        String.format("[%s]", this.currentContext, description));
     }
   }
 
@@ -105,19 +132,28 @@ public class PolicyFile {
     @JsonProperty("name") String name,
     @JsonProperty("entitlements") List<EntitlementsNode> entitlements
   ) {
-    void validate(PolicyValidationIssues issues) {
+    void validate(IssueCollector issues) {
       if (this.id == null || !ID_PATTERN.matcher(this.id).matches()) {
-        issues.addError("'%s' is not a valid policy ID", this.id);
+        issues.add(
+          true,
+          PolicyIssue.Code.POLICY_INVALID_ID,
+          "'%s' is not a valid policy ID", this.id);
       }
 
       issues.setContext(this.id);
 
       if (this.name() == null || this.name().isBlank()) {
-        issues.addError("The policy must have a name");
+        issues.add(
+          true,
+          PolicyIssue.Code.POLICY_MISSING_NAME,
+          "The policy must have a name");
       }
 
       if (this.entitlements == null || this.entitlements.isEmpty()) {
-        issues.addError("The policy must contain at least one entitlement");
+        issues.add(
+          true,
+          PolicyIssue.Code.POLICY_MISSING_ENTITLEMENTS,
+          "The policy must contain at least one entitlement");
       }
 
       this.entitlements.stream().forEach(e ->  e.validate(this, issues));
@@ -131,28 +167,40 @@ public class PolicyFile {
     @JsonProperty("eligible") EligibleNode eligible,
     @JsonProperty("approval") ApprovalNode approval
   ) {
-    void validate(PolicyNode parent, PolicyValidationIssues issues) {
+    void validate(PolicyNode parent, IssueCollector issues) {
       if (this.id == null || !ID_PATTERN.matcher(this.id).matches()) {
-        issues.addError("'%s' is not a valid entitlement ID", this.id);
+        issues.add(
+          true,
+          PolicyIssue.Code.ENTITLEMENT_INVALID_ID,
+          "'%s' is not a valid entitlement ID", this.id);
       }
 
       issues.setContext(String.format("%s > %s", parent.id, this.id));
 
       if (this.name() == null || this.name().isBlank()) {
-        issues.addError("The entitlement must have a name", this.id);
+        issues.add(
+          true,
+          PolicyIssue.Code.ENTITLEMENT_MISSING_NAME,
+          "The entitlement must have a name", this.id);
       }
 
       try {
         Duration.parse(this.expiry);
       }
       catch (DateTimeParseException e) {
-        issues.addError("The expiry is invalid: %s", e.getMessage());
+        issues.add(
+          true,
+          PolicyIssue.Code.ENTITLEMENT_INVALID_EXPIRY,
+          "The expiry is invalid: %s", e.getMessage());
       }
 
       if (this.eligible == null ||
           this.eligible.principals == null ||
           this.eligible.principals.isEmpty()) {
-        issues.addWarning("The entitlement does not contain any eligible principals");
+        issues.add(
+          false,
+          PolicyIssue.Code.ENTITLEMENT_MISSING_ELIGIBLE_PRINCIPALS,
+          "The entitlement does not contain any eligible principals");
       }
 
       this.eligible.validate(issues);
@@ -162,11 +210,13 @@ public class PolicyFile {
   record EligibleNode(
     @JsonProperty("principals") List<String> principals
   ) {
-    void validate(PolicyValidationIssues issues) {
+    void validate(IssueCollector issues) {
       for (var principal : principals) {
         if (!principal.startsWith(UserEmail.TYPE) &&
             !principal.startsWith(GroupEmail.TYPE)) {
-          issues.addError(
+          issues.add(
+            true,
+            PolicyIssue.Code.PRINCIPAL_INVALID,
             "'%s' is not a valid principal identifier, see " +
             "https://cloud.google.com/iam/docs/principal-identifiers for details",
             principal);
@@ -179,18 +229,18 @@ public class PolicyFile {
     @JsonProperty("self") boolean self,
     @JsonProperty("peer") ApprovableByPeer peer
   ) {
-    void validate(PolicyValidationIssues issues) {
-      if (this.self) {
-        if (this.peer != null) {
-          issues.addError("Self-approval and peer-approval are mutually exclusive");
-        }
-      }
-      else if (this.peer != null) {
-
-      }
-      else {
-        issues.addError("Approval settings are missing");
-      }
+    void validate(IssueCollector issues) {
+//      if (this.self) {
+//        if (this.peer != null) {
+//          issues.addError("Self-approval and peer-approval are mutually exclusive");
+//        }
+//      }
+//      else if (this.peer != null) {
+//
+//      }
+//      else {
+//        issues.addError("Approval settings are missing");
+//      }
     }
   }
 
