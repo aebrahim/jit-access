@@ -1,12 +1,19 @@
 package com.google.solutions.jitaccess.core.catalog.group;
 
+import autovalue.shaded.org.jetbrains.annotations.NotNull;
+import com.google.common.base.Preconditions;
 import com.google.solutions.jitaccess.core.AccessException;
+import com.google.solutions.jitaccess.core.OrganizationId;
 import com.google.solutions.jitaccess.core.UserEmail;
 import com.google.solutions.jitaccess.core.catalog.ActivationRequest;
 import com.google.solutions.jitaccess.core.catalog.EntitlementCatalog;
+import com.google.solutions.jitaccess.core.catalog.EntitlementSet;
 import com.google.solutions.jitaccess.core.catalog.MpaActivationRequest;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Catalog for groups.
@@ -14,19 +21,63 @@ import java.io.IOException;
  * The catalog is scoped to a Google Cloud organization (or technically,
  * to a Cloud Identity/Workspace account).
  */
-//public class GroupCatalog implements EntitlementCatalog<GroupMembership> {
-//  @Override
-//  public void verifyUserCanRequest(
-//    @NotNull ActivationRequest<GroupMembership> request
-//  ) throws AccessException, IOException {
-//    throw new RuntimeException("NIY!");
-//  }
-//
-//  @Override
-//  public void verifyUserCanApprove(
-//    @NotNull UserEmail approvingUser,
-//    @NotNull MpaActivationRequest<GroupMembership> request
-//  ) throws AccessException, IOException {
-//    throw new RuntimeException("NIY!");
-//  }
-//}
+public class GroupCatalog implements EntitlementCatalog<GroupMembership, OrganizationId> {
+  /**
+   * Pseudo-organization ID indicating the "current" organization.
+   * Using the real ID would be unnecessary as this catalog only ever
+   * operates on a single organization.
+   */
+  public static final OrganizationId CURRENT_ORGANIZATION = new OrganizationId("-");
+
+  //---------------------------------------------------------------------------
+  // EntitlementCatalog.
+  //---------------------------------------------------------------------------
+
+  @Override
+  public SortedSet<OrganizationId> listScopes(
+    @NotNull UserEmail user
+  ) {
+    return new TreeSet<>(List.of(CURRENT_ORGANIZATION));
+  }
+
+  @Override
+  public void verifyUserCanRequest(
+    @NotNull ActivationRequest<GroupMembership> request
+  ) throws AccessException, IOException {
+
+    // TODO: analyze policy
+    throw new RuntimeException("NIY!");
+  }
+
+  @Override
+  public void verifyUserCanApprove(
+    @NotNull UserEmail approvingUser,
+    @NotNull MpaActivationRequest<GroupMembership> request
+  ) throws AccessException, IOException {
+
+    // TODO: analyze policy
+    throw new RuntimeException("NIY!");
+  }
+
+
+  @Override
+  public SortedSet<UserEmail> listReviewers(
+    @NotNull UserEmail requestingUser,
+    @NotNull GroupMembership entitlement
+  ) throws AccessException, IOException {
+
+    // TODO: analyze policy
+    throw new RuntimeException("NIY!");
+  }
+
+  @Override
+  public EntitlementSet<GroupMembership> listEntitlements(
+    @NotNull UserEmail user,
+    @NotNull OrganizationId scope
+  ) throws AccessException, IOException {
+    Preconditions.checkArgument(CURRENT_ORGANIZATION.equals(scope));
+
+    // TODO: compare policy with direct group memberships
+    throw new RuntimeException("NIY!");
+  }
+}

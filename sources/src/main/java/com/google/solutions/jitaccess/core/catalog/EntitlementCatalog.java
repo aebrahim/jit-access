@@ -65,7 +65,7 @@ public interface EntitlementCatalog
    */
   SortedSet<UserEmail> listReviewers(
     UserEmail requestingUser,
-    ProjectRoleBinding entitlement
+    TEntitlementId entitlement
   ) throws AccessException, IOException;
 
 
