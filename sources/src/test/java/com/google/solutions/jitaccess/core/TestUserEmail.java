@@ -77,4 +77,15 @@ public class TestUserEmail {
 
     assertFalse(id1.equals(""));
   }
+
+  // -------------------------------------------------------------------------
+  // PrincipalIdentifier.
+  // -------------------------------------------------------------------------
+
+  @Test
+  public void value() {
+    assertEquals(
+      "bob@example.com",
+      new UserEmail("bob@example.com").value());
+  }
 }

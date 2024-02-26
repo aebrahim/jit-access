@@ -77,4 +77,15 @@ public class TestGroupEmail {
 
     assertFalse(id1.equals(""));
   }
+
+  // -------------------------------------------------------------------------
+  // PrincipalIdentifier.
+  // -------------------------------------------------------------------------
+
+  @Test
+  public void value() {
+    assertEquals(
+      "group@example.com",
+      new GroupEmail("group@example.com").value());
+  }
 }

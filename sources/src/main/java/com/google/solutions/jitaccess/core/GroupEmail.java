@@ -30,7 +30,8 @@ import java.util.Objects;
 /**
  * Email address of a group.
  */
-public class GroupEmail implements Comparable<GroupEmail> {
+public class GroupEmail implements Comparable<GroupEmail>, PrincipalIdentifier {
+  public static final String TYPE = "group";
   public final @NotNull String email;
 
   public GroupEmail(@NotNull String email) {
@@ -69,5 +70,19 @@ public class GroupEmail implements Comparable<GroupEmail> {
   @Override
   public int compareTo(@NotNull GroupEmail o) {
     return this.email.compareTo(o.email);
+  }
+
+  // -------------------------------------------------------------------------
+  // Principal.
+  // -------------------------------------------------------------------------
+
+  @Override
+  public String type() {
+    return TYPE;
+  }
+
+  @Override
+  public String value() {
+    return this.email;
   }
 }
