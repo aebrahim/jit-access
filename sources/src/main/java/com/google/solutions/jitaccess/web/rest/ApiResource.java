@@ -170,7 +170,7 @@ public class ApiResource {
     var iapPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
 
     try {
-      var projects = this.mpaCatalog.listProjects(iapPrincipal.getId());
+      var projects = this.mpaCatalog.listScopes(iapPrincipal.getId());
 
       this.logAdapter
         .newInfoEntry(

@@ -167,7 +167,7 @@ public class TestApiResource {
 
   @Test
   public void whenProjectDiscoveryThrowsAccessDeniedException_ThenListProjectsReturnsError() throws Exception {
-    when(this.resource.mpaCatalog.listProjects(eq(SAMPLE_USER)))
+    when(this.resource.mpaCatalog.listScopes(eq(SAMPLE_USER)))
       .thenThrow(new AccessDeniedException("mock"));
 
     var response = new RestDispatcher<>(this.resource, SAMPLE_USER)
@@ -181,7 +181,7 @@ public class TestApiResource {
 
   @Test
   public void whenProjectDiscoveryThrowsIOException_ThenListProjectsReturnsError() throws Exception {
-    when(this.resource.mpaCatalog.listProjects(eq(SAMPLE_USER)))
+    when(this.resource.mpaCatalog.listScopes(eq(SAMPLE_USER)))
       .thenThrow(new IOException("mock"));
 
     var response = new RestDispatcher<>(this.resource, SAMPLE_USER)
@@ -195,7 +195,7 @@ public class TestApiResource {
 
   @Test
   public void whenProjectDiscoveryReturnsNoProjects_ThenListProjectsReturnsEmptyList() throws Exception {
-    when(this.resource.mpaCatalog.listProjects(eq(SAMPLE_USER)))
+    when(this.resource.mpaCatalog.listScopes(eq(SAMPLE_USER)))
       .thenReturn(new TreeSet<>());
 
     var response = new RestDispatcher<>(this.resource, SAMPLE_USER)
@@ -210,7 +210,7 @@ public class TestApiResource {
 
   @Test
   public void whenProjectDiscoveryReturnsProjects_ThenListProjectsReturnsList() throws Exception {
-    when(this.resource.mpaCatalog.listProjects(eq(SAMPLE_USER)))
+    when(this.resource.mpaCatalog.listScopes(eq(SAMPLE_USER)))
       .thenReturn(new TreeSet<>(Set.of(
         new ProjectId("project-1"),
         new ProjectId("project-2"),
@@ -329,7 +329,7 @@ public class TestApiResource {
 
   @Test
   public void whenProjectIsEmpty_ThenListRolesReturnsError() throws Exception {
-    when(this.resource.mpaCatalog.listProjects(eq(SAMPLE_USER)))
+    when(this.resource.mpaCatalog.listScopes(eq(SAMPLE_USER)))
       .thenThrow(new AccessDeniedException("mock"));
 
     var response = new RestDispatcher<>(this.resource, SAMPLE_USER)

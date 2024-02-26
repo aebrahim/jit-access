@@ -53,6 +53,12 @@ public interface EntitlementCatalog
     MpaActivationRequest<TEntitlementId> request
   ) throws AccessException, IOException;
 
+  /**
+   * List scopes that the user has any entitlements for.
+   */
+  SortedSet<TScopeId> listScopes(
+    UserEmail user
+  ) throws AccessException, IOException;
 
   /**
    * List available reviewers for (MPA-) activating an entitlement.

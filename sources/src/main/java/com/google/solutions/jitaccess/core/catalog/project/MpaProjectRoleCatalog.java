@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * MPA activation for project role-based entitlements.
  */
 @Singleton
-public class MpaProjectRoleCatalog extends ProjectRoleCatalog {
+public class MpaProjectRoleCatalog implements EntitlementCatalog<ProjectRoleBinding, ProjectId> {
   private final @NotNull ProjectRoleRepository repository;
   private final @NotNull ResourceManagerClient resourceManagerClient;
   private final @NotNull Options options;
@@ -137,7 +137,7 @@ public class MpaProjectRoleCatalog extends ProjectRoleCatalog {
   //---------------------------------------------------------------------------
 
   @Override
-  public SortedSet<ProjectId> listProjects(
+  public SortedSet<ProjectId> listScopes(
     UserEmail user
   ) throws AccessException, IOException {
     if (Strings.isNullOrEmpty(this.options.availableProjectsQuery)) {
