@@ -22,10 +22,7 @@
 package com.google.solutions.jitaccess.core.catalog.group;
 
 import com.google.common.base.Preconditions;
-import com.google.solutions.jitaccess.core.AccessException;
-import com.google.solutions.jitaccess.core.AlreadyExistsException;
-import com.google.solutions.jitaccess.core.GroupEmail;
-import com.google.solutions.jitaccess.core.UserEmail;
+import com.google.solutions.jitaccess.core.*;
 import com.google.solutions.jitaccess.core.catalog.*;
 import com.google.solutions.jitaccess.core.clients.CloudIdentityGroupsClient;
 import org.jetbrains.annotations.NotNull;
@@ -37,11 +34,11 @@ import java.time.Instant;
 /**
  * Activator for group memberships.
  */
-public class GroupMembershipActivator extends EntitlementActivator<GroupMembership> {
+public class GroupMembershipActivator extends EntitlementActivator<GroupMembership, OrganizationId> {
   private final @NotNull CloudIdentityGroupsClient groupsClient;
 
   public GroupMembershipActivator(
-    @NotNull EntitlementCatalog<GroupMembership> catalog,
+    @NotNull EntitlementCatalog<GroupMembership, OrganizationId> catalog,
     @NotNull CloudIdentityGroupsClient groupsClient,
     @NotNull JustificationPolicy policy
   ) {

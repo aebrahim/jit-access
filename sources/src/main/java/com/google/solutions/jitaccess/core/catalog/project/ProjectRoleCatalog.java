@@ -33,27 +33,11 @@ import java.util.SortedSet;
 /**
  * Catalog for project-level role bindings.
  */
-public abstract class ProjectRoleCatalog implements EntitlementCatalog<ProjectRoleBinding> {
+public abstract class ProjectRoleCatalog implements EntitlementCatalog<ProjectRoleBinding, ProjectId> {
   /**
    * List projects that the user has any entitlements for.
    */
   public abstract SortedSet<ProjectId> listProjects(
     UserEmail user
-  ) throws AccessException, IOException;
-
-  /**
-   * List available entitlements.
-   */
-  public abstract EntitlementSet<ProjectRoleBinding> listEntitlements(
-    UserEmail user,
-    ProjectId projectId
-  ) throws AccessException, IOException;
-
-  /**
-   * List available reviewers for (MPA-) activating an entitlement.
-   */
-  public abstract SortedSet<UserEmail> listReviewers(
-    UserEmail requestingUser,
-    ProjectRoleBinding entitlement
   ) throws AccessException, IOException;
 }

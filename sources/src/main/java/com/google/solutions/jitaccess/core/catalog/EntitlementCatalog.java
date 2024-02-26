@@ -22,14 +22,22 @@
 package com.google.solutions.jitaccess.core.catalog;
 
 import com.google.solutions.jitaccess.core.AccessException;
+import com.google.solutions.jitaccess.core.ProjectId;
+import com.google.solutions.jitaccess.core.ResourceId;
 import com.google.solutions.jitaccess.core.UserEmail;
+import com.google.solutions.jitaccess.core.catalog.project.ProjectRoleBinding;
 
 import java.io.IOException;
+import java.util.SortedSet;
 
 /**
  * A catalog of entitlement that can be browsed by the user.
+ *
+ * The catalog is scoped to a project.
  */
-public interface EntitlementCatalog<TEntitlementId extends EntitlementId> {
+public interface EntitlementCatalog
+  <TEntitlementId extends EntitlementId, TScopeId extends ResourceId> {
+
   /**
    * Verify if a user is allowed to make the given request.
    */
@@ -43,5 +51,23 @@ public interface EntitlementCatalog<TEntitlementId extends EntitlementId> {
   void verifyUserCanApprove(
     UserEmail approvingUser,
     MpaActivationRequest<TEntitlementId> request
+  ) throws AccessException, IOException;
+
+
+  /**
+   * List available reviewers for (MPA-) activating an entitlement.
+   */
+  SortedSet<UserEmail> listReviewers(
+    UserEmail requestingUser,
+    ProjectRoleBinding entitlement
+  ) throws AccessException, IOException;
+
+
+  /**
+   * List available entitlements.
+   */
+  EntitlementSet<TEntitlementId> listEntitlements(
+    UserEmail user,
+    TScopeId scope
   ) throws AccessException, IOException;
 }
