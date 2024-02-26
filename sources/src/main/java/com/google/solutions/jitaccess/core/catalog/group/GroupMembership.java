@@ -1,5 +1,5 @@
 //
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
@@ -19,32 +19,29 @@
 // under the License.
 //
 
-package com.google.solutions.jitaccess.core.catalog.project;
+package com.google.solutions.jitaccess.core.catalog.group;
 
 import com.google.common.base.Preconditions;
-import com.google.solutions.jitaccess.core.ProjectId;
-import com.google.solutions.jitaccess.core.RoleBinding;
+import com.google.solutions.jitaccess.core.GroupEmail;
 import com.google.solutions.jitaccess.core.catalog.EntitlementId;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Identifies a project role binding as an entitlement.
+ * Identifies a group membership as an entitlement.
  */
-public class ProjectRoleBinding extends EntitlementId {
-  static final String CATALOG = "iam";
+public class GroupMembership extends EntitlementId {
+  static final String CATALOG = "groups";
 
-  private final @NotNull RoleBinding roleBinding;
+  private final GroupEmail group;
 
-  public ProjectRoleBinding(@NotNull RoleBinding roleBinding) {
-    Preconditions.checkNotNull(roleBinding, "roleBinding");
+  public GroupMembership(@NotNull GroupEmail group) {
+    Preconditions.checkNotNull(group, "group");
 
-    assert ProjectId.isProjectFullResourceName(roleBinding.fullResourceName());
-
-    this.roleBinding = roleBinding;
+    this.group = group;
   }
 
-  public RoleBinding roleBinding() {
-    return this.roleBinding;
+  public @NotNull GroupEmail group() {
+    return this.group;
   }
 
   @Override
@@ -53,11 +50,7 @@ public class ProjectRoleBinding extends EntitlementId {
   }
 
   @Override
-  public String id() {
-    return this.roleBinding.toString();
-  }
-
-  public @NotNull ProjectId projectId() {
-    return ProjectId.fromFullResourceName(this.roleBinding.fullResourceName());
+  public @NotNull String id() {
+    return this.group.email;
   }
 }

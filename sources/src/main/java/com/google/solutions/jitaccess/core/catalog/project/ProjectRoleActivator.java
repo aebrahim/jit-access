@@ -49,12 +49,11 @@ public class ProjectRoleActivator extends EntitlementActivator<ProjectRoleBindin
   public ProjectRoleActivator(
     EntitlementCatalog<ProjectRoleBinding> catalog,
     @NotNull ResourceManagerClient resourceManagerClient,
-    JustificationPolicy policy
+    @NotNull JustificationPolicy policy
   ) {
     super(catalog, policy);
 
     Preconditions.checkNotNull(resourceManagerClient, "resourceManagerClient");
-
     this.resourceManagerClient = resourceManagerClient;
   }
 
@@ -101,7 +100,6 @@ public class ProjectRoleActivator extends EntitlementActivator<ProjectRoleBindin
   protected void provisionAccess(
     @NotNull JitActivationRequest<ProjectRoleBinding> request
   ) throws AccessException, AlreadyExistsException, IOException {
-
     Preconditions.checkNotNull(request, "request");
 
     var bindingDescription = String.format(
@@ -136,7 +134,7 @@ public class ProjectRoleActivator extends EntitlementActivator<ProjectRoleBindin
     //
     // NB. The start/end time for the binding is derived from the approval token. If multiple
     // reviewers try to approve the same token, the resulting condition (and binding) will
-    // be the same. This is important so that we can use the FAIL_IF_BINDING_EXISTS flag.
+    // be the same.
     //
 
     provisionTemporaryBinding(
