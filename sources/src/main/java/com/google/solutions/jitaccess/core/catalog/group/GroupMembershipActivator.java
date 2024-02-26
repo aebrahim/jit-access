@@ -56,15 +56,19 @@ public class GroupMembershipActivator extends EntitlementActivator<GroupMembersh
     @NotNull UserEmail user,
     @NotNull Instant startTime,
     @NotNull Duration duration
-  ) {
-
+  ) throws AccessException, IOException {
     //
     // Add time-bound group membership. If the user is a member
     // already, update the expiry of their membership.
     //
+    // NB. Unlike with IAM conditions, we can't specify a start time
+    // for a temporary group memberships.
+    //
+    Preconditions.checkArgument(
+      startTime.isBefore(Instant.now()),
+      "Start time must not be in the future");
 
-    //TODO: add membership!
-    throw new RuntimeException("NIY!");
+    this.groupsClient.addMembership(group, user, startTime.plus(duration));
   }
 
   //---------------------------------------------------------------------------
