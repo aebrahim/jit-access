@@ -401,13 +401,12 @@ public class CloudIdentityGroupsClient {
   /**
    * Add a member to a group in an idempotent way.
    */
-  public @NotNull MembershipId addMembership(
+  private @NotNull MembershipId addMembership(
+    @NotNull CloudIdentity client,
     @NotNull GroupId groupId,
     @NotNull UserEmail userEmail,
     @NotNull Instant expiry
   ) throws AccessException, IOException {
-    var client = createClient();
-
     var role = new MembershipRole()
       .setName("MEMBER")
       .setExpiryDetail(new ExpiryDetail()
@@ -451,6 +450,33 @@ public class CloudIdentityGroupsClient {
         return null;
       }
     }
+  }
+
+  /**
+   * Add a member to a group in an idempotent way.
+   */
+  public @NotNull MembershipId addMembership(
+    @NotNull GroupId groupId,
+    @NotNull UserEmail userEmail,
+    @NotNull Instant expiry
+  ) throws AccessException, IOException {
+    return addMembership(createClient(), groupId, userEmail, expiry);
+  }
+
+  /**
+   * Add a member to a group in an idempotent way.
+   */
+  public @NotNull MembershipId addMembership(
+    @NotNull GroupEmail groupEmail,
+    @NotNull UserEmail userEmail,
+    @NotNull Instant expiry
+  ) throws AccessException, IOException {
+    var client = createClient();
+    return addMembership(
+      client,
+      lookupGroup(client, groupEmail),
+      userEmail,
+      expiry);
   }
 
   /**
