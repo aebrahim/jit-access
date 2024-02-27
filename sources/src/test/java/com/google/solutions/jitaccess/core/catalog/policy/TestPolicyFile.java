@@ -21,19 +21,198 @@
 
 package com.google.solutions.jitaccess.core.catalog.policy;
 
+import com.google.solutions.jitaccess.core.GroupEmail;
+import com.google.solutions.jitaccess.core.UserEmail;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestPolicyFile {
-  @Test
-  public void whenJsonMalformed_ThenFromStringThrowsException() {
+  public void assertPolicyIssue(
+    PolicyIssue.Code firstExpectedCode,
+    String policyJson
+  ) {
     try {
-      PolicyFile.fromString("{xx");
+      PolicyFile.fromString(policyJson.replace('\'', '\"'));
       fail("Expected exception");
     }
     catch (PolicyException e) {
       assertFalse(e.getIssues().isEmpty());
-      assertEquals(PolicyIssue.Code.FILE_INVALID_SYNTAX, e.getIssues().get(0).code());
+      assertEquals(
+        firstExpectedCode,
+        e.getIssues().get(0).code(),
+        e.getIssues().get(0).details());
     }
+    catch (Throwable e) {
+      throw new RuntimeException("Unexpected exception: " + e.getMessage(), e);
+    }
+  }
+
+  //---------------------------------------------------------------------------
+  // Policy errors.
+  //---------------------------------------------------------------------------
+
+  @Test
+  public void malformedJson() {
+    assertPolicyIssue(
+      PolicyIssue.Code.FILE_INVALID_SYNTAX,
+      "{xx");
+  }
+
+  @Test
+  public void unrecognizedField() {
+    assertPolicyIssue(
+      PolicyIssue.Code.FILE_INVALID_SYNTAX,
+      "{'xx': false}");
+  }
+
+  @Test
+  public void policyIdMissing() {
+    assertPolicyIssue(
+      PolicyIssue.Code.POLICY_INVALID_ID,
+      "{}");
+  }
+
+  @Test
+  public void policyIdInvalid() {
+    assertPolicyIssue(
+      PolicyIssue.Code.POLICY_INVALID_ID,
+      "{'id': ' '}");
+  }
+
+  @Test
+  public void policyNameMissing() {
+    assertPolicyIssue(
+      PolicyIssue.Code.POLICY_MISSING_NAME,
+      "{'id': 'policy-1'}");
+  }
+
+  //---------------------------------------------------------------------------
+  // Entitlement errors.
+  //---------------------------------------------------------------------------
+
+  @Test
+  public void entitlementIdMissing() {
+    assertPolicyIssue(
+      PolicyIssue.Code.ENTITLEMENT_INVALID_ID,
+      "{" +
+        "  'id': 'policy-1'," +
+        "  'name': 'name-of-policy-1'," +
+        "  'entitlements': [{}]" +
+        "}");
+  }
+
+  @Test
+  public void entitlementIdInvalid() {
+    assertPolicyIssue(
+      PolicyIssue.Code.ENTITLEMENT_INVALID_ID,
+      "{" +
+        "  'id': 'policy-1'," +
+        "  'name': 'name-of-policy-1'," +
+        "  'entitlements': [" +
+        "    {" +
+        "     'id': 'not a valid id'" +
+        "    }" +
+        "  ]" +
+        "}");
+  }
+
+  @Test
+  public void entitlementNameMissing() {
+    assertPolicyIssue(
+      PolicyIssue.Code.ENTITLEMENT_MISSING_NAME,
+      "{" +
+        "  'id': 'policy-1'," +
+        "  'name': 'name-of-policy-1'," +
+        "  'entitlements': [" +
+        "    {" +
+        "     'id': 'id-2'" +
+        "    }" +
+        "  ]" +
+        "}");
+  }
+
+  @Test
+  public void entitlementExpiryInvalid() {
+    assertPolicyIssue(
+      PolicyIssue.Code.ENTITLEMENT_INVALID_EXPIRY,
+      "{" +
+        "  'id': 'policy-1'," +
+        "  'name': 'name-of-policy-1'," +
+        "  'entitlements': [" +
+        "    {" +
+        "     'id': 'id-2'," +
+        "     'name': 'name of id-2'," +
+        "     'expires_after': 'not a date'" +
+        "    }" +
+        "  ]" +
+        "}");
+  }
+
+  @Test
+  public void eligiblePrincipalInvalid() {
+    assertPolicyIssue(
+      PolicyIssue.Code.PRINCIPAL_INVALID,
+      "{" +
+        "  'id': 'policy-1'," +
+        "  'name': 'name-of-policy-1'," +
+        "  'entitlements': [" +
+        "    {" +
+        "     'id': 'id-2'," +
+        "     'name': 'name of id-2'," +
+        "     'expires_after': 'PT15M'," +
+        "     'eligible': {" +
+        "       'principals': [" +
+        "         'foo@example.com'" +
+        "       ]" +
+        "     }" +
+        "    }" +
+        "  ]" +
+        "}");
+  }
+
+  //---------------------------------------------------------------------------
+  // Valid policies.
+  //---------------------------------------------------------------------------
+
+  @Test
+  public void jitPolicy() throws Exception {
+    var json =
+      "{" +
+        "  'id': 'policy-1'," +
+        "  'name': 'name-of-policy-1'," +
+        "  'entitlements': [" +
+        "    {" +
+        "     'id': 'id-2'," +
+        "     'name': 'name of id-2'," +
+        "     'expires_after': 'PT5M'," +
+        "     'eligible': {" +
+        "       'principals': [" +
+        "         'user:alice@example.com'," +
+        "         'group:ftes@example.com'" +
+        "       ]" +
+        "     }" +
+        "    }" +
+        "  ]" +
+        "}";
+
+    var policy = PolicyFile.fromString(json.replace('\'', '"'));
+    assertTrue(policy.warnings().isEmpty());
+
+    assertEquals("policy-1", policy.node().id());
+    assertEquals("name-of-policy-1", policy.node().name());
+    assertEquals(1, policy.node().entitlements().size());
+
+    var entitlement = policy.node().entitlements().get(0);
+    assertEquals("id-2", entitlement.id());
+    assertEquals("name of id-2", entitlement.name());
+    assertEquals(Duration.ofMinutes(5), entitlement.expiry());
+    assertEquals(2, entitlement.eligible().principals().size());
+    assertIterableEquals(
+      List.of("user:alice@example.com", "group:ftes@example.com"),
+      entitlement.eligible().principals());
   }
 }

@@ -52,6 +52,20 @@ public class PolicyFile {
    */
   private final @NotNull List<PolicyIssue> warnings;
 
+  /**
+   * @return list of warnings encountered when parsing the policy
+   */
+  public List<PolicyIssue> warnings() {
+    return warnings;
+  }
+
+  /**
+   * @return root of the policy.
+   */
+  PolicyNode node() {
+    return node;
+  }
+
   private PolicyFile(
     @Nullable PolicyNode node,
     @NotNull List<PolicyIssue> warnings
@@ -76,7 +90,7 @@ public class PolicyFile {
       //
       node.validate(issueCollector);
 
-      if (issueCollector.getIssues().stream().anyMatch(i -> i.error())) {
+      if (issueCollector.getIssues().stream().noneMatch(i -> i.error())) {
         return new PolicyFile(node, issueCollector.getIssues());
       }
       else {
@@ -106,7 +120,7 @@ public class PolicyFile {
       return issues;
     }
 
-    PolicyIssue add(
+    void add(
       boolean error,
       @NotNull PolicyIssue.Code code,
       @NotNull String format,
@@ -116,10 +130,10 @@ public class PolicyFile {
         .format(format, args)
         .toString();
 
-      return new PolicyIssue(
+      this.issues.add(new PolicyIssue(
         error,
         code,
-        String.format("[%s]", this.currentContext, description));
+        String.format("[%s] %s", this.currentContext, description)));
     }
   }
 
@@ -139,8 +153,9 @@ public class PolicyFile {
           PolicyIssue.Code.POLICY_INVALID_ID,
           "'%s' is not a valid policy ID", this.id);
       }
-
-      issues.setContext(this.id);
+      else {
+        issues.setContext(this.id);
+      }
 
       if (this.name() == null || this.name().isBlank()) {
         issues.add(
@@ -155,8 +170,9 @@ public class PolicyFile {
           PolicyIssue.Code.POLICY_MISSING_ENTITLEMENTS,
           "The policy must contain at least one entitlement");
       }
-
-      this.entitlements.stream().forEach(e ->  e.validate(this, issues));
+      else {
+        this.entitlements.stream().forEach(e ->  e.validate(this, issues));
+      }
     }
   }
 
@@ -184,14 +200,22 @@ public class PolicyFile {
           "The entitlement must have a name", this.id);
       }
 
-      try {
-        Duration.parse(this.expiry);
-      }
-      catch (DateTimeParseException e) {
+      if (this.expiry == null || this.expiry.isBlank()) {
         issues.add(
           true,
           PolicyIssue.Code.ENTITLEMENT_INVALID_EXPIRY,
-          "The expiry is invalid: %s", e.getMessage());
+          "The entitlement must have an expiry");
+      }
+      else {
+        try {
+          Duration.parse(this.expiry);
+        }
+        catch (DateTimeParseException e) {
+          issues.add(
+            true,
+            PolicyIssue.Code.ENTITLEMENT_INVALID_EXPIRY,
+            "The expiry is invalid: %s", e.getMessage());
+        }
       }
 
       if (this.eligible == null ||
@@ -202,8 +226,9 @@ public class PolicyFile {
           PolicyIssue.Code.ENTITLEMENT_MISSING_ELIGIBLE_PRINCIPALS,
           "The entitlement does not contain any eligible principals");
       }
-
-      this.eligible.validate(issues);
+      else {
+        this.eligible.validate(issues);
+      }
     }
   }
 
