@@ -110,7 +110,7 @@ public class PolicyFile {
   /**
    * Parse a JSON-formatted policy file.
    */
-  public static @NotNull PolicyFile fromString(String json) throws PolicyException {
+  public static @NotNull PolicyFile fromString(String json) throws PolicyException { //TODO: read multiple policies?
     var issueCollector = new IssueCollector();
     try {
       //

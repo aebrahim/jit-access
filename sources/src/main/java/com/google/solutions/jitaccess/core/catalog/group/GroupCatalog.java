@@ -8,12 +8,11 @@ import com.google.solutions.jitaccess.core.catalog.ActivationRequest;
 import com.google.solutions.jitaccess.core.catalog.EntitlementCatalog;
 import com.google.solutions.jitaccess.core.catalog.EntitlementSet;
 import com.google.solutions.jitaccess.core.catalog.MpaActivationRequest;
+import com.google.solutions.jitaccess.core.catalog.policy.Policy;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Catalog for groups.
@@ -28,6 +27,19 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
    * operates on a single organization.
    */
   public static final OrganizationId CURRENT_ORGANIZATION = new OrganizationId("-");
+
+  private final @NotNull List<Policy> policies;
+
+  public GroupCatalog(@NotNull List<Policy> policies) {
+    var policyIds = new HashSet<String>();
+
+    Preconditions.checkNotNull(policies, "policies");
+    Preconditions.checkArgument(
+      policies.stream().map(p -> p.id()).allMatch(t -> policyIds.add(t)),
+      "Policy IDs must be unique");
+
+    this.policies = policies;
+  }
 
   //---------------------------------------------------------------------------
   // EntitlementCatalog.
