@@ -1,14 +1,9 @@
 package com.google.solutions.jitaccess.core.catalog.group;
 
 import com.google.common.base.Preconditions;
-import com.google.solutions.jitaccess.core.AccessException;
-import com.google.solutions.jitaccess.core.OrganizationId;
-import com.google.solutions.jitaccess.core.PrincipalIdentifier;
-import com.google.solutions.jitaccess.core.UserEmail;
-import com.google.solutions.jitaccess.core.catalog.ActivationRequest;
-import com.google.solutions.jitaccess.core.catalog.EntitlementCatalog;
-import com.google.solutions.jitaccess.core.catalog.EntitlementSet;
-import com.google.solutions.jitaccess.core.catalog.MpaActivationRequest;
+import com.google.solutions.jitaccess.cel.TimeSpan;
+import com.google.solutions.jitaccess.core.*;
+import com.google.solutions.jitaccess.core.catalog.*;
 import com.google.solutions.jitaccess.core.catalog.policy.Policy;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +28,12 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
 
   public GroupCatalog(@NotNull List<Policy> policies) {
     this.policies = policies;
+  }
+
+  private GroupEmail emailForEntitlement(Policy.Entitlement e) {
+
+    // TODO: search groups
+    throw new RuntimeException("NIY!");
   }
 
   private PrincipalSet createUserPrincipalSet() {
@@ -71,7 +72,6 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
     throw new RuntimeException("NIY!");
   }
 
-
   @Override
   public SortedSet<UserEmail> listReviewers(
     @NotNull UserEmail requestingUser,
@@ -89,11 +89,47 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
   ) throws AccessException, IOException {
     Preconditions.checkArgument(CURRENT_ORGANIZATION.equals(scope));
 
-//    this.policies
-//      .stream()
-//      .flatMap(p -> p.entitlements().stream())
-//      .filter(e -> e.eligiblePrincipals())
-    // TODO: compare policy with direct group memberships
-    throw new RuntimeException("NIY!");
+    var userPrincipalSet = createUserPrincipalSet();
+
+    //
+    // Find entitlements that lists this user (or one of its groups)
+    // as being eligible.
+    //
+    var availableEntitlements = new TreeSet<Entitlement<GroupMembership>>();
+    for (var policyEntitlement : this.policies
+      .stream()
+      .flatMap(p -> p.entitlements().stream())
+      .filter(e -> userPrincipalSet.overlaps(e.eligiblePrincipals()))
+      .toList()) {
+
+      var group = emailForEntitlement(policyEntitlement);
+      if (userPrincipalSet.contains(group)) {
+        //
+        // The user is a member of the group that this entitlement controls, so
+        // he must have activated it.
+        //
+
+        // TODO: find expiry
+        TimeSpan validity = null;
+
+        availableEntitlements.add(new Entitlement<GroupMembership>(
+          new GroupMembership(group),
+          policyEntitlement.name(), //TODO: include policy name
+          policyEntitlement.approvalRequirement().activationType(),
+          Entitlement.Status.ACTIVE,
+          validity));
+      }
+      else {
+        availableEntitlements.add(new Entitlement<GroupMembership>(
+          new GroupMembership(group),
+          policyEntitlement.name(), //TODO: include policy name
+          policyEntitlement.approvalRequirement().activationType(),
+          Entitlement.Status.AVAILABLE));
+      }
+
+      // TODO: does the API return expired memberships?
+    }
+
+    return new EntitlementSet<>(availableEntitlements, new TreeSet<>(), Set.of());
   }
 }

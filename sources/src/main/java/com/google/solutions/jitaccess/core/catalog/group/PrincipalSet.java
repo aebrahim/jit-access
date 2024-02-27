@@ -12,10 +12,21 @@ class PrincipalSet {
     this.principals = principals;
   }
 
+  boolean contains(PrincipalIdentifier principal) { // TODO: test
+    return this.principals.contains(principal);
+  }
+
+  /**
+   * Check if two sets overlap.
+   */
+  boolean overlaps(@NotNull Set<PrincipalIdentifier> principals) {
+    return this.principals.stream().anyMatch(id -> principals.contains(id));
+  }
+
   /**
    * Check if two sets overlap.
    */
   boolean overlaps(@NotNull PrincipalSet set) {
-    return this.principals.stream().anyMatch(id -> set.principals.contains(id));
+    return overlaps(set.principals);
   }
 }

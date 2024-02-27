@@ -22,6 +22,7 @@
 package com.google.solutions.jitaccess.core.catalog.policy;
 
 import com.google.solutions.jitaccess.core.PrincipalIdentifier;
+import com.google.solutions.jitaccess.core.catalog.ActivationType;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
@@ -63,12 +64,19 @@ public record Policy(
    * Base interface for approval requirements.
    */
   public interface ApprovalRequirement {
+    /**
+     * Type of activation required.
+     */
+    ActivationType activationType();
   }
 
   /**
    * Indicates that eligible principals can self-approve.
    */
   public record SelfApprovalRequirement() implements ApprovalRequirement {
+    public ActivationType activationType() {
+      return ActivationType.JIT;
+    }
   }
 
   /**
@@ -82,5 +90,8 @@ public record Policy(
     Integer minimumNumberOfPeersToNotify,
     Integer maximumNumberOfPeersToNotify
   ) implements ApprovalRequirement {
+    public ActivationType activationType() {
+      return ActivationType.MPA;
+    }
   }
 }
