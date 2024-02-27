@@ -34,21 +34,16 @@ import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Parsed representation of a JSON-formatted policy document.
+ * A document can contain one or more policies.
  */
-public class PolicyFile {
+public class PolicyDocument {
   private static Pattern ID_PATTERN = Pattern.compile("^[A-Za-z0-9\\-_]{1,32}$");
 
-  /**
-   * The root node of the JSON.
-   */
-  private final @NotNull PolicyNode node;
-
-  /**
-   * Non-critical warnings.
-   */
+  private final @NotNull List<PolicyNode> nodes;
   private final @NotNull List<PolicyIssue> warnings;
 
   /**
@@ -59,76 +54,98 @@ public class PolicyFile {
   }
 
   /**
-   * @return root of the policy document.
+   * @return list of policy nodes defined in this document.
    */
-  @NotNull PolicyNode node() {
-    return this.node;
+  @NotNull List<PolicyNode> nodes() {
+    return this.nodes;
   }
 
-  public @NotNull Policy policy() {
+  /**
+   * @return list of policies defined in this document.
+   */
+  public @NotNull List<Policy> policies() {
     //
     // NB. We already validated the document, so we don't need to do extra
     // validation here anymore.
     //
     assert this.warnings.stream().noneMatch(w -> w.error());
 
-    return new Policy(
-      this.node.id,
-      this.node.name,
-      this.node
-        .entitlements
-        .stream()
-        .map(e -> {
-          Policy.ApprovalRequirement approvalRequirement;
-          if (e.requirements != null && e.requirements.peerApproval != null) {
-            approvalRequirement = new Policy.PeerApprovalRequirement(
-              e.requirements.peerApproval.minimumNumberOfPeers,
-              e.requirements.peerApproval.maximumNumberOfPeers);
-          }
-          else {
-            approvalRequirement = new Policy.SelfApprovalRequirement();
-          }
+    return this.nodes.stream().map(
+      node -> new Policy(
+        node.id,
+        node.name,
+        node
+          .entitlements
+          .stream()
+          .map(e -> {
+            Policy.ApprovalRequirement approvalRequirement;
+            if (e.requirements != null && e.requirements.peerApproval != null) {
+              approvalRequirement = new Policy.PeerApprovalRequirement(
+                e.requirements.peerApproval.minimumNumberOfPeers,
+                e.requirements.peerApproval.maximumNumberOfPeers);
+            }
+            else {
+              approvalRequirement = new Policy.SelfApprovalRequirement();
+            }
 
-          return new Policy.Entitlement(
-            e.id,
-            e.name,
-            e.expiry(),
-            e.eligible.principals(),
-            approvalRequirement);
-        })
-        .toList());
+            return new Policy.Entitlement(
+              e.id,
+              e.name,
+              e.expiry(),
+              e.eligible.principals(),
+              approvalRequirement);
+          })
+          .toList()))
+      .collect(Collectors.toUnmodifiableList());
   }
 
-  private PolicyFile(
-    @Nullable PolicyNode node,
+  private PolicyDocument(
+    @Nullable List<PolicyNode> nodes,
     @NotNull List<PolicyIssue> warnings
   ) {
-    this.node = node;
+    this.nodes = nodes;
     this.warnings = warnings;
   }
 
   /**
-   * Parse a JSON-formatted policy file.
+   * Parse a JSON-formatted policy document.
    */
-  public static @NotNull PolicyFile fromString(String json) throws PolicyException { //TODO: read multiple policies?
+  public static @NotNull PolicyDocument fromString(String json) throws PolicyException {
     var issueCollector = new IssueCollector();
     try {
       //
       // Parse the JSON.
       //
-      var node = new ObjectMapper().readValue(json, PolicyNode.class);
+      List<PolicyNode> nodes;
+      if (json.stripLeading().startsWith("[")) {
+        nodes = Arrays.asList(new ObjectMapper().readValue(json, PolicyNode[].class));
+      }
+      else {
+        nodes = List.of(new ObjectMapper().readValue(json, PolicyNode.class));
+      }
+
+      if (nodes.isEmpty()) {
+        issueCollector.add(
+          true,
+          PolicyIssue.Code.FILE_INVALID_SYNTAX,
+          "The document does not contain any policies");
+
+        throw new PolicyException(
+          "The document does not contain any policies",
+          issueCollector.getIssues());
+      }
 
       //
       // The policy is syntactically correct. Now check semantics.
       //
-      node.validate(issueCollector);
+      nodes.forEach(n -> n.validate(issueCollector));
 
       if (issueCollector.getIssues().stream().noneMatch(i -> i.error())) {
-        return new PolicyFile(node, issueCollector.getIssues());
+        return new PolicyDocument(nodes, issueCollector.getIssues());
       }
       else {
         throw new PolicyException(
-          "The policy did not pass validation",
+          "The document contains invalid policies",
           issueCollector.getIssues());
       }
     }
@@ -136,7 +153,7 @@ public class PolicyFile {
       issueCollector.add(true, PolicyIssue.Code.FILE_INVALID_SYNTAX, e.getMessage());
 
       throw new PolicyException(
-        "Parsing the policy failed because it contains syntax errors",
+        "The document is not well-formed JSON",
         issueCollector.getIssues());
     }
   }

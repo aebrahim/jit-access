@@ -30,13 +30,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestPolicyFile {
+public class TestPolicyDocument {
   public void assertPolicyIssue(
     PolicyIssue.Code firstExpectedCode,
     String policyJson
   ) {
     try {
-      PolicyFile.fromString(policyJson.replace('\'', '\"'));
+      PolicyDocument.fromString(policyJson.replace('\'', '\"'));
       fail("Expected exception");
     }
     catch (PolicyException e) {
@@ -52,7 +52,7 @@ public class TestPolicyFile {
   }
 
   //---------------------------------------------------------------------------
-  // Policy errors.
+  // Document issues.
   //---------------------------------------------------------------------------
 
   @Test
@@ -61,6 +61,24 @@ public class TestPolicyFile {
       PolicyIssue.Code.FILE_INVALID_SYNTAX,
       "{xx");
   }
+
+  @Test
+  public void emptyJson() {
+    assertPolicyIssue(
+      PolicyIssue.Code.FILE_INVALID_SYNTAX,
+      " ");
+  }
+
+  @Test
+  public void emptyArray() {
+    assertPolicyIssue(
+      PolicyIssue.Code.FILE_INVALID_SYNTAX,
+      "[]");
+  }
+
+  //---------------------------------------------------------------------------
+  // Policy issues.
+  //---------------------------------------------------------------------------
 
   @Test
   public void unrecognizedField() {
@@ -91,7 +109,7 @@ public class TestPolicyFile {
   }
 
   //---------------------------------------------------------------------------
-  // Entitlement errors.
+  // Entitlement issues.
   //---------------------------------------------------------------------------
 
   @Test
@@ -175,7 +193,7 @@ public class TestPolicyFile {
   }
 
   //---------------------------------------------------------------------------
-  // Requirements errors.
+  // Requirements issues.
   //---------------------------------------------------------------------------
 
   @Test
@@ -237,14 +255,14 @@ public class TestPolicyFile {
   // Valid policies.
   //---------------------------------------------------------------------------
 
-  private static PolicyFile parse(String json) throws PolicyException {
-    return PolicyFile.fromString(json.replace('\'', '"'));
+  private static PolicyDocument parse(String json) throws PolicyException {
+    return PolicyDocument.fromString(json.replace('\'', '"'));
   }
 
   @Test
   public void jitPolicy() throws Exception {
     var json =
-      "{" +
+      "[{" +
         "  'id': 'policy-1'," +
         "  'name': 'name-of-policy-1'," +
         "  'entitlements': [" +
@@ -260,12 +278,13 @@ public class TestPolicyFile {
         "      }" +
         "    }" +
         "  ]" +
-        "}";
+        "}]";
 
     var policyFile = parse(json);
     assertTrue(policyFile.warnings().isEmpty());
 
-    var policy = policyFile.policy();
+    assertEquals(1, policyFile.policies().size());
+    var policy = policyFile.policies().get(0);
 
     assertEquals("policy-1", policy.id());
     assertEquals("name-of-policy-1", policy.name());
@@ -282,11 +301,10 @@ public class TestPolicyFile {
     assertInstanceOf(Policy.SelfApprovalRequirement.class, entitlement.approvalRequirement());
   }
 
-
   @Test
   public void peerApprovalPolicy() throws Exception {
     var json =
-      "{" +
+      "[{" +
         "  'id': 'policy-1'," +
         "  'name': 'name-of-policy-1'," +
         "  'entitlements': [" +
@@ -305,12 +323,13 @@ public class TestPolicyFile {
         "      }" +
         "    }" +
         "  ]" +
-        "}";
+        "}]";
 
     var policyFile = parse(json);
     assertTrue(policyFile.warnings().isEmpty());
 
-    var policy = policyFile.policy();
+    assertEquals(1, policyFile.policies().size());
+    var policy = policyFile.policies().get(0);
 
     assertEquals("policy-1", policy.id());
     assertEquals("name-of-policy-1", policy.name());
