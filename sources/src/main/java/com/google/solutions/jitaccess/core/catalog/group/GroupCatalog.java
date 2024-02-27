@@ -92,7 +92,7 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
     var userPrincipalSet = createUserPrincipalSet();
 
     //
-    // Find entitlements that lists this user (or one of its groups)
+    // Find entitlements that list this user (or one of its groups)
     // as being eligible.
     //
     var availableEntitlements = new TreeSet<Entitlement<GroupMembership>>();
@@ -102,17 +102,17 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
       .filter(e -> userPrincipalSet.overlaps(e.eligiblePrincipals()))
       .toList()) {
 
+      //
+      // Map entitlement to group and check if the user is already
+      // a member of that group. If so, they must have activated
+      // the entitlement already.
+      //
       var group = emailForEntitlement(policyEntitlement);
       if (userPrincipalSet.contains(group)) {
-        //
-        // The user is a member of the group that this entitlement controls, so
-        // he must have activated it.
-        //
-
         // TODO: find expiry
         TimeSpan validity = null;
 
-        availableEntitlements.add(new Entitlement<GroupMembership>(
+        availableEntitlements.add(new Entitlement<>(
           new GroupMembership(group),
           policyEntitlement.name(), //TODO: include policy name
           policyEntitlement.approvalRequirement().activationType(),
@@ -120,7 +120,7 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
           validity));
       }
       else {
-        availableEntitlements.add(new Entitlement<GroupMembership>(
+        availableEntitlements.add(new Entitlement<>(
           new GroupMembership(group),
           policyEntitlement.name(), //TODO: include policy name
           policyEntitlement.approvalRequirement().activationType(),
