@@ -31,13 +31,6 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
   private final @NotNull List<Policy> policies;
 
   public GroupCatalog(@NotNull List<Policy> policies) {
-    var policyIds = new HashSet<String>();
-
-    Preconditions.checkNotNull(policies, "policies");
-    Preconditions.checkArgument(
-      policies.stream().map(p -> p.id()).allMatch(t -> policyIds.add(t)),
-      "Policy IDs must be unique");
-
     this.policies = policies;
   }
 

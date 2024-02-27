@@ -37,6 +37,7 @@ public record PolicyIssue(
   public enum Code {
     FILE_INVALID_SYNTAX,
     POLICY_INVALID_ID,
+    POLICY_DUPLICATE_ID,
     POLICY_MISSING_NAME,
     POLICY_MISSING_ENTITLEMENTS,
 

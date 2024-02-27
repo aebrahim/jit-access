@@ -108,6 +108,56 @@ public class TestPolicyDocument {
       "{'id': 'policy-1'}");
   }
 
+  @Test
+  public void policyWithDuplicateId() {
+    assertPolicyIssue(
+      PolicyIssue.Code.POLICY_DUPLICATE_ID,
+      "[" +
+        "  {" +
+        "    'id': 'policy-1'," +
+        "    'name': 'name-of-policy-1'," +
+        "    'entitlements': [" +
+        "      {" +
+        "        'id': 'id-2'," +
+        "        'name': 'name of id-2'," +
+        "        'expires_after': 'PT15M'," +
+        "        'eligible': {" +
+        "          'principals': [" +
+        "            'user:foo@example.com'" +
+        "          ]" +
+        "        }," +
+        "        'requirements': {" +
+        "          'requirePeerApproval': {" +
+        "            'minimum_peers_to_notify': 0" +
+        "          }" +
+        "        }" +
+        "      }" +
+        "    ]" +
+        "  }," +
+        "  {" +
+        "    'id': 'policy-1'," +
+        "    'name': 'name-of-policy-1'," +
+        "    'entitlements': [" +
+        "      {" +
+        "        'id': 'id-2'," +
+        "        'name': 'name of id-2'," +
+        "        'expires_after': 'PT15M'," +
+        "        'eligible': {" +
+        "          'principals': [" +
+        "            'user:foo@example.com'" +
+        "          ]" +
+        "        }," +
+        "        'requirements': {" +
+        "          'requirePeerApproval': {" +
+        "            'minimum_peers_to_notify': 0" +
+        "          }" +
+        "        }" +
+        "      }" +
+        "    ]" +
+        "  }" +
+        "]");
+  }
+
   //---------------------------------------------------------------------------
   // Entitlement issues.
   //---------------------------------------------------------------------------

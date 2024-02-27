@@ -129,16 +129,19 @@ public class PolicyDocument {
           true,
           PolicyIssue.Code.FILE_INVALID_SYNTAX,
           "The document does not contain any policies");
-
-        throw new PolicyException(
-          "The document does not contain any policies",
-          issueCollector.getIssues());
       }
-
-      //
-      // The policy is syntactically correct. Now check semantics.
-      //
-      nodes.forEach(n -> n.validate(issueCollector));
+      else if (!nodes.stream().map(p -> p.id()).allMatch(new HashSet<String>()::add)) {
+        issueCollector.add(
+          true,
+          PolicyIssue.Code.POLICY_DUPLICATE_ID,
+          "The document contains multiple policies with the same ID");
+      }
+      else {
+        //
+        // The policy is syntactically correct. Now check semantics.
+        //
+        nodes.forEach(n -> n.validate(issueCollector));
+      }
 
       if (issueCollector.getIssues().stream().noneMatch(i -> i.error())) {
         return new PolicyDocument(nodes, issueCollector.getIssues());
