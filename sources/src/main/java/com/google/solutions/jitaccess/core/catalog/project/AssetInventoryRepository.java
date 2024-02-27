@@ -337,7 +337,6 @@ public class AssetInventoryRepository extends ProjectRoleRepository {
     }
   }
 
-
   /**
    * @param scope Scope to use for queries.
    */

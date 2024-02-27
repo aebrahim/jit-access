@@ -3,6 +3,7 @@ package com.google.solutions.jitaccess.core.catalog.group;
 import com.google.common.base.Preconditions;
 import com.google.solutions.jitaccess.core.AccessException;
 import com.google.solutions.jitaccess.core.OrganizationId;
+import com.google.solutions.jitaccess.core.PrincipalIdentifier;
 import com.google.solutions.jitaccess.core.UserEmail;
 import com.google.solutions.jitaccess.core.catalog.ActivationRequest;
 import com.google.solutions.jitaccess.core.catalog.EntitlementCatalog;
@@ -32,6 +33,12 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
 
   public GroupCatalog(@NotNull List<Policy> policies) {
     this.policies = policies;
+  }
+
+  private PrincipalSet createUserPrincipalSet() {
+
+    // TODO: search groups
+    throw new RuntimeException("NIY!");
   }
 
   //---------------------------------------------------------------------------
@@ -82,6 +89,10 @@ public class GroupCatalog implements EntitlementCatalog<GroupMembership, Organiz
   ) throws AccessException, IOException {
     Preconditions.checkArgument(CURRENT_ORGANIZATION.equals(scope));
 
+//    this.policies
+//      .stream()
+//      .flatMap(p -> p.entitlements().stream())
+//      .filter(e -> e.eligiblePrincipals())
     // TODO: compare policy with direct group memberships
     throw new RuntimeException("NIY!");
   }
