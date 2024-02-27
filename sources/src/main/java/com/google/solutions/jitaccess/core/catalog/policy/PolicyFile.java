@@ -25,19 +25,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.solutions.jitaccess.core.GroupEmail;
+import com.google.solutions.jitaccess.core.PrincipalIdentifier;
 import com.google.solutions.jitaccess.core.UserEmail;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
-import java.util.Formatter;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Parsed representation of a JSON-formatted policy file.
+ * Parsed representation of a JSON-formatted policy document.
  */
 public class PolicyFile {
   private static Pattern ID_PATTERN = Pattern.compile("^[A-Za-z0-9\\-_]{1,32}$");
@@ -55,15 +54,49 @@ public class PolicyFile {
   /**
    * @return list of warnings encountered when parsing the policy
    */
-  public List<PolicyIssue> warnings() {
-    return warnings;
+  public @NotNull List<PolicyIssue> warnings() {
+    return this.warnings;
   }
 
   /**
-   * @return root of the policy.
+   * @return root of the policy document.
    */
-  PolicyNode node() {
-    return node;
+  @NotNull PolicyNode node() {
+    return this.node;
+  }
+
+  public @NotNull Policy policy() {
+    //
+    // NB. We already validated the document, so we don't need to do extra
+    // validation here anymore.
+    //
+    assert this.warnings.stream().noneMatch(w -> w.error());
+
+    return new Policy(
+      this.node.id,
+      this.node.name,
+      this.node
+        .entitlements
+        .stream()
+        .map(e -> {
+          Policy.ApprovalRequirement approvalRequirement;
+          if (e.requirements != null && e.requirements.peerApproval != null) {
+            approvalRequirement = new Policy.PeerApprovalRequirement(
+              e.requirements.peerApproval.minimumNumberOfPeers,
+              e.requirements.peerApproval.maximumNumberOfPeers);
+          }
+          else {
+            approvalRequirement = new Policy.SelfApprovalRequirement();
+          }
+
+          return new Policy.Entitlement(
+            e.id,
+            e.name,
+            e.expiry(),
+            e.eligible.principals(),
+            approvalRequirement);
+        })
+        .toList());
   }
 
   private PolicyFile(
@@ -77,7 +110,7 @@ public class PolicyFile {
   /**
    * Parse a JSON-formatted policy file.
    */
-  public static PolicyFile fromString(String json) throws PolicyException {
+  public static @NotNull PolicyFile fromString(String json) throws PolicyException {
     var issueCollector = new IssueCollector();
     try {
       //
@@ -179,9 +212,9 @@ public class PolicyFile {
   record EntitlementsNode(
     @JsonProperty("id") String id,
     @JsonProperty("name") String name,
-    @JsonProperty("expires_after") String expiry,
+    @JsonProperty("expires_after") String expiryString,
     @JsonProperty("eligible") EligibleNode eligible,
-    @JsonProperty("approval") ApprovalNode approval
+    @JsonProperty("requirements") RequirementsNode requirements
   ) {
     void validate(PolicyNode parent, IssueCollector issues) {
       if (this.id == null || !ID_PATTERN.matcher(this.id).matches()) {
@@ -200,7 +233,7 @@ public class PolicyFile {
           "The entitlement must have a name", this.id);
       }
 
-      if (this.expiry == null || this.expiry.isBlank()) {
+      if (this.expiryString == null || this.expiryString.isBlank()) {
         issues.add(
           true,
           PolicyIssue.Code.ENTITLEMENT_INVALID_EXPIRY,
@@ -208,7 +241,7 @@ public class PolicyFile {
       }
       else {
         try {
-          Duration.parse(this.expiry);
+          Duration.parse(this.expiryString);
         }
         catch (DateTimeParseException e) {
           issues.add(
@@ -219,8 +252,8 @@ public class PolicyFile {
       }
 
       if (this.eligible == null ||
-          this.eligible.principals == null ||
-          this.eligible.principals.isEmpty()) {
+          this.eligible.principalStrings == null ||
+          this.eligible.principalStrings.isEmpty()) {
         issues.add(
           false,
           PolicyIssue.Code.ENTITLEMENT_MISSING_ELIGIBLE_PRINCIPALS,
@@ -229,14 +262,22 @@ public class PolicyFile {
       else {
         this.eligible.validate(issues);
       }
+
+      if (this.requirements != null) {
+        this.requirements.validate(issues);
+      }
+    }
+
+    Duration expiry() {
+      return Duration.parse(this.expiryString);
     }
   }
 
   record EligibleNode(
-    @JsonProperty("principals") List<String> principals
+    @JsonProperty("principals") List<String> principalStrings
   ) {
     void validate(IssueCollector issues) {
-      for (var principal : principals) {
+      for (var principal : principalStrings) {
         if (!principal.startsWith(UserEmail.TYPE) &&
             !principal.startsWith(GroupEmail.TYPE)) {
           issues.add(
@@ -248,29 +289,51 @@ public class PolicyFile {
         }
       }
     }
-  }
 
-  record ApprovalNode(
-    @JsonProperty("self") boolean self,
-    @JsonProperty("peer") ApprovableByPeer peer
-  ) {
-    void validate(IssueCollector issues) {
-//      if (this.self) {
-//        if (this.peer != null) {
-//          issues.addError("Self-approval and peer-approval are mutually exclusive");
-//        }
-//      }
-//      else if (this.peer != null) {
-//
-//      }
-//      else {
-//        issues.addError("Approval settings are missing");
-//      }
+    Set<PrincipalIdentifier> principals() {
+      var principals = new HashSet<PrincipalIdentifier>();
+
+      for (var s : this.principalStrings) {
+        if (s.startsWith(UserEmail.TYPE + ":")) {
+          principals.add(new UserEmail(s.substring(UserEmail.TYPE.length() + 1)));
+        }
+        else if (s.startsWith(GroupEmail.TYPE + ":")) {
+          principals.add(new GroupEmail(s.substring(GroupEmail.TYPE.length() + 1)));
+        }
+      }
+
+      return principals;
     }
   }
 
-  record ApprovableByPeer(
-    @JsonProperty("minimum_peers_to_notify") int minNumberOfPeers,
-    @JsonProperty("maximum_peers_to_notify") int maxNumberOfPeers
-  ) {}
+  record RequirementsNode(
+    @JsonProperty("requirePeerApproval") RequirePeerApprovalNode peerApproval
+  ) {
+    void validate(IssueCollector issues) {
+      if (this.peerApproval != null) {
+        this.peerApproval.validate(issues);
+      }
+    }
+  }
+
+  record RequirePeerApprovalNode(
+    @JsonProperty("minimum_peers_to_notify") Integer minimumNumberOfPeers,
+    @JsonProperty("maximum_peers_to_notify") Integer maximumNumberOfPeers
+  ) {
+    void validate(IssueCollector issues) {
+      if (minimumNumberOfPeers != null && minimumNumberOfPeers < 1) {
+        issues.add(
+          true,
+          PolicyIssue.Code.PEER_APPROVAL_CONSTRAINTS_INVALID,
+          "minimum_peers_to_notify must be greater than 0");
+      }
+
+      if (maximumNumberOfPeers != null && maximumNumberOfPeers < minimumNumberOfPeers) {
+        issues.add(
+          true,
+          PolicyIssue.Code.PEER_APPROVAL_CONSTRAINTS_INVALID,
+          "maximum_peers_to_notify must be greater than minimum_peers_to_notify");
+      }
+    }
+  }
 }

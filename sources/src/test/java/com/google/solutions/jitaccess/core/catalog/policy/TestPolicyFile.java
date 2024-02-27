@@ -114,7 +114,7 @@ public class TestPolicyFile {
         "  'name': 'name-of-policy-1'," +
         "  'entitlements': [" +
         "    {" +
-        "     'id': 'not a valid id'" +
+        "      'id': 'not a valid id'" +
         "    }" +
         "  ]" +
         "}");
@@ -129,7 +129,7 @@ public class TestPolicyFile {
         "  'name': 'name-of-policy-1'," +
         "  'entitlements': [" +
         "    {" +
-        "     'id': 'id-2'" +
+        "      'id': 'id-2'" +
         "    }" +
         "  ]" +
         "}");
@@ -144,9 +144,9 @@ public class TestPolicyFile {
         "  'name': 'name-of-policy-1'," +
         "  'entitlements': [" +
         "    {" +
-        "     'id': 'id-2'," +
-        "     'name': 'name of id-2'," +
-        "     'expires_after': 'not a date'" +
+        "      'id': 'id-2'," +
+        "      'name': 'name of id-2'," +
+        "      'expires_after': 'not a date'" +
         "    }" +
         "  ]" +
         "}");
@@ -161,14 +161,73 @@ public class TestPolicyFile {
         "  'name': 'name-of-policy-1'," +
         "  'entitlements': [" +
         "    {" +
-        "     'id': 'id-2'," +
-        "     'name': 'name of id-2'," +
-        "     'expires_after': 'PT15M'," +
-        "     'eligible': {" +
-        "       'principals': [" +
-        "         'foo@example.com'" +
-        "       ]" +
-        "     }" +
+        "      'id': 'id-2'," +
+        "      'name': 'name of id-2'," +
+        "      'expires_after': 'PT15M'," +
+        "      'eligible': {" +
+        "        'principals': [" +
+        "          'foo@example.com'" +
+        "        ]" +
+        "      }" +
+        "    }" +
+        "  ]" +
+        "}");
+  }
+
+  //---------------------------------------------------------------------------
+  // Requirements errors.
+  //---------------------------------------------------------------------------
+
+  @Test
+  public void invalidNumberOfMinimumPeersToNotify() {
+    assertPolicyIssue(
+      PolicyIssue.Code.PEER_APPROVAL_CONSTRAINTS_INVALID,
+      "{" +
+        "  'id': 'policy-1'," +
+        "  'name': 'name-of-policy-1'," +
+        "  'entitlements': [" +
+        "    {" +
+        "      'id': 'id-2'," +
+        "      'name': 'name of id-2'," +
+        "      'expires_after': 'PT15M'," +
+        "      'eligible': {" +
+        "        'principals': [" +
+        "          'user:foo@example.com'" +
+        "        ]" +
+        "      }," +
+        "      'requirements': {" +
+        "        'requirePeerApproval': {" +
+        "          'minimum_peers_to_notify': 0" +
+        "        }" +
+        "      }" +
+        "    }" +
+        "  ]" +
+        "}");
+  }
+
+  @Test
+  public void invalidNumberOfMaximumPeersToNotify() {
+    assertPolicyIssue(
+      PolicyIssue.Code.PEER_APPROVAL_CONSTRAINTS_INVALID,
+      "{" +
+        "  'id': 'policy-1'," +
+        "  'name': 'name-of-policy-1'," +
+        "  'entitlements': [" +
+        "    {" +
+        "      'id': 'id-2'," +
+        "      'name': 'name of id-2'," +
+        "      'expires_after': 'PT15M'," +
+        "      'eligible': {" +
+        "        'principals': [" +
+        "          'user:foo@example.com'" +
+        "        ]" +
+        "      }," +
+        "      'requirements': {" +
+        "        'requirePeerApproval': {" +
+        "          'minimum_peers_to_notify': 1," +
+        "          'maximum_peers_to_notify': 0" +
+        "        }" +
+        "      }" +
         "    }" +
         "  ]" +
         "}");
@@ -178,6 +237,10 @@ public class TestPolicyFile {
   // Valid policies.
   //---------------------------------------------------------------------------
 
+  private static PolicyFile parse(String json) throws PolicyException {
+    return PolicyFile.fromString(json.replace('\'', '"'));
+  }
+
   @Test
   public void jitPolicy() throws Exception {
     var json =
@@ -186,33 +249,81 @@ public class TestPolicyFile {
         "  'name': 'name-of-policy-1'," +
         "  'entitlements': [" +
         "    {" +
-        "     'id': 'id-2'," +
-        "     'name': 'name of id-2'," +
-        "     'expires_after': 'PT5M'," +
-        "     'eligible': {" +
-        "       'principals': [" +
-        "         'user:alice@example.com'," +
-        "         'group:ftes@example.com'" +
-        "       ]" +
-        "     }" +
+        "      'id': 'id-2'," +
+        "      'name': 'name of id-2'," +
+        "      'expires_after': 'PT5M'," +
+        "      'eligible': {" +
+        "        'principals': [" +
+        "          'user:alice@example.com'," +
+        "          'group:ftes@example.com'" +
+        "        ]" +
+        "      }" +
         "    }" +
         "  ]" +
         "}";
 
-    var policy = PolicyFile.fromString(json.replace('\'', '"'));
-    assertTrue(policy.warnings().isEmpty());
+    var policyFile = parse(json);
+    assertTrue(policyFile.warnings().isEmpty());
 
-    assertEquals("policy-1", policy.node().id());
-    assertEquals("name-of-policy-1", policy.node().name());
-    assertEquals(1, policy.node().entitlements().size());
+    var policy = policyFile.policy();
 
-    var entitlement = policy.node().entitlements().get(0);
+    assertEquals("policy-1", policy.id());
+    assertEquals("name-of-policy-1", policy.name());
+    assertEquals(1, policy.entitlements().size());
+
+    var entitlement = policy.entitlements().get(0);
     assertEquals("id-2", entitlement.id());
     assertEquals("name of id-2", entitlement.name());
     assertEquals(Duration.ofMinutes(5), entitlement.expiry());
-    assertEquals(2, entitlement.eligible().principals().size());
+    assertEquals(2, entitlement.eligiblePrincipals().size());
     assertIterableEquals(
-      List.of("user:alice@example.com", "group:ftes@example.com"),
-      entitlement.eligible().principals());
+      List.of(new UserEmail("alice@example.com"), new GroupEmail("ftes@example.com")),
+      entitlement.eligiblePrincipals());
+    assertInstanceOf(Policy.SelfApprovalRequirement.class, entitlement.approvalRequirement());
+  }
+
+
+  @Test
+  public void peerApprovalPolicy() throws Exception {
+    var json =
+      "{" +
+        "  'id': 'policy-1'," +
+        "  'name': 'name-of-policy-1'," +
+        "  'entitlements': [" +
+        "    {" +
+        "      'id': 'id-2'," +
+        "      'name': 'name of id-2'," +
+        "      'expires_after': 'PT5M'," +
+        "      'eligible': {" +
+        "        'principals': [" +
+        "          'user:alice@example.com'," +
+        "          'group:ftes@example.com'" +
+        "        ]" +
+        "      }," +
+        "      'requirements': {" +
+        "        'requirePeerApproval': {}" +
+        "      }" +
+        "    }" +
+        "  ]" +
+        "}";
+
+    var policyFile = parse(json);
+    assertTrue(policyFile.warnings().isEmpty());
+
+    var policy = policyFile.policy();
+
+    assertEquals("policy-1", policy.id());
+    assertEquals("name-of-policy-1", policy.name());
+    assertEquals(1, policy.entitlements().size());
+
+    var entitlement = policy.entitlements().get(0);
+    assertEquals("id-2", entitlement.id());
+    assertEquals("name of id-2", entitlement.name());
+    assertEquals(Duration.ofMinutes(5), entitlement.expiry());
+    assertEquals(2, entitlement.eligiblePrincipals().size());
+    assertIterableEquals(
+      List.of(new UserEmail("alice@example.com"), new GroupEmail("ftes@example.com")),
+      entitlement.eligiblePrincipals());
+    assertInstanceOf(Policy.PeerApprovalRequirement.class, entitlement.approvalRequirement());
   }
 }

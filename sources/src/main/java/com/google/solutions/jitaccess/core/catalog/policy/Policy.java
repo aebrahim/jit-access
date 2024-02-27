@@ -1,143 +1,86 @@
-//package com.google.solutions.jitaccess.core.catalog.policy;
 //
-//import com.fasterxml.jackson.annotation.JsonProperty;
-//import com.google.common.base.Preconditions;
-//import com.google.solutions.jitaccess.core.GroupEmail;
-//import com.google.solutions.jitaccess.core.PrincipalIdentifier;
-//import com.google.solutions.jitaccess.core.UserEmail;
-//import org.jetbrains.annotations.NotNull;
+// Copyright 2024 Google LLC
 //
-//import java.time.Duration;
-//import java.time.format.DateTimeParseException;
-//import java.util.HashSet;
-//import java.util.LinkedList;
-//import java.util.List;
-//import java.util.Set;
-//import java.util.regex.Pattern;
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
 //
-//public record Policy(
-//  @NotNull String id,
-//  @NotNull String name,
-//  @NotNull List<Entitlement> entitlements
-//) {
-//  private static Pattern ID_PATTERN = Pattern.compile("^[A-Za-z0-9\\-_]{1,32}$");
+//   http://www.apache.org/licenses/LICENSE-2.0
 //
-//  static Policy from(
-//    @NotNull PolicyElement element
-//  ) throws PolicyException {
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 //
-//    Preconditions.checkNotNull(element, "element");
-//
-//    if (element.id == null || !ID_PATTERN.matcher(element.id).matches()) {
-//      throw new InvalidPolicyException(
-//        String.format("'%s' is not a valid policy ID", element.id));
-//    }
-//
-//    if (element.name() == null || element.name().isBlank()) {
-//      throw new InvalidPolicyException(
-//        String.format("Policy '%s' must have a name", element.id));
-//    }
-//
-//    if (element.entitlements == null || element.entitlements.isEmpty()) {
-//      throw new InvalidPolicyException(
-//        String.format("Policy '%s' must contain at least one entitlement", element.id));
-//    }
-//
-//    var entitlements = new LinkedList<Entitlement>();
-//    for (var entitlementElement : element.entitlements) {
-//      entitlements.add(Entitlement.from(entitlementElement));
-//    }
-//
-//    return new Policy(element.id, element.name, entitlements);
-//  }
-//
-//  public record Entitlement(
-//    @NotNull String id,
-//    @NotNull String name,
-//    @NotNull Duration expiry,
-//    @NotNull PrincipalSet eligiblePrincipals
-//  ) {
-//    static Entitlement from(EntitlementsElement entitlementElement) throws PolicyException {
-//      if (entitlementElement.id == null || !ID_PATTERN.matcher(entitlementElement.id).matches()) {
-//        throw new InvalidPolicyException(
-//          String.format("'%s' is not a valid entitlement ID", entitlementElement.id));
-//      }
-//
-//      if (entitlementElement.name() == null || entitlementElement.name().isBlank()) {
-//        throw new InvalidPolicyException(
-//          String.format("Entitlement '%s' must have a name", entitlementElement.id));
-//      }
-//
-//      try {
-//        var expiry = Duration.parse(entitlementElement.expiry);
-//        if (expiry.isZero() || expiry.isNegative()) {
-//          throw new InvalidPolicyException(
-//            String.format("Expiry for entitlement '%s' must be positive", entitlementElement.id));
-//        }
-//
-//        if (entitlementElement.eligible == null ||
-//          entitlementElement.eligible.principals == null ||
-//          entitlementElement.eligible.principals.isEmpty()) {
-//
-//          throw new InvalidPolicyException(
-//            String.format(
-//              "The list of principals that can request entitlement '%s' is empty",
-//              entitlementElement.id));
-//        }
-//
-//        return new Entitlement(
-//          entitlementElement.id,
-//          entitlementElement.name,
-//          expiry,
-//          PrincipalSet.from(entitlementElement.eligible.principals));
-//      }
-//      catch (DateTimeParseException e) {
-//        throw new InvalidPolicyException(
-//          String.format("Expiry for entitlement '%s' is invalid", entitlementElement.id),
-//          e);
-//      }
-//    }
-//  }
-//
-//  public record PrincipalSet(
-//    @NotNull Set<PrincipalIdentifier> principals
-//  ) {
-//    static PrincipalSet from(List<String> principalStrings) throws PolicyException {
-//      var principals = new HashSet<PrincipalIdentifier>();
-//      for (var s : principalStrings) {
-//        if (s.startsWith(UserEmail.TYPE)) {
-//          principals.add(new UserEmail(s.substring(UserEmail.TYPE.length())));
-//        }
-//        else if (s.startsWith(GroupEmail.TYPE)) {
-//          principals.add(new GroupEmail(s.substring(GroupEmail.TYPE.length())));
-//        }
-//        else {
-//         throw new InvalidPrincipalIdentifierException(s);
-//        }
-//      }
-//
-//      return new PrincipalSet(principals);
-//    }
-//  }
-//
-//
-//
-//  public static class InvalidPolicyException extends PolicyException {
-//    public InvalidPolicyException(String message) {
-//      super(message);
-//    }
-//
-//    public InvalidPolicyException(String message, Throwable cause) {
-//      super(message, cause);
-//    }
-//  }
-//
-//  public static class InvalidPrincipalIdentifierException extends PolicyException {
-//    public InvalidPrincipalIdentifierException(String identifier) {
-//      super(String.format(
-//        "'%s' is not a valid principal identifier, see " +
-//          "https://cloud.google.com/iam/docs/principal-identifiers for details",
-//        identifier));
-//    }
-//  }
-//}
+
+package com.google.solutions.jitaccess.core.catalog.policy;
+
+import com.google.solutions.jitaccess.core.PrincipalIdentifier;
+import org.jetbrains.annotations.NotNull;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * A parsed and validated policy.
+ * @param id unique ID of the policy
+ * @param name name or description for the policy
+ * @param entitlements list of entitlements managed by this policy
+ */
+public record Policy(
+  @NotNull String id,
+  @NotNull String name,
+  @NotNull List<Entitlement> entitlements
+) {
+
+  /**
+   * An entitlement that an eligible user can activate if they
+   * meet the specified requirements.
+   *
+   * @param id unique ID of the entitlement
+   * @param name name or description for the entitlement
+   * @param expiry time after which an activation expires
+   * @param eligiblePrincipals list of principals that can request to activate
+   * @param approvalRequirement approvals required to activate this requirement
+   */
+  public record Entitlement(
+    @NotNull String id,
+    @NotNull String name,
+    @NotNull Duration expiry,
+    @NotNull Set<PrincipalIdentifier> eligiblePrincipals,
+    @NotNull ApprovalRequirement approvalRequirement
+  ) {
+  }
+
+  /**
+   * Base interface for approval requirements.
+   */
+  public interface ApprovalRequirement {
+  }
+
+  /**
+   * Indicates that eligible principals can self-approve.
+   */
+  public record SelfApprovalRequirement() implements ApprovalRequirement {
+  }
+
+  /**
+   * Indicates that eligible principals need approval
+   * from a peer.
+   *
+   * @param minimumNumberOfPeersToNotify minimum number of peers to notify
+   * @param maximumNumberOfPeersToNotify maximum number of peers to notify
+   */
+  public record PeerApprovalRequirement(
+    Integer minimumNumberOfPeersToNotify,
+    Integer maximumNumberOfPeersToNotify
+  ) implements ApprovalRequirement {
+  }
+}
