@@ -21,9 +21,9 @@
 
 package com.google.solutions.jitaccess.web;
 
-import com.google.solutions.jitaccess.core.AccessException;
-import com.google.solutions.jitaccess.core.NotAuthenticatedException;
-import com.google.solutions.jitaccess.core.ResourceNotFoundException;
+import com.google.solutions.jitaccess.apis.clients.AccessException;
+import com.google.solutions.jitaccess.apis.clients.NotAuthenticatedException;
+import com.google.solutions.jitaccess.apis.clients.ResourceNotFoundException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotAllowedException;
@@ -192,6 +192,11 @@ public class ExceptionMappers {
 
     public String getMessage() {
       return message;
+    }
+
+    @Override
+    public String toString() {
+      return this.message;
     }
   }
 }

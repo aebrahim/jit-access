@@ -23,12 +23,12 @@ mdc.dataTable.MDCDataTable.prototype.addRow = function(id, columns, showCheckbox
     if (showCheckbox) {
         const checkboxTd = $(`<td class="mdc-data-table__cell mdc-data-table__cell--checkbox">
                 <div class="mdc-checkbox mdc-data-table__row-checkbox">
-                <input type="checkbox" class="mdc-checkbox__native-control"/>
-                <div class="mdc-checkbox__background">
-                <svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
-                    <path class="mdc-checkbox__checkmark-path" fill="none" d="M1.73,12.91 8.1,19.28 22.79,4.59" />
-                </svg>
-                <div class="mdc-checkbox__mixedmark"></div>
+                    <input type="checkbox" class="mdc-checkbox__native-control"/>
+                    <div class="mdc-checkbox__background">
+                    <svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
+                        <path class="mdc-checkbox__checkmark-path" fill="none" d="M1.73,12.91 8.1,19.28 22.79,4.59" />
+                    </svg>
+                    <div class="mdc-checkbox__mixedmark"></div>
                 </div>
                 <div class="mdc-checkbox__ripple"></div>
                 </div>
@@ -47,6 +47,7 @@ mdc.dataTable.MDCDataTable.prototype.addRow = function(id, columns, showCheckbox
         else {
             div.text(value.text);
         }
+
         if (value.class) {
             div.attr("class", value.class);
         }
@@ -60,13 +61,22 @@ mdc.dataTable.MDCDataTable.prototype.addRow = function(id, columns, showCheckbox
             td = $(`<td class="mdc-data-table__cell"></td>`);
         }
 
-        const icon = $("<span class='material-symbols-outlined'></span>");
         if (value.icon) {
+            const icon = $("<span class='material-symbols-outlined'></span>");
             icon.text(value.icon);
             div.prepend(icon);
         }
+
+        if (value.href) {
+            const a = $("<a></a>");
+            a.prop('href', value.href);
+            a.append(div);
+            td.append(a);
+        }
+        else {
+            td.append(div);
+        }
         
-        td.append(div);
         tr.append(td);
     });
 
@@ -75,6 +85,61 @@ mdc.dataTable.MDCDataTable.prototype.addRow = function(id, columns, showCheckbox
     //
     this.layout();
 };
+
+mdc.list.MDCList.prototype.clearRows = function () {
+    this.root.innerHTML = '';
+
+    //
+    // Update internal bindings.
+    //
+    this.layout();
+};
+
+
+mdc.list.MDCList.prototype.addRow = function (column) {
+    const li = $(`<li class="mdc-list-item">
+        <span class="mdc-list-item__ripple"></span>
+      </li>`);
+
+    const textSpan = $(`<span class="mdc-list-item__text">`);
+
+    if (column.icon) {
+        const icon = $("<span class='material-symbols-outlined'></span>");
+        icon.text(column.icon);
+        textSpan.prepend(icon);
+    }
+
+    li.append(textSpan);
+
+    if (column.key) {
+        const span = $(`<span class="mdc-list-item__primary-text" style="display: inline-block; width: 110px"></span>`);
+        span.text(column.key)
+        textSpan.append(span);
+    }
+    if (column.value) {
+        const span = $(`<span class="mdc-list-item__primary-text" style="display: inline-block;"></span>`);
+        span.text(column.value)
+        textSpan.append(span);
+    }
+
+    if (column.primary) {
+        const span = $(`<span class="mdc-list-item__primary-text"></span>`);
+        span.text(column.primary)
+        textSpan.append(span);
+    }
+    if (column.secondary) {
+        const span = $(`<span class="mdc-list-item__secondary-text"></span>`);
+        span.text(column.secondary);
+        textSpan.append(span);
+    }
+
+    $(this.root).append(li);
+
+    //
+    // Update internal bindings.
+    //
+    this.layout();
+}
 
 //-----------------------------------------------------------------------------
 // Base classes.
@@ -112,6 +177,14 @@ class DialogBase {
             this.element.open();
         });
     }
+
+    select(relativeSelector) {
+        return $(this.selector + ' ' + relativeSelector);
+    }
+
+    close() {
+        this.element.close();
+    }
 }
 
 /** Base class for views */
@@ -127,6 +200,10 @@ class ViewBase {
         $(this.selector).show();
         
         return Promise.resolve({});
+    }
+
+    select(relativeSelector) {
+        return $(this.selector + ' ' + relativeSelector);
     }
 
     cancelView(error) {
@@ -145,44 +222,44 @@ class DefaultView extends ViewBase {
 class SelectScopeDialog extends DialogBase {
     constructor() {
         super('#jit-scopedialog');
-        
-        const textField = new mdc.textField.MDCTextField(document.querySelector('#jit-scopedialog-project'));
 
-        $('#jit-scopedialog-project-input').on('change', e => {
-            $('#jit-scopedialog-ok').prop('disabled', $('#jit-scopedialog-project-input').val() == '');
-        });
+        this._list = new mdc.list.MDCList(document.querySelector('#jit-scopedialog-list'));
+    }
 
-        //
-        // Configure autocompleter.
-        //
-        $("#jit-scopedialog-project-input").autocomplete({
-            source: async (request, response) => {
-                try {
-                    const projects = await document.model.searchProjects(request.term);
-                    response($.map(projects, (item) => {
-                        return {
-                            label: item,
-                            value: item
-                        };
-                    }));
-                }
-                catch (e) {
-                    this.cancelDialog(`Loading projects failed: ${e}`);
-                }
-            },
-            minLength: 2,
-            position: { of: $("#jit-scopedialog-project-input") },
-            open: function() {
-                $("ul.ui-menu").width($(this).innerWidth());
-            },
-            select: (e, ui) => {
-                $('#jit-scopedialog-ok').prop('disabled', ui.item.value == '');
-            }
-        });
+
+    async showAsync() {
+        this._list.clearRows();
+
+        const environments = await document.appbar.model.listEnvironments();
+
+        if (environments.environments.length > 0) {
+            environments.environments.forEach(item => {
+                this._list.addRow({
+                    primary: item.name,
+                    secondary: item.description
+                });
+            });
+        }
+        else {
+            throw "There are currently no environments available"
+        }
+
+        const dialog = this.element;
+        let onSelect = (e) => {
+            this._list.unlisten('MDCList:action', onSelect);
+
+            this._result = environments.environments[e.detail.index].name;
+
+            dialog.close("accept");
+        }
+
+        this._list.listen('MDCList:action', onSelect);        
+
+        return super.showAsync();
     }
 
     get result() {
-        return $('#jit-scopedialog-project-input').val();
+        return this._result;
     }
 }
 
@@ -191,10 +268,7 @@ class AppBar {
     constructor() {
         this._banner = new mdc.banner.MDCBanner(document.querySelector('.mdc-banner'));
         
-        const localSettings = new LocalSettings();
-        this.scope = new URLSearchParams(location.search).get("projectId") ?? localSettings.lastProjectId;
-        
-        $('#jit-projectselector').on('click', () => {
+        $('#jit-environmentselector').on('click', () => {
             this.selectScopeAsync().catch(e => {
                 if (e) {
                     this.showError(e, true);
@@ -203,55 +277,75 @@ class AppBar {
         });
     }
 
-    /** Reload page, stripping previous parameters */
-    _reloadPage() {
-        let url = window.location.pathname;
-        if (new URLSearchParams(location.search).get("debug")) {
-            url += '?debug=1';
-        }
-
-        window.location.href = url;
-    }
-    
     /** Prompt user to select a scope */
     async selectScopeAsync() {
         var dialog = new SelectScopeDialog();
 
-        const newScope = await dialog.showAsync();
-        new LocalSettings().lastProjectId = newScope;
+        new LocalSettings().environment = await dialog.showAsync();
         
-        this._reloadPage();
+        window.location = window.location.href.split('#')[0];
     }
 
-    async initialize() {
+    async loadModel() {
+        this.model = window.location.host.startsWith("localhost:")
+            ? new DebugModel()
+            : new Model();
+
         //
         // Clear all views.
         //
         new DefaultView().showAsync();
 
-        try {
-            //
-            // Download policy to check if the communication with the model
-            // works properly. 
-            //
-            await document.model.fetchPolicy();
+        //
+        // Determine resource to load.
+        //
+        const settings = new LocalSettings();
+        let resource;
+        if (window.location.hash && window.location.hash.startsWith('#!')) {
+            resource = window.location.hash.substring(2);
 
-            $("#signed-in-user").text(document.model.policy.signedInUser.email);
-            $("#application-version").text(document.model.policy.applicationVersion);
+            if (resource) {
+                //
+                // Extract environment name.
+                //
+                const regex = /^\/environments\/(.*?)(\/.*)?$/;
+                const found = resource.match(regex);
+                if (found && found.length >= 2) {
+                    this.environment = found[1];
 
+                    $('#jit-scope').text(this.environment);
+                    $('title').html(`JIT Access: ${this.environment}`);
+                }
+                else {
+                    this.environment = null;
+                }
+            }
         }
-        catch (error) {
-            this.showError(error, true);
-            return;
+        else if (settings.environment) {
+            this.environment = settings.environment;
+            resource = `/environments/${this.environment}`;
+
+            $('#jit-scope').text(this.environment);
+            $('title').html(`JIT Access: ${this.environment}`);
         }
 
-        if (!this.scope) {
+        if (!this.environment) {
+            //
+            // Configuration incomplete, show dialog.
+            //
             await this.selectScopeAsync();
+            return null;
         }
-        else {
-            $('#jit-scope').text(this.scope);
-            $('title').html(`JIT Access: ${this.scope}`);
-        }
+
+        //
+        // Initialize model.
+        //
+        await this.model.initialize(this.environment, resource);
+
+        $("#signed-in-user").text(this.model.context.subject.email);
+        $("#application-version").text(this.model.context.application.version);
+
+        return this.model;
     }
 
     /** Display an error bar at the top of the screen */
@@ -285,12 +379,12 @@ $(document).ready(async () => {
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
                 <span class="mdc-top-app-bar__title jit-title">
                     <img src='logo.png' alt='JIT Access'/>
-                    <a href="/">Just-in-Time Access</a>
+                    <a href="/">JIT Access</a>
                 </span>
-                <button class="mdc-button mdc-button--outlined" id="jit-projectselector">
+                <button class="mdc-button mdc-button--outlined" id="jit-environmentselector">
                     <span class="mdc-button__ripple"></span>
                     <span class="mdc-button__label">
-                        <span id="jit-scope">No project selected</span>
+                        <span id="jit-scope">No environment selected</span>
                         <i class="material-icons mdc-button__icon" aria-hidden="true">expand_more</i>
                     </span>
                 </button>
@@ -317,7 +411,9 @@ $(document).ready(async () => {
                 </div>
             </div>
         </div>
-        <div class='jit-view' id='jit-default-view'></div>`);
+        <div class='jit-view' id='jit-default-view'>
+            Loading...
+        </div>`);
     $('body').append(`
         <div class="mdc-dialog" id="jit-scopedialog">
             <div class="mdc-dialog__container">
@@ -327,27 +423,15 @@ $(document).ready(async () => {
                 aria-labelledby="scopedialog-title"
                 aria-describedby="scopedialog-content">
                   
-                <h2 class="mdc-dialog__title" id="scopedialog-title">Select project</h2>
+                <h2 class="mdc-dialog__title" id="scopedialog-title">Environment</h2>
                 <div class="mdc-dialog__content" id="scopedialog-content">
-                    <label class="mdc-text-field mdc-text-field--outlined" id="jit-scopedialog-project">
-                        <span class="mdc-notched-outline">
-                            <span class="mdc-notched-outline__leading"></span>
-                            <span class="mdc-notched-outline__notch">
-                                <span class="mdc-floating-label">Project ID</span>
-                            </span>
-                            <span class="mdc-notched-outline__trailing"></span>
-                        </span>
-                        <input type="text" class="mdc-text-field__input" id="jit-scopedialog-project-input" autofocus>
-                    </label>
+                    <ul class="mdc-list mdc-list--two-line" id="jit-scopedialog-list">
+                    </ul>
                 </div>
                 <div class="mdc-dialog__actions">
                     <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
                         <div class="mdc-button__ripple"></div>
                         <span class="mdc-button__label">Cancel</span>
-                    </button>
-                    <button type="button" class="mdc-button mdc-dialog__button  mdc-button--raised" data-mdc-dialog-action="accept" id="jit-scopedialog-ok" disabled>
-                        <div class="mdc-button__ripple"></div>
-                        <span class="mdc-button__label">OK</span>
                     </button>
                 </div>
             </div>
@@ -363,8 +447,5 @@ $(document).ready(async () => {
         
     mdc.autoInit();
     
-    document.model = new URLSearchParams(location.search).get("debug") 
-        ? new DebugModel() 
-        : new Model();
     document.appbar = new AppBar();
 });
