@@ -23,7 +23,7 @@ package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
 import com.google.solutions.jitaccess.catalog.Catalog;
-import com.google.solutions.jitaccess.catalog.EnvironmentRepositories;
+import com.google.solutions.jitaccess.catalog.CatalogSources;
 import com.google.solutions.jitaccess.catalog.Policies;
 import com.google.solutions.jitaccess.catalog.Subjects;
 import com.google.solutions.jitaccess.catalog.auth.Principal;
@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 public class TestSystemsResource {
 
@@ -47,7 +46,7 @@ public class TestSystemsResource {
   private static Catalog createCatalog(EnvironmentPolicy environment, Subject subject) {
     return new Catalog(
       subject,
-      EnvironmentRepositories.create(environment));
+      CatalogSources.create(environment));
   }
 
   private static Catalog createCatalog(EnvironmentPolicy environment) {

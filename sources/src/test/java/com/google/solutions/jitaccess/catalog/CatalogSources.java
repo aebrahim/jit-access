@@ -35,7 +35,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public class EnvironmentRepositories { // TODO: rename
+public class CatalogSources {
 
   public static Catalog.Source create(List<EnvironmentPolicy> policies) {
     return new Catalog.Source() {

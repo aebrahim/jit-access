@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Interface for catalog objects returned by REST resource methods.
  */
-public interface CatalogInfo {
+public interface CatalogInfo { // TODO: rename
   /**
    * Type of resource, can be used by clients to determine rendering.
    */

@@ -23,7 +23,7 @@ package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
 import com.google.solutions.jitaccess.catalog.Catalog;
-import com.google.solutions.jitaccess.catalog.EnvironmentRepositories;
+import com.google.solutions.jitaccess.catalog.CatalogSources;
 import com.google.solutions.jitaccess.catalog.Subjects;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
@@ -79,7 +79,7 @@ public class TestEnvironmentsResource {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
-      EnvironmentRepositories.create(environment));
+      CatalogSources.create(environment));
 
     assertThrows(
       IllegalArgumentException.class,
@@ -91,7 +91,7 @@ public class TestEnvironmentsResource {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
-      EnvironmentRepositories.create(List.of()));
+      CatalogSources.create(List.of()));
 
     assertThrows(
       AccessDeniedException.class,
@@ -110,7 +110,7 @@ public class TestEnvironmentsResource {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
-      EnvironmentRepositories.create(environment));
+      CatalogSources.create(environment));
 
     assertThrows(
       AccessDeniedException.class,
@@ -144,7 +144,7 @@ public class TestEnvironmentsResource {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
-      EnvironmentRepositories.create(environment));
+      CatalogSources.create(environment));
 
     var environmentInfo = resource.get(environment.name());
     assertEquals(environment.name(), environmentInfo.name());
@@ -168,7 +168,7 @@ public class TestEnvironmentsResource {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
-      EnvironmentRepositories.create(environment));
+      CatalogSources.create(environment));
 
     assertThrows(
       IllegalArgumentException.class,
@@ -180,7 +180,7 @@ public class TestEnvironmentsResource {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
-      EnvironmentRepositories.create(List.of()));
+      CatalogSources.create(List.of()));
 
     assertThrows(
       AccessDeniedException.class,
@@ -199,7 +199,7 @@ public class TestEnvironmentsResource {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
-      EnvironmentRepositories.create(environment));
+      CatalogSources.create(environment));
 
     assertThrows(
       AccessDeniedException.class,
@@ -221,7 +221,7 @@ public class TestEnvironmentsResource {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
       subject,
-      EnvironmentRepositories.create(environment));
+      CatalogSources.create(environment));
 
     var yaml = resource.export(environment.name());
     assertTrue(yaml.contains("schemaVersion: 1"));

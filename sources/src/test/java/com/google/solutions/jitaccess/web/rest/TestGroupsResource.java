@@ -45,7 +45,7 @@ public class TestGroupsResource {
   private static Catalog createCatalog(JitGroupPolicy group, Subject subject) {
     return new Catalog(
       subject,
-      EnvironmentRepositories.create(group.system().environment()));
+      CatalogSources.create(group.system().environment()));
   }
 
   private static Catalog createCatalog(JitGroupPolicy group) {
