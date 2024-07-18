@@ -33,7 +33,6 @@ import com.google.auth.oauth2.ImpersonatedCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.solutions.jitaccess.ApplicationVersion;
-import com.google.solutions.jitaccess.apis.ProjectId;
 import com.google.solutions.jitaccess.apis.clients.*;
 import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.Logger;
@@ -358,11 +357,11 @@ public class Application {
   @RequestScoped
   public @NotNull Catalog produceCatalog(
     @NotNull Subject subject,
-    @NotNull EnvironmentLoader environmentLoader
+    @NotNull CatalogSource catalogSource
   ) {
     return new Catalog(
       subject,
-      environmentLoader);
+      catalogSource);
   }
 
   @Produces
@@ -373,7 +372,7 @@ public class Application {
 
   @Produces
   @Singleton
-  public @NotNull EnvironmentLoader produceEnvironments(
+  public @NotNull CatalogSource produceEnvironments(
     @NotNull GroupMapping groupMapping,
     @NotNull CloudIdentityGroupsClient groupsClient
     ) {
@@ -525,7 +524,7 @@ public class Application {
           }));
     }
 
-    return new EnvironmentLoader(
+    return new CatalogSource(
       configurations.keySet(),
       envName -> configurations.get(envName).loadPolicy.get(),
       policy -> new ResourceManagerClient(

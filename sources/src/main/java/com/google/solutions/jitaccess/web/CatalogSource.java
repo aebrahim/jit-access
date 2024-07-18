@@ -31,7 +31,6 @@ import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.Provisioner;
 import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.auth.GroupMapping;
-import com.google.solutions.jitaccess.catalog.policy.AccessControlList;
 import com.google.solutions.jitaccess.catalog.policy.EnvironmentPolicy;
 import com.google.solutions.jitaccess.catalog.policy.PolicyHeader;
 import com.google.solutions.jitaccess.util.Exceptions;
@@ -46,13 +45,8 @@ import java.util.function.Function;
 /**
  * Loads and caches environments.
  */
-public class EnvironmentLoader implements Catalog.Source {
-
-  /**
-   * Map environment name -> policy locator.
-   */
+public class CatalogSource implements Catalog.Source {
   private final @NotNull LoadingCache<String, Entry> environmentCache;
-
   private final @NotNull GroupMapping groupMapping;
   private final @NotNull Set<String> environmentNames;
   private final @NotNull Function<String, EnvironmentPolicy> producePolicy;
@@ -60,7 +54,7 @@ public class EnvironmentLoader implements Catalog.Source {
   private final @NotNull CloudIdentityGroupsClient groupsClient;
   private final @NotNull Logger logger;
 
-  EnvironmentLoader(
+  CatalogSource(
     @NotNull Set<String> environmentNames,
     @NotNull Function<String, EnvironmentPolicy> producePolicy,
     @NotNull Function<EnvironmentPolicy, ResourceManagerClient> produceResourceManagerClient,
