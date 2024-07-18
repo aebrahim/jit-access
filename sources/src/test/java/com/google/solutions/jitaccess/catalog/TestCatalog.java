@@ -113,21 +113,21 @@ public class TestCatalog {
 
 
   // -------------------------------------------------------------------------
-  // environmentPolicy.
+  // exportEnvironmentPolicy.
   // -------------------------------------------------------------------------
 
   @Test
-  public void environmentPolicy_whenNotFound() {
+  public void exportEnvironmentPolicy_whenNotFound() {
     var catalog = new Catalog(
       Mockito.mock(Subject.class),
       EnvironmentRepositories.create(createEnvironmentPolicy("env-1")));
 
-    assertFalse(catalog.environmentPolicy("").isPresent());
-    assertFalse(catalog.environmentPolicy("ENV-1").isPresent());
+    assertFalse(catalog.exportEnvironmentPolicy("").isPresent());
+    assertFalse(catalog.exportEnvironmentPolicy("ENV-1").isPresent());
   }
 
   @Test
-  public void environmentPolicy_whenAccessDenied() {
+  public void exportEnvironmentPolicy_whenAccessDenied() {
     var subject = Subjects.createSubject(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(
@@ -142,11 +142,11 @@ public class TestCatalog {
       Subjects.createSubject(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
-    assertFalse(catalog.environmentPolicy(environment.name()).isPresent());
+    assertFalse(catalog.exportEnvironmentPolicy(environment.name()).isPresent());
   }
 
   @Test
-  public void environmentPolicy() {
+  public void exportEnvironmentPolicy() {
     var subject = Subjects.createSubject(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(
@@ -161,7 +161,7 @@ public class TestCatalog {
       subject,
       EnvironmentRepositories.create(environment));
 
-    assertTrue(catalog.environmentPolicy(environment.name()).isPresent());
+    assertTrue(catalog.exportEnvironmentPolicy(environment.name()).isPresent());
   }
 
   // -------------------------------------------------------------------------

@@ -189,7 +189,10 @@
 
                 this.select('h1').text(model.content.name);
                 this.select('.jit-environment-description').text(model.content.description);
-                this.select('.mdc-button').prop('href', model.content.export.href);
+
+                this.select('.mdc-button')
+                    .prop('href', model.content.export != null ? model.content.export.href : '#')
+                    .toggle(model.content.export != null);
 
                 if (model.content.systems) {
                     model.content.systems.forEach(item => {

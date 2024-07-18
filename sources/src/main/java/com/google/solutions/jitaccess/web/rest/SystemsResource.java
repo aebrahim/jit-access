@@ -90,7 +90,8 @@ public class SystemsResource {
         policy.description(),
         EnvironmentsResource.EnvironmentInfo.fromPolicy(
           policy.environment(),
-          null), // Don't list nested systems.
+          null, // Don't list nested systems.
+          false),
         groups);
     }
   }

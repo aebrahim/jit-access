@@ -215,7 +215,8 @@ public class GroupsResource {
           .toList(),
         EnvironmentsResource.EnvironmentInfo.fromPolicy(
           g.group().system().environment(),
-          null), // Don't list nested systems.
+          null, // Don't list nested systems.
+          false),
         SystemsResource.SystemInfo.fromPolicy(
           g.group().system(),
           null), // Don't list nested groups.

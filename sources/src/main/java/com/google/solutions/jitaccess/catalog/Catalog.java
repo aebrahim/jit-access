@@ -79,7 +79,7 @@ public class Catalog {
   /**
    * Export the environment policy. Requires EXPORT access.
    */
-  public @NotNull Optional<PolicyDocument> environmentPolicy(@NotNull String name) {
+  public @NotNull Optional<PolicyDocument> exportEnvironmentPolicy(@NotNull String name) {
     Preconditions.checkNotNull(name, "Name must not be null");
 
     return this.repository
@@ -89,6 +89,17 @@ public class Catalog {
       .map(PolicyDocument::new);
   }
 
+  /**
+   * Check if the current subject is allowed to export the environment policy.
+   * Requires EXPORT access.
+   */
+  public boolean canExportEnvironmentPolicy(@NotNull String name) { // TODO: test, or return "Env" object instead
+    return this.repository
+      .lookup(this, name)
+      .map(Environment::policy)
+      .map(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.EXPORT)))
+      .orElse(false);
+  }
 
   /**
    * List system policies for which the subject has VIEW access.

@@ -55,7 +55,7 @@ public class EnvironmentsResource {
   public @NotNull EnvironmentsResource.EnvironmentsInfo list() {
     var environments = this.catalog.environments()
       .stream()
-      .map(env -> EnvironmentInfo.fromPolicy(env, null))
+      .map(env -> EnvironmentInfo.fromPolicy(env, null, false))
       //TODO: sort
       .collect(Collectors.toList());
 
@@ -83,7 +83,8 @@ public class EnvironmentsResource {
         filteredSystems
           .stream()
           .map(sys -> SystemsResource.SystemInfo.fromPolicy(sys, null))
-          .toList()))
+          .toList(),
+          this.catalog.canExportEnvironmentPolicy(environment)))
       .orElseThrow(() -> new AccessDeniedException(
         "The environment does not exist or access is denied"));
   }
@@ -93,14 +94,13 @@ public class EnvironmentsResource {
    * Export the environment policy.
    */
   @GET
-  //@Produces("application/yaml")
   @Produces(MediaType.TEXT_PLAIN)
   @Path("environments/{environment}/policy")
   public @NotNull String export(
     @PathParam("environment") @NotNull String environment
   ) throws AccessDeniedException {
     return this.catalog
-      .environmentPolicy(environment)
+      .exportEnvironmentPolicy(environment)
       .map(PolicyDocument::toString)
       .orElseThrow(() -> new AccessDeniedException(
         "The environment does not exist or access is denied"));
@@ -118,7 +118,7 @@ public class EnvironmentsResource {
 
   public record EnvironmentInfo(
     @NotNull Link self,
-    @NotNull Link export,
+    @Nullable Link export,
     @NotNull String name,
     @NotNull String description,
     @Nullable List<SystemsResource.SystemInfo> systems
@@ -126,11 +126,12 @@ public class EnvironmentsResource {
 
     static EnvironmentInfo fromPolicy(
       @NotNull PolicyHeader policy,
-      @Nullable List<SystemsResource.SystemInfo> systems
+      @Nullable List<SystemsResource.SystemInfo> systems,
+      boolean canExport
     ) {
       return new EnvironmentInfo(
         new Link("environments/%s", policy.name()),
-        new Link("/api/catalog/environments/%s/policy", policy.name()),
+        canExport ? new Link("/api/catalog/environments/%s/policy", policy.name()) : null,
         policy.name(),
         policy.description(),
         systems);
