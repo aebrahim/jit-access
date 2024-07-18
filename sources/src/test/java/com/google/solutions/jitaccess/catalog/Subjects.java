@@ -21,10 +21,7 @@
 
 package com.google.solutions.jitaccess.catalog;
 
-import com.google.solutions.jitaccess.catalog.auth.Principal;
-import com.google.solutions.jitaccess.catalog.auth.PrincipalId;
-import com.google.solutions.jitaccess.catalog.auth.Subject;
-import com.google.solutions.jitaccess.catalog.auth.UserId;
+import com.google.solutions.jitaccess.catalog.auth.*;
 import org.mockito.Mockito;
 
 import java.util.Set;
@@ -35,21 +32,37 @@ import static org.mockito.Mockito.when;
 
 public class Subjects {
 
-  public static Subject createSubject(
+  public static Subject createWithPrincipals(
     UserId user,
-    Set<PrincipalId> otherPrincipals
+    Set<Principal> otherPrincipals
   ) {
+    var defaultPrincipals = Stream.of(
+      new Principal(user),
+      new Principal(SystemId.ALL_AUTHENTICATED));
+
     var subject = Mockito.mock(Subject.class);
     when(subject.user()).thenReturn(user);
     when(subject.principals()).thenReturn(
-      Stream.concat(otherPrincipals.stream(), Stream.<PrincipalId>of(user))
-        .map(p -> new Principal(p))
+      Stream
+        .concat(otherPrincipals.stream(), defaultPrincipals)
         .collect(Collectors.toSet()));
 
     return subject;
   }
 
-  public static Subject createSubject(UserId user) {
-    return createSubject(user, Set.of());
+  public static Subject createWithPrincipalIds(
+    UserId user,
+    Set<PrincipalId> otherPrincipals
+  ) {
+    return createWithPrincipals(
+      user,
+      otherPrincipals
+        .stream()
+        .map(p -> new Principal(p))
+        .collect(Collectors.toSet()));
+  }
+
+  public static Subject create(UserId user) {
+    return createWithPrincipals(user, Set.<Principal>of());
   }
 }

@@ -22,6 +22,7 @@
 package com.google.solutions.jitaccess.catalog.policy;
 
 import com.google.common.base.Preconditions;
+import com.google.solutions.jitaccess.catalog.auth.SystemId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,6 +38,12 @@ import java.util.*;
  */
 public class EnvironmentPolicy extends AbstractPolicy {
   static final String NAME_PATTERN = "^[a-zA-Z0-9\\-]{1,16}$";
+
+  /**
+   * Default ACL for environments.
+   */
+  static final AccessControlList DEFAULT_ACCESS_CONTROL_LIST = new AccessControlList(
+    List.of(new AccessControlList.AllowedEntry(SystemId.ALL_AUTHENTICATED, PolicyPermission.VIEW.toMask())));
 
   private final @NotNull Map<String, SystemPolicy> systems = new TreeMap<>();
 
@@ -64,7 +71,7 @@ public class EnvironmentPolicy extends AbstractPolicy {
     @NotNull String description,
     @NotNull Metadata metadata
   ) {
-    this(name, description, null, Map.of(), metadata);
+    this(name, description, DEFAULT_ACCESS_CONTROL_LIST, Map.of(), metadata);
   }
 
   public @NotNull EnvironmentPolicy add(@NotNull SystemPolicy system) {

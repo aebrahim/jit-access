@@ -49,7 +49,7 @@ public class TestGroupsResource {
   }
 
   private static Catalog createCatalog(JitGroupPolicy group) {
-    return createCatalog(group, Subjects.createSubject(SAMPLE_USER));
+    return createCatalog(group, Subjects.create(SAMPLE_USER));
   }
 
   //---------------------------------------------------------------------------
@@ -155,7 +155,12 @@ public class TestGroupsResource {
 
   @Test
   public void post_whenGroupNotAllowed() throws Exception {
-    var group = Policies.createJitGroupPolicy("g-1", AccessControlList.EMPTY, Map.of());
+    var group = Policies.createJitGroupPolicy(
+      "g-1",
+      new AccessControlList.Builder()
+        .deny(SAMPLE_USER, PolicyPermission.JOIN.toMask())
+        .build(),
+      Map.of());
 
     var resource = new GroupsResource();
     resource.catalog = createCatalog(group);

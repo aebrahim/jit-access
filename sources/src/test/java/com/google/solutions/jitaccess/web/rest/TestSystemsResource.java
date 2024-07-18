@@ -31,7 +31,6 @@ import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.util.List;
@@ -52,7 +51,7 @@ public class TestSystemsResource {
   }
 
   private static Catalog createCatalog(EnvironmentPolicy environment) {
-    return createCatalog(environment, Subjects.createSubject(SAMPLE_USER));
+    return createCatalog(environment, Subjects.create(SAMPLE_USER));
   }
 
   //---------------------------------------------------------------------------
@@ -104,12 +103,14 @@ public class TestSystemsResource {
     var system = new SystemPolicy(
       "sys-1",
       "Sys-1",
-      AccessControlList.EMPTY, // Empty ACL -> deny all
+      new AccessControlList.Builder()
+        .deny(SAMPLE_USER, -1)
+        .build(),
       Map.of());
     environment.add(system);
 
     var resource = new SystemsResource();
-    resource.catalog = createCatalog(environment, Subjects.createSubject(SAMPLE_USER));
+    resource.catalog = createCatalog(environment, Subjects.create(SAMPLE_USER));
 
     assertThrows(
       AccessDeniedException.class,
@@ -135,7 +136,9 @@ public class TestSystemsResource {
     var deniedGroup = new JitGroupPolicy(
       "denied-1",
       "Denied 1",
-      AccessControlList.EMPTY, // Empty ACL -> deny all
+      new AccessControlList.Builder()
+        .deny(SAMPLE_USER, -1)
+        .build(),
       Map.of(),
       List.of());
     system.add(allowedGroup);
@@ -143,7 +146,7 @@ public class TestSystemsResource {
     environment.add(system);
 
     var resource = new SystemsResource();
-    resource.catalog = createCatalog(environment, Subjects.createSubject(SAMPLE_USER));
+    resource.catalog = createCatalog(environment, Subjects.create(SAMPLE_USER));
 
     var systemInfo = resource.get(environment.name(), system.name());
     assertEquals(system.name(), systemInfo.name());
@@ -164,10 +167,11 @@ public class TestSystemsResource {
       Map.of());
 
     var expiry = Instant.now().plusSeconds(60);
-    var subject = Mockito.mock(Subject.class);
-    when(subject.user()).thenReturn(SAMPLE_USER);
-    when(subject.principals())
-      .thenReturn(Set.of(new Principal(SAMPLE_USER), new Principal(group.id(), expiry)));
+    var subject = Subjects.createWithPrincipals(
+      SAMPLE_USER,
+      Set.of(
+        new Principal(SAMPLE_USER),
+        new Principal(group.id(), expiry)));
 
     var resource = new SystemsResource();
     resource.catalog = createCatalog(group.system().environment(), subject);

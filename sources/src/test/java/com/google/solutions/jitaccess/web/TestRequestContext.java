@@ -58,7 +58,7 @@ public class TestRequestContext {
 
   @Test
   public void whenAuthenticated() throws Exception {
-    var subject = Subjects.createSubject(SAMPLE_USER, Set.of(SAMPLE_GROUP));
+    var subject = Subjects.createWithPrincipalIds(SAMPLE_USER, Set.of(SAMPLE_GROUP));
 
     var resolver = Mockito.mock(SubjectResolver.class);
     when(resolver.resolve(eq(SAMPLE_USER)))
@@ -68,8 +68,8 @@ public class TestRequestContext {
     context.authenticate(SAMPLE_USER, new IapDevice("device-1", List.of()));
 
     assertEquals(SAMPLE_USER.email, context.subject().user().email);
-    assertEquals(2, context.subject().principals().size());
-    assertEquals(2, context.subject().principals().size()); // Invoke again to trigger cache
+    assertEquals(3, context.subject().principals().size());
+    assertEquals(3, context.subject().principals().size()); // Invoke again to trigger cache
 
     assertEquals("device-1", context.device().deviceId());
 

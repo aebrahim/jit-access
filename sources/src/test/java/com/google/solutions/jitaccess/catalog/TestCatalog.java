@@ -86,7 +86,7 @@ public class TestCatalog {
       new Policy.Metadata("test", Instant.EPOCH));
 
     var catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
     assertFalse(catalog.environment(environment.name()).isPresent());
@@ -94,7 +94,7 @@ public class TestCatalog {
 
   @Test
   public void environment() {
-    var subject = Subjects.createSubject(SAMPLE_USER);
+    var subject = Subjects.create(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(
       "env-1",
@@ -128,7 +128,7 @@ public class TestCatalog {
 
   @Test
   public void exportEnvironmentPolicy_whenAccessDenied() {
-    var subject = Subjects.createSubject(SAMPLE_USER);
+    var subject = Subjects.create(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(
       "env-1",
@@ -139,7 +139,7 @@ public class TestCatalog {
       new Policy.Metadata("test", Instant.EPOCH));
 
     var catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
     assertFalse(catalog.exportEnvironmentPolicy(environment.name()).isPresent());
@@ -147,7 +147,7 @@ public class TestCatalog {
 
   @Test
   public void exportEnvironmentPolicy() {
-    var subject = Subjects.createSubject(SAMPLE_USER);
+    var subject = Subjects.create(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(
       "env-1",
@@ -204,7 +204,7 @@ public class TestCatalog {
     environment.add(deniedSystem);
 
     var catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(List.of(environment)));
 
     var systems = catalog.systems(environment.name());
@@ -236,12 +236,14 @@ public class TestCatalog {
     var system = new SystemPolicy(
       "system-1",
       "System 1",
-      AccessControlList.EMPTY,
+      new AccessControlList.Builder()
+        .deny(SAMPLE_USER, -1)
+        .build(),
       Map.of());
     environment.add(system);
 
     var catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
     assertFalse(catalog.system(environment.name(), system.name()).isPresent());
@@ -249,7 +251,7 @@ public class TestCatalog {
 
   @Test
   public void system() {
-    var subject = Subjects.createSubject(SAMPLE_USER);
+    var subject = Subjects.create(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(
       "env-1",
@@ -291,7 +293,9 @@ public class TestCatalog {
     var deniedGroup = new JitGroupPolicy(
       "group-1",
       "Group 1",
-      AccessControlList.EMPTY, // Empty ACL -> deny all
+      new AccessControlList.Builder()
+        .deny(SAMPLE_USER, -1)
+        .build(),
       Map.of(),
       List.of());
     system.add(allowedGroup);
@@ -299,7 +303,7 @@ public class TestCatalog {
     environment.add(system);
 
     var catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
     var groups = catalog.groups(environment.name(), system.name());

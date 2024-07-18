@@ -62,6 +62,9 @@ public class TestPolicyDocument {
         "environment:\n" +
         "  name: \"env\"\n" +
         "  description: \"\"\n" +
+        "  access:\n" +
+        "  - principal: \"system:allAuthenticatedUsers\"\n" +
+        "    allow: \"VIEW\"\n" +
         "  systems: []\n",
       new PolicyDocument(policy).toString());
   }

@@ -78,7 +78,7 @@ public class TestEnvironmentsResource {
 
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
     assertThrows(
@@ -90,7 +90,7 @@ public class TestEnvironmentsResource {
   public void get_whenEnvironmentNotFound() throws Exception {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(List.of()));
 
     assertThrows(
@@ -109,7 +109,7 @@ public class TestEnvironmentsResource {
 
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
     assertThrows(
@@ -134,14 +134,16 @@ public class TestEnvironmentsResource {
     var deniedSystem = new SystemPolicy(
       "denied-1",
       "Denied 1",
-      AccessControlList.EMPTY, // Empty ACL -> deny all
+      new AccessControlList.Builder()
+        .deny(SAMPLE_USER, -1)
+        .build(),
       Map.of());
     environment.add(allowedSystem);
     environment.add(deniedSystem);
 
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
     var environmentInfo = resource.get(environment.name());
@@ -165,7 +167,7 @@ public class TestEnvironmentsResource {
 
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
     assertThrows(
@@ -177,7 +179,7 @@ public class TestEnvironmentsResource {
   public void export_whenEnvironmentNotFound() throws Exception {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(List.of()));
 
     assertThrows(
@@ -196,7 +198,7 @@ public class TestEnvironmentsResource {
 
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
-      Subjects.createSubject(SAMPLE_USER),
+      Subjects.create(SAMPLE_USER),
       EnvironmentRepositories.create(environment));
 
     assertThrows(
@@ -206,7 +208,7 @@ public class TestEnvironmentsResource {
 
   @Test
   public void export() throws AccessDeniedException {
-    var subject = Subjects.createSubject(SAMPLE_USER);
+    var subject = Subjects.create(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(
       "env-1",

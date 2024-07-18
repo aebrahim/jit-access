@@ -99,7 +99,7 @@ public class TestPolicy {
     var policy = new SamplePolicy(null);
 
     assertFalse(policy.isAllowedByAccessControlList(
-      Subjects.createSubject(SAMPLE_USER, Set.of()),
+      Subjects.create(SAMPLE_USER),
       EnumSet.of(PolicyPermission.JOIN)));
   }
 
@@ -108,7 +108,7 @@ public class TestPolicy {
     var policy = new SamplePolicy(AccessControlList.EMPTY);
 
     assertFalse(policy.isAllowedByAccessControlList(
-      Subjects.createSubject(SAMPLE_USER, Set.of()),
+      Subjects.create(SAMPLE_USER),
       EnumSet.of(PolicyPermission.JOIN)));
   }
 
@@ -123,7 +123,7 @@ public class TestPolicy {
     policy.setParent(parentPolicy);
 
     assertTrue(policy.isAllowedByAccessControlList(
-      Subjects.createSubject(SAMPLE_USER, Set.of()),
+      Subjects.create(SAMPLE_USER),
       EnumSet.of(PolicyPermission.JOIN)));
   }
 
@@ -141,7 +141,7 @@ public class TestPolicy {
     policy.setParent(parentPolicy);
 
     assertFalse(policy.isAllowedByAccessControlList(
-      Subjects.createSubject(SAMPLE_USER, Set.of()),
+      Subjects.createWithPrincipalIds(SAMPLE_USER, Set.of()),
       EnumSet.of(PolicyPermission.JOIN)));
   }
 
@@ -159,7 +159,7 @@ public class TestPolicy {
     policy.setParent(parentPolicy);
 
     assertFalse(policy.isAllowedByAccessControlList(
-      Subjects.createSubject(SAMPLE_USER, Set.of()),
+      Subjects.createWithPrincipalIds(SAMPLE_USER, Set.of()),
       EnumSet.of(PolicyPermission.JOIN)));
   }
 
@@ -177,7 +177,7 @@ public class TestPolicy {
     policy.setParent(parentPolicy);
 
     assertTrue(policy.isAllowedByAccessControlList(
-      Subjects.createSubject(SAMPLE_USER, Set.of()),
+      Subjects.createWithPrincipalIds(SAMPLE_USER, Set.of()),
       EnumSet.of(PolicyPermission.JOIN)));
   }
 }

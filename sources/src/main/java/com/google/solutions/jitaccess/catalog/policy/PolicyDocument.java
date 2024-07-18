@@ -367,11 +367,6 @@ public class PolicyDocument {
     @JsonProperty("constraints") ConstraintsElement constraints,
     @JsonProperty("systems") List<SystemElement> systems
   ) {
-    /**
-     * Default ACL, applies if the policy doesn't specify an ACL.
-     */
-    static final AccessControlList DEFAULT_ACCESS_CONTROL_LIST = new AccessControlList(
-      List.of(new AccessControlList.AllowedEntry(SystemId.ALL_AUTHENTICATED, PolicyPermission.VIEW.toMask())));
 
     static EnvironmentElement fromPolicy(
       @NotNull EnvironmentPolicy policy
@@ -425,7 +420,7 @@ public class PolicyDocument {
                 this.name,
                 Strings.nullToEmpty(this.description),
                 acl == null
-                  ? DEFAULT_ACCESS_CONTROL_LIST
+                  ? EnvironmentPolicy.DEFAULT_ACCESS_CONTROL_LIST
                   : new AccessControlList(aces.stream().map(Optional::get).toList()),
                 constraints.get(),
                 metadata);

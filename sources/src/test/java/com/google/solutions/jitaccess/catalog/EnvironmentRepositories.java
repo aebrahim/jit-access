@@ -57,7 +57,11 @@ public class EnvironmentRepositories { // TODO: rename
         @NotNull Catalog catalog,
         @NotNull String name
       ) {
-        return Optional.of(Mockito.mock(Provisioner.class));
+        var provisioner = Mockito.mock(Provisioner.class);
+        when(provisioner.mapGroupId(any()))
+          .thenAnswer(a -> new GroupId(((JitGroupPolicy)a.getArgument(0)).id() + "@example.com"));
+
+        return Optional.of(provisioner);
       }
     };
   }
