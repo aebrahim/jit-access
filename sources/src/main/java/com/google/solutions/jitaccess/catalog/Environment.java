@@ -34,7 +34,7 @@ import java.util.Optional;
 /**
  * Environment in the context of a specific subject.
  */
-public class Environment { // TODO: test
+public class Environment {
   private final @NotNull EnvironmentPolicy policy;
   private final @NotNull Subject subject;
 

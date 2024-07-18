@@ -111,59 +111,6 @@ public class TestCatalog {
     assertTrue(catalog.environment(environment.name()).isPresent());
   }
 
-
-  // -------------------------------------------------------------------------
-  // TODO: exportEnvironmentPolicy.
-  // -------------------------------------------------------------------------
-
-//  @Test
-//  public void exportEnvironmentPolicy_whenNotFound() {
-//    var catalog = new Catalog(
-//      Mockito.mock(Subject.class),
-//      CatalogSources.create(createEnvironmentPolicy("env-1")));
-//
-//    assertFalse(catalog.exportEnvironmentPolicy("").isPresent());
-//    assertFalse(catalog.exportEnvironmentPolicy("ENV-1").isPresent());
-//  }
-//
-//  @Test
-//  public void exportEnvironmentPolicy_whenAccessDenied() {
-//    var subject = Subjects.create(SAMPLE_USER);
-//
-//    var environment = new EnvironmentPolicy(
-//      "env-1",
-//      "Env-1",
-//      new AccessControlList(List.of(
-//        new AccessControlList.AllowedEntry(subject.user(), PolicyPermission.VIEW.toMask()))),
-//      Map.of(),
-//      new Policy.Metadata("test", Instant.EPOCH));
-//
-//    var catalog = new Catalog(
-//      Subjects.create(SAMPLE_USER),
-//      CatalogSources.create(environment));
-//
-//    assertFalse(catalog.exportEnvironmentPolicy(environment.name()).isPresent());
-//  }
-//
-//  @Test
-//  public void exportEnvironmentPolicy() {
-//    var subject = Subjects.create(SAMPLE_USER);
-//
-//    var environment = new EnvironmentPolicy(
-//      "env-1",
-//      "Env-1",
-//      new AccessControlList(List.of(
-//        new AccessControlList.AllowedEntry(subject.user(), PolicyPermission.EXPORT.toMask()))),
-//      Map.of(),
-//      new Policy.Metadata("test", Instant.EPOCH));
-//
-//    var catalog = new Catalog(
-//      subject,
-//      CatalogSources.create(environment));
-//
-//    assertTrue(catalog.exportEnvironmentPolicy(environment.name()).isPresent());
-//  }
-
   // -------------------------------------------------------------------------
   // systems.
   // -------------------------------------------------------------------------
