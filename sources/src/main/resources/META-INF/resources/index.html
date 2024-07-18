@@ -468,6 +468,8 @@
                         element.find('.jit-description').text(input.description);
 
                         const datetimeInput = element.find('input[type="datetime-local"]');
+                        const durationInput = element.find('input[type="hidden"]');
+
                         if (input.minInclusive) {
                             datetimeInput.prop('min', this._localDateFromDuration(input.minInclusive));
                         }
@@ -475,12 +477,12 @@
                         if (input.maxInclusive) {
                             datetimeInput.prop('max', this._localDateFromDuration(input.maxInclusive));
                             datetimeInput.prop('value', this._localDateFromDuration(input.maxInclusive));
+                            durationInput.val(input.maxInclusive);
                         }
 
                         //
                         // Convert the date into a duration and update the hidden form field.
                         //
-                        const durationInput = element.find('input[type="hidden"]');
                         datetimeInput.on("change", e => {
                             const durationInSec = Math.floor((Date.parse(datetimeInput.val()) - new Date().getTime()) / 1000);
                             durationInput.val(durationInSec);
