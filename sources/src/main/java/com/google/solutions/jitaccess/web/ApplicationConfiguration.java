@@ -224,7 +224,7 @@ class ApplicationConfiguration {
     //
     // Legacy settings.
     //
-    this.legacyCatalog = new StringSetting("RESOURCE_CATALOG", null);
+    this.legacyCatalog = new StringSetting("RESOURCE_CATALOG", "AssetInventory");
     this.legacyScope = new StringSetting(
       "RESOURCE_SCOPE",
       String.format("projects/%s", this.settingsData.get("GOOGLE_CLOUD_PROJECT")));

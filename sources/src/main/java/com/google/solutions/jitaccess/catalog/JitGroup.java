@@ -212,7 +212,7 @@ public class JitGroup {
 
     public ApprovalOperation(@NotNull Subject requestingSubject) {
       this.requestingSubject = requestingSubject;
-      throw new IllegalStateException("Approval is not supported yet");
+      throw new UnsupportedOperationException("Approval is not supported yet");
     }
 
     // requestingSubject

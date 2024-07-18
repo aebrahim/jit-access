@@ -49,7 +49,8 @@ public class ExceptionMappers {
     UnhandledExceptionMapper.class,
     NotAllowedExceptionMapper.class,
     NotAcceptableExceptionMapper.class,
-    NotFoundExceptionMapper.class
+    NotFoundExceptionMapper.class,
+    UnsupportedOperationExceptionMapper.class
   };
 
   @Provider
@@ -167,6 +168,17 @@ public class ExceptionMappers {
     public Response toResponse(@NotNull NotFoundException exception) {
       return Response
         .status(Response.Status.NOT_FOUND)
+        .entity(new ErrorEntity(exception))
+        .build();
+    }
+  }
+
+  @Provider
+  public static class UnsupportedOperationExceptionMapper implements ExceptionMapper<UnsupportedOperationException> {
+    @Override
+    public Response toResponse(@NotNull UnsupportedOperationException exception) {
+      return Response
+        .status(Response.Status.NOT_IMPLEMENTED)
         .entity(new ErrorEntity(exception))
         .build();
     }

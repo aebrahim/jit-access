@@ -89,6 +89,7 @@ public class Catalog {
       .map(PolicyDocument::new);
   }
 
+
   /**
    * List system policies for which the subject has VIEW access.
    */
