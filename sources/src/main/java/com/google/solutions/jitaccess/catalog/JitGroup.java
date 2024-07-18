@@ -40,14 +40,14 @@ import java.util.List;
 public class JitGroup {
   private final @NotNull JitGroupPolicy policy;
   private final @NotNull Subject subject;
-  private final @NotNull Environment environment;
+  private final @NotNull Provisioner provisioner;
 
   JitGroup(
-    @NotNull Environment environment,
+    @NotNull Provisioner provisioner,
     @NotNull JitGroupPolicy policy,
     @NotNull Subject subject
   ) {
-    this.environment = environment;
+    this.provisioner = provisioner;
     this.policy = policy;
     this.subject = subject;
   }
@@ -63,7 +63,7 @@ public class JitGroup {
    * @return Cloud Identity group that backs this JIT group.
    */
   public @NotNull GroupId cloudIdentityGroupId() {
-    return this.environment.mapGroupId(this.group());
+    return this.provisioner.mapGroupId(this.group());
   }
 
   /**
@@ -196,7 +196,7 @@ public class JitGroup {
       // Provision group membership.
       //
       var group = JitGroup.this;
-      group.environment.provisionAccess(
+      group.provisioner.provisionAccess(
         group.policy,
         group.subject.user(),
         expiry);

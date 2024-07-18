@@ -58,16 +58,16 @@ public class TestEnvironmentLoader {
       Duration.ZERO,
       Mockito.mock(Logger.class));
 
-    assertEquals(2, loader.environments().size());
+    assertEquals(2, loader.environmentPolicies().size());
 
-    var one = loader.environments()
+    var one = loader.environmentPolicies()
       .stream()
       .filter(e -> e.name().equals("one"))
       .findFirst();
     assertTrue(one.isPresent());
     assertEquals("one", one.get().description());
 
-    var two = loader.environments()
+    var two = loader.environmentPolicies()
       .stream()
       .filter(e -> e.name().equals("two"))
       .findFirst();
@@ -93,7 +93,7 @@ public class TestEnvironmentLoader {
       logger);
 
     assertFalse(loader
-      .lookup(Mockito.mock(Catalog.class), "not-found")
+      .provisioner(Mockito.mock(Catalog.class), "not-found")
       .isPresent());
 
     verify(logger, times(0)).error(
@@ -116,7 +116,7 @@ public class TestEnvironmentLoader {
       logger);
 
     assertFalse(loader
-      .lookup(Mockito.mock(Catalog.class), "env")
+      .provisioner(Mockito.mock(Catalog.class), "env")
       .isPresent());
 
     verify(logger, times(1)).error(
@@ -139,7 +139,7 @@ public class TestEnvironmentLoader {
       logger);
 
     assertFalse(loader
-      .lookup(Mockito.mock(Catalog.class), "env")
+      .provisioner(Mockito.mock(Catalog.class), "env")
       .isPresent());
 
     verify(logger, times(1)).error(
@@ -162,7 +162,7 @@ public class TestEnvironmentLoader {
       logger);
 
     assertFalse(loader
-      .lookup(Mockito.mock(Catalog.class), "env")
+      .provisioner(Mockito.mock(Catalog.class), "env")
       .isPresent());
 
     verify(logger, times(1)).error(
@@ -184,7 +184,7 @@ public class TestEnvironmentLoader {
       Duration.ZERO,
       logger);
 
-    var environment = loader.lookup(Mockito.mock(Catalog.class), "env");
+    var environment = loader.provisioner(Mockito.mock(Catalog.class), "env");
     assertTrue(environment.isPresent());
   }
 }

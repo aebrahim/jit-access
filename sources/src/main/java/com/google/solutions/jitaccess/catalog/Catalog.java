@@ -39,7 +39,7 @@ import java.util.Optional;
  * lookup or join groups.
  */
 public class Catalog {
-  private final @NotNull Catalog.Source repository;
+  private final @NotNull Catalog.Source source;
   private final @NotNull Subject subject;
 
   @NotNull Subject subject() {
@@ -48,10 +48,10 @@ public class Catalog {
 
   public Catalog(
     @NotNull Subject subject,
-    @NotNull Catalog.Source repository
+    @NotNull Catalog.Source source
   ) {
     this.subject = subject;
-    this.repository = repository;
+    this.source = source;
   }
 
   /**
@@ -61,7 +61,7 @@ public class Catalog {
    * minimum of data.
    */
   public @NotNull Collection<PolicyHeader> environments() {
-    return this.repository.environments();
+    return this.source.environmentPolicies();
   }
 
   /**
@@ -70,9 +70,8 @@ public class Catalog {
   public @NotNull Optional<EnvironmentPolicy> environment(@NotNull String name) {
     Preconditions.checkNotNull(name, "Name must not be null");
 
-    return this.repository
-      .lookup(this, name)
-      .map(Environment::policy)
+    return this.source
+      .environmentPolicy(name)
       .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)));
   }
 
@@ -82,9 +81,8 @@ public class Catalog {
   public @NotNull Optional<PolicyDocument> exportEnvironmentPolicy(@NotNull String name) {
     Preconditions.checkNotNull(name, "Name must not be null");
 
-    return this.repository
-      .lookup(this, name)
-      .map(Environment::policy)
+    return this.source
+      .environmentPolicy(name)
       .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.EXPORT)))
       .map(PolicyDocument::new);
   }
@@ -94,9 +92,8 @@ public class Catalog {
    * Requires EXPORT access.
    */
   public boolean canExportEnvironmentPolicy(@NotNull String name) { // TODO: test, or return "Env" object instead
-    return this.repository
-      .lookup(this, name)
-      .map(Environment::policy)
+    return this.source
+      .environmentPolicy(name)
       .map(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.EXPORT)))
       .orElse(false);
   }
@@ -107,10 +104,9 @@ public class Catalog {
   public @NotNull Collection<SystemPolicy> systems(@NotNull String environmentName) {
     Preconditions.checkNotNull(environmentName, "Environment must not be null");
 
-    return this.repository
-      .lookup(this, environmentName)
+    return this.source
+      .environmentPolicy(environmentName)
       .stream()
-      .map(Environment::policy)
       .flatMap(env -> env.systems().stream())
       .filter(sys -> sys.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
       .toList();
@@ -126,9 +122,8 @@ public class Catalog {
     Preconditions.checkArgument(environmentName != null, "Environment must not be null");
     Preconditions.checkArgument(name != null, "Name must not be null");
 
-    return this.repository
-      .lookup(this, environmentName)
-      .map(Environment::policy)
+    return this.source
+      .environmentPolicy(environmentName)
       .flatMap(env -> env.system(name))
       .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)));
   }
@@ -142,10 +137,10 @@ public class Catalog {
   ) {
     Preconditions.checkArgument(environmentName != null, "Environment name must not be null");
 
-    var environment = this.repository.lookup(this, environmentName);
+    var provisioner = this.source.provisioner(this, environmentName);
 
-    return environment
-      .map(Environment::policy)
+    return this.source
+      .environmentPolicy(environmentName)
       .flatMap(env -> env.system(systemName))
       .stream()
       .flatMap(sys -> sys.groups().stream())
@@ -153,7 +148,7 @@ public class Catalog {
         .analyze(this.subject, EnumSet.of(PolicyPermission.VIEW))
         .execute()
         .isAccessAllowed(PolicyAnalysis.AccessOptions.DEFAULT))
-      .map(grp -> new JitGroup(environment.get(), grp, this.subject))
+      .map(grp -> new JitGroup(provisioner.get(), grp, this.subject))
       .sorted(Comparator.comparing(g -> g.group().id()))
       .toList();
   }
@@ -168,10 +163,10 @@ public class Catalog {
   ) {
     Preconditions.checkArgument(groupId != null, "Group ID must not be null");
 
-    var environment = this.repository.lookup(this, groupId.environment());
+    var environment = this.source.provisioner(this, groupId.environment());
 
-    return environment
-      .map(Environment::policy)
+    return this.source
+      .environmentPolicy(groupId.environment())
       .flatMap(env -> env.system(groupId.system()))
       .flatMap(sys -> sys.group(groupId.name()))
       .filter(grp -> grp
@@ -188,12 +183,17 @@ public class Catalog {
     /**
      * Get list of summaries for available policies.
      */
-    @NotNull Collection<PolicyHeader> environments();
+    @NotNull Collection<PolicyHeader> environmentPolicies();
 
     /**
-     * Lookup environment
+     * Get policy for an environment.
      */
-    @NotNull Optional<Environment> lookup(
+    @NotNull Optional<EnvironmentPolicy> environmentPolicy(@NotNull String name);
+
+    /**
+     * Get provisioner for an environment
+     */
+    @NotNull Optional<Provisioner> provisioner(
       @NotNull Catalog catalog,
       @NotNull String name);
   }

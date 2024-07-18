@@ -28,9 +28,10 @@ import com.google.common.cache.LoadingCache;
 import com.google.solutions.jitaccess.apis.clients.CloudIdentityGroupsClient;
 import com.google.solutions.jitaccess.apis.clients.ResourceManagerClient;
 import com.google.solutions.jitaccess.catalog.Catalog;
-import com.google.solutions.jitaccess.catalog.Environment;
+import com.google.solutions.jitaccess.catalog.Provisioner;
 import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.auth.GroupMapping;
+import com.google.solutions.jitaccess.catalog.policy.AccessControlList;
 import com.google.solutions.jitaccess.catalog.policy.EnvironmentPolicy;
 import com.google.solutions.jitaccess.catalog.policy.PolicyHeader;
 import com.google.solutions.jitaccess.util.Exceptions;
@@ -50,7 +51,7 @@ public class EnvironmentLoader implements Catalog.Source {
   /**
    * Map environment name -> policy locator.
    */
-  private final @NotNull LoadingCache<String, Environment> environmentCache;
+  private final @NotNull LoadingCache<String, Entry> environmentCache;
 
   private final @NotNull GroupMapping groupMapping;
   private final @NotNull Set<String> environmentNames;
@@ -82,7 +83,7 @@ public class EnvironmentLoader implements Catalog.Source {
       .expireAfterWrite(cacheDuration)
       .build(new CacheLoader<>() {
         @Override
-        public @NotNull Environment load(
+        public @NotNull Entry load(
           @NotNull String environmentName
         ) {
           var policy = producePolicy.apply(environmentName);
@@ -94,14 +95,38 @@ public class EnvironmentLoader implements Catalog.Source {
               policy.name(),
               environmentName));
 
-          return new Environment(
+          return new Entry(
             policy,
-            groupMapping,
-            groupsClient,
-            produceResourceManagerClient.apply(policy),
-            logger);
+            new Provisioner(
+              groupMapping,
+              groupsClient,
+              produceResourceManagerClient.apply(policy),
+              logger)
+          );
         }
       });
+  }
+
+  private @NotNull Optional<Entry> lookup(
+    @NotNull String name
+  ) {
+    if (!environmentNames.contains(name)) {
+      return Optional.empty();
+    }
+
+    //
+    // Lookup from cache (or load it lazily). Throws an exception if not found.
+    //
+    try {
+      return Optional.of(this.environmentCache.get(name));
+    }
+    catch (Exception e) {
+      this.logger.error(
+        EventIds.LOAD_ENVIRONMENT,
+        String.format("Loading policy for environment '%s' failed", name),
+        Exceptions.unwrap(e));
+      return Optional.empty();
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -109,7 +134,7 @@ public class EnvironmentLoader implements Catalog.Source {
   // -------------------------------------------------------------------------
 
   @Override
-  public @NotNull Collection<PolicyHeader> environments() {
+  public @NotNull Collection<PolicyHeader> environmentPolicies() {
     //
     // Avoid eagerly loading all policies just to retrieve their
     // name and descriptions.
@@ -131,29 +156,20 @@ public class EnvironmentLoader implements Catalog.Source {
   }
 
   @Override
-  public @NotNull Optional<Environment> lookup(
+  public @NotNull Optional<EnvironmentPolicy> environmentPolicy(@NotNull String name) {
+    return lookup(name).map(e -> e.policy);
+  }
+
+  @Override
+  public @NotNull Optional<Provisioner> provisioner(
     @NotNull Catalog catalog,
     @NotNull String name
   ) {
-    if (!environmentNames.contains(name)) {
-      return Optional.empty();
-    }
-
-    //
-    // Read policy from cache (or load it lazily)
-    //
-    try {
-      //
-      // Retrieve configuration. Throws an exception if not found.
-      //
-      return Optional.of(this.environmentCache.get(name));
-    }
-    catch (Exception e) {
-      this.logger.error(
-        EventIds.LOAD_ENVIRONMENT,
-        String.format("Loading policy for environment '%s' failed", name),
-        Exceptions.unwrap(e));
-      return Optional.empty();
-    }
+    return lookup(name).map(e -> e.provisioner);
   }
+
+  private record Entry(
+    @NotNull EnvironmentPolicy policy,
+    @NotNull Provisioner provisioner
+  ) {}
 }

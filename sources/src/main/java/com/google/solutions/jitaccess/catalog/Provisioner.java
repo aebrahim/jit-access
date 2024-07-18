@@ -48,42 +48,29 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Represents an environment, and provisions access to the resources in
- * that environment.
+ * Provisions access to the resources in an environment.
  */
-public class Environment {
-  private final @NotNull EnvironmentPolicy policy;
+public class Provisioner {
   private final @NotNull GroupProvisioner groupProvisioner;
   private final @NotNull IamProvisioner iamProvisioner;
 
-  Environment(
-    @NotNull EnvironmentPolicy policy,
+  Provisioner(
     @NotNull GroupProvisioner groupProvisioner,
     @NotNull IamProvisioner iamProvisioner
   ) {
-    this.policy = policy;
     this.groupProvisioner = groupProvisioner;
     this.iamProvisioner = iamProvisioner;
   }
 
-  public Environment(
-    @NotNull EnvironmentPolicy policy,
+  public Provisioner(
     @NotNull GroupMapping groupMapping,
     @NotNull CloudIdentityGroupsClient groupsClient,
     @NotNull ResourceManagerClient resourceManagerClient,
     @NotNull Logger logger
   ) {
     this(
-      policy,
       new GroupProvisioner(groupMapping, groupsClient, logger),
       new IamProvisioner(groupsClient, resourceManagerClient, logger));
-  }
-
-  /**
-   * Get policy that defines this environment.
-   */
-  @NotNull EnvironmentPolicy policy() {
-    return this.policy;
   }
 
   /**

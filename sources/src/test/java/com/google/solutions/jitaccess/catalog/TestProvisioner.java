@@ -55,7 +55,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-public class TestEnvironment {
+public class TestProvisioner {
   private static final UserId SAMPLE_USER_1 = new UserId("user-1@example.com");
   private static final UserId SAMPLE_USER_2 = new UserId("user-2@example.com");
   private static final GroupId SAMPLE_GROUP = new GroupId("group@example.com");
@@ -72,11 +72,11 @@ public class TestEnvironment {
 
   @Test
   public void provisionAccess() throws Exception {
-    var groupProvisioner = Mockito.mock(Environment.GroupProvisioner.class);
+    var groupProvisioner = Mockito.mock(Provisioner.GroupProvisioner.class);
     when(groupProvisioner.provisionedGroupId(any()))
       .thenAnswer(a -> new GroupId("group@example.com"));
 
-    var iamProvisioner = Mockito.mock(Environment.IamProvisioner.class);
+    var iamProvisioner = Mockito.mock(Provisioner.IamProvisioner.class);
 
     var group = Policies.createJitGroupPolicy(
       "group",
@@ -87,8 +87,7 @@ public class TestEnvironment {
         new IamRoleBinding(SAMPLE_PROJECT_1, SAMPLE_ROLE_2),
         Mockito.mock(Privilege.class)));
 
-    var environment = new Environment(
-      group.system().environment(),
+    var environment = new Provisioner(
       groupProvisioner,
       iamProvisioner);
 
@@ -123,7 +122,7 @@ public class TestEnvironment {
       when(mapping.groupFromJitGroup(eq(groupId)))
         .thenReturn(new GroupId("mapped@example.com"));
 
-      var provisioner = new Environment.GroupProvisioner(
+      var provisioner = new Provisioner.GroupProvisioner(
         mapping,
         Mockito.mock(CloudIdentityGroupsClient.class),
         Mockito.mock(Logger.class));
@@ -163,7 +162,7 @@ public class TestEnvironment {
         .thenThrow(new AccessDeniedException("mock"));
 
       var logger = Mockito.mock(Logger.class);
-      var provisioner = new Environment.GroupProvisioner(
+      var provisioner = new Provisioner.GroupProvisioner(
         mapping,
         groupsClient,
         logger);
@@ -206,7 +205,7 @@ public class TestEnvironment {
       when(groupsClient.getGroup(eq(SAMPLE_GROUP)))
         .thenReturn(new Group());
 
-      var provisioner = new Environment.GroupProvisioner(
+      var provisioner = new Provisioner.GroupProvisioner(
         mapping,
         groupsClient,
         Mockito.mock(Logger.class));
@@ -249,7 +248,7 @@ public class TestEnvironment {
       var policy = new Policy();
       policy.setBindings(new ArrayList<>(List.of(role1, role2)));
 
-      Environment.IamProvisioner.replaceBindingsForPrincipals(
+      Provisioner.IamProvisioner.replaceBindingsForPrincipals(
         policy,
         SAMPLE_USER_1,
         List.of(new IamRoleBinding(SAMPLE_PROJECT_1, SAMPLE_ROLE_3)));
@@ -270,7 +269,7 @@ public class TestEnvironment {
       var policy = new Policy();
       policy.setBindings(new ArrayList<>());
 
-      Environment.IamProvisioner.replaceBindingsForPrincipals(
+      Provisioner.IamProvisioner.replaceBindingsForPrincipals(
         policy,
         SAMPLE_USER_1,
         List.of(new IamRoleBinding(
@@ -301,7 +300,7 @@ public class TestEnvironment {
 
       var resourceManagerClient = Mockito.mock(ResourceManagerClient.class);
 
-      var provisioner = new Environment.IamProvisioner(
+      var provisioner = new Provisioner.IamProvisioner(
         groupsClient,
         resourceManagerClient,
         Mockito.mock(Logger.class));
@@ -322,7 +321,7 @@ public class TestEnvironment {
 
       var resourceManagerClient = Mockito.mock(ResourceManagerClient.class);
 
-      var provisioner = new Environment.IamProvisioner(
+      var provisioner = new Provisioner.IamProvisioner(
         groupsClient,
         resourceManagerClient,
         Mockito.mock(Logger.class));
@@ -345,7 +344,7 @@ public class TestEnvironment {
 
       var resourceManagerClient = Mockito.mock(ResourceManagerClient.class);
 
-      var provisioner = new Environment.IamProvisioner(
+      var provisioner = new Provisioner.IamProvisioner(
         groupsClient,
         resourceManagerClient,
         Mockito.mock(Logger.class));
@@ -380,7 +379,7 @@ public class TestEnvironment {
         .modifyIamPolicy(eq(SAMPLE_PROJECT_1), any(), any());
 
       var logger = Mockito.mock(Logger.class);
-      var provisioner = new Environment.IamProvisioner(
+      var provisioner = new Provisioner.IamProvisioner(
         groupsClient,
         resourceManagerClient,
         logger);
@@ -408,24 +407,24 @@ public class TestEnvironment {
 
     @Test
     public void fromTaggedDescription_whenDescriptionIsNull() {
-      var checksum = Environment.IamBindingChecksum.fromTaggedDescription(null);
+      var checksum = Provisioner.IamBindingChecksum.fromTaggedDescription(null);
 
-      assertEquals(Environment.IamBindingChecksum.ZERO, checksum);
+      assertEquals(Provisioner.IamBindingChecksum.ZERO, checksum);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"", "text", "###"})
     public void fromTaggedDescription_whenDescriptionDoesNotContainHash(String description) {
-      var checksum = Environment.IamBindingChecksum.fromTaggedDescription(description);
+      var checksum = Provisioner.IamBindingChecksum.fromTaggedDescription(description);
 
-      assertEquals(Environment.IamBindingChecksum.ZERO, checksum);
+      assertEquals(Provisioner.IamBindingChecksum.ZERO, checksum);
     }
 
     @Test
     public void fromTaggedDescription_whenDescriptionContainsHash() {
-      var checksum = Environment.IamBindingChecksum.fromTaggedDescription("some text #1199aaff");
+      var checksum = Provisioner.IamBindingChecksum.fromTaggedDescription("some text #1199aaff");
 
-      assertNotEquals(Environment.IamBindingChecksum.ZERO, checksum);
+      assertNotEquals(Provisioner.IamBindingChecksum.ZERO, checksum);
       assertEquals("1199aaff", checksum.toString());
     }
 
@@ -437,28 +436,28 @@ public class TestEnvironment {
     public void toTaggedDescription_whenDescriptionIsNull() {
       assertEquals(
         "#000000cc",
-        new Environment.IamBindingChecksum(0xCC).toTaggedDescription(null));
+        new Provisioner.IamBindingChecksum(0xCC).toTaggedDescription(null));
     }
 
     @Test
     public void toTaggedDescription_whenDescriptionEmpty() {
       assertEquals(
         "#000000cc",
-        new Environment.IamBindingChecksum(0xCC).toTaggedDescription(""));
+        new Provisioner.IamBindingChecksum(0xCC).toTaggedDescription(""));
     }
 
     @Test
     public void toTaggedDescription_whenDescriptionNotEmpty() {
       assertEquals(
         "some text #000000cc",
-        new Environment.IamBindingChecksum(0xCC).toTaggedDescription("some text"));
+        new Provisioner.IamBindingChecksum(0xCC).toTaggedDescription("some text"));
     }
 
     @Test
     public void toTaggedDescription_whenDescriptionIsTagged() {
       assertEquals(
         "some text #000000cc",
-        new Environment.IamBindingChecksum(0xCC).toTaggedDescription("some text #aa11"));
+        new Provisioner.IamBindingChecksum(0xCC).toTaggedDescription("some text #aa11"));
     }
 
     // -------------------------------------------------------------------------
@@ -467,7 +466,7 @@ public class TestEnvironment {
 
     @Test
     public void fromBindings() {
-      var checksum = Environment.IamBindingChecksum.fromBindings(
+      var checksum = Provisioner.IamBindingChecksum.fromBindings(
         Set.of(
           new IamRoleBinding(SAMPLE_PROJECT_1, SAMPLE_ROLE_1),
           new IamRoleBinding(SAMPLE_PROJECT_1, SAMPLE_ROLE_1, "description", "expression"),

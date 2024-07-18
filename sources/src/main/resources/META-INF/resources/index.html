@@ -25,7 +25,7 @@
         <div class='jit-view' id='jit-environmentinfo-view'>
             <h1>Systems</h1>
             <div class="jit-card-subsection">
-                <span class="jit-environment-description"></span>
+                <span class="jit-provisioner-description"></span>
             </div>
             <div class="mdc-data-table">
                 <div class="mdc-data-table__table-container">
@@ -53,7 +53,7 @@
         <!-- SystemInfoView -->
         <div class='jit-view' id='jit-systeminfo-view'>
             <h1>
-                <a class="jit-environment-name"></a>
+                <a class="jit-provisioner-name"></a>
                 <span class="jit-material-icons">chevron_right</span>
                 <span class="jit-system-name"></span>
             </h1>
@@ -81,7 +81,7 @@
         <!-- GroupInfoView -->
         <div class='jit-view' id='jit-groupinfo-view'>
             <h1>
-                <a class="jit-environment-name"></a>
+                <a class="jit-provisioner-name"></a>
                 <span class="jit-material-icons">chevron_right</span>
                 <a class="jit-system-name"></a>
                 <span class="jit-material-icons">chevron_right</span>
@@ -188,7 +188,7 @@
                 this.table.clearRows();
 
                 this.select('h1').text(model.content.name);
-                this.select('.jit-environment-description').text(model.content.description);
+                this.select('.jit-provisioner-description').text(model.content.description);
 
                 this.select('.mdc-button')
                     .prop('href', model.content.export != null ? model.content.export.href : '#')
@@ -217,9 +217,9 @@
                 this.table = new mdc.dataTable.MDCDataTable(this.select('table').get(0));
                 this.table.clearRows();
 
-                this.select('.jit-environment-name')
-                    .text(model.content.environment.name)
-                    .prop('href', `#!/${model.content.environment.self.href}`);
+                this.select('.jit-provisioner-name')
+                    .text(model.content.provisioner.name)
+                    .prop('href', `#!/${model.content.provisioner.self.href}`);
                 this.select('.jit-system-name').text(model.content.name);
                 this.select('.jit-system-description').text(model.content.description);
 
@@ -288,9 +288,9 @@
                 //
                 // Details.
                 //
-                this.select('.jit-environment-name')
-                    .text(groupInfo.environment.name)
-                    .prop('href', `#!/${groupInfo.environment.self.href}`);
+                this.select('.jit-provisioner-name')
+                    .text(groupInfo.provisioner.name)
+                    .prop('href', `#!/${groupInfo.provisioner.self.href}`);
                 this.select('.jit-system-name')
                     .text(groupInfo.system.name)
                     .prop('href', `#!/${groupInfo.system.self.href}`);
@@ -563,7 +563,7 @@
                     view.cancelView(e);
                 }
 
-                document.appbar.showError(e ?? "No environment selected", true);
+                document.appbar.showError(e ?? "No provisioner selected", true);
             }
         }
 

@@ -88,7 +88,7 @@ public class TestJitGroup {
       List.of());
 
     var group = new JitGroup(
-      Mockito.mock(Environment.class),
+      Mockito.mock(Provisioner.class),
       deniedGroup,
       subject);
 
@@ -128,7 +128,7 @@ public class TestJitGroup {
         .add(deniedGroup));
 
     var joinOp = new JitGroup(
-      Mockito.mock(Environment.class),
+      Mockito.mock(Provisioner.class),
       deniedGroup,
       subject).join();
     assertFalse(joinOp.requiresApproval());
@@ -165,7 +165,7 @@ public class TestJitGroup {
         .add(deniedGroup));
 
     var joinOp = new JitGroup(
-      Mockito.mock(Environment.class),
+      Mockito.mock(Provisioner.class),
       deniedGroup,
       subject).join();
     assertTrue(joinOp.requiresApproval());

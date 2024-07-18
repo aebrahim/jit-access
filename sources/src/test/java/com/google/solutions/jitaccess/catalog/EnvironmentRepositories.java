@@ -35,31 +35,29 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public class EnvironmentRepositories {
+public class EnvironmentRepositories { // TODO: rename
 
   public static Catalog.Source create(List<EnvironmentPolicy> policies) {
     return new Catalog.Source() {
       @Override
-      public @NotNull Collection<PolicyHeader> environments() {
+      public @NotNull Collection<PolicyHeader> environmentPolicies() {
         return policies.stream().map(p -> (PolicyHeader)p).toList();
       }
 
       @Override
-      public @NotNull Optional<Environment> lookup(
+      public @NotNull Optional<EnvironmentPolicy> environmentPolicy(@NotNull String name) {
+        return policies
+          .stream()
+          .filter(p -> p.name().equals(name))
+          .findFirst();
+      }
+
+      @Override
+      public @NotNull Optional<Provisioner> provisioner(
         @NotNull Catalog catalog,
         @NotNull String name
       ) {
-        var provisioner = Mockito.mock(Environment.GroupProvisioner.class);
-        when(provisioner.provisionedGroupId(any()))
-          .thenAnswer(a -> new GroupId(((JitGroupPolicy)a.getArgument(0)).id() + "@example.com"));
-
-        return policies.stream()
-          .filter(p -> p.name().equals(name))
-          .map(p -> new Environment(
-            p,
-            provisioner,
-            Mockito.mock(Environment.IamProvisioner.class)))
-          .findFirst();
+        return Optional.of(Mockito.mock(Provisioner.class));
       }
     };
   }
