@@ -53,21 +53,21 @@ public class JitGroup {
   }
 
   /**
-   * @return group details.
+   * Get group policy.
    */
-  public @NotNull JitGroupPolicy group() {
+  public @NotNull JitGroupPolicy policy() {
     return this.policy;
   }
 
   /**
-   * @return Cloud Identity group that backs this JIT group.
+   * Resolve the Cloud Identity group that backs this JIT group.
    */
   public @NotNull GroupId cloudIdentityGroupId() {
-    return this.provisioner.mapGroupId(this.group());
+    return this.provisioner.mapGroupId(this.policy());
   }
 
   /**
-   * @return details about possibly unmet constraints.
+   * Get details about possibly unmet constraints.
    */
   public @NotNull JoinOperation join() {
     //
@@ -190,7 +190,7 @@ public class JitGroup {
         .orElseThrow(() -> new UnsupportedOperationException(
           String.format(
             "The group %s doesn't specify an expiry constraint",
-            JitGroup.this.group().id())));
+            JitGroup.this.policy().id())));
 
       //
       // Provision group membership.

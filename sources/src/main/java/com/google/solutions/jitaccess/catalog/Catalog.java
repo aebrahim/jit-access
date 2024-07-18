@@ -67,41 +67,19 @@ public class Catalog {
   /**
    * Get environment policy. Requires VIEW access.
    */
-  public @NotNull Optional<EnvironmentPolicy> environment(@NotNull String name) {
+  public @NotNull Optional<Environment> environment(@NotNull String name) {
     Preconditions.checkNotNull(name, "Name must not be null");
 
     return this.source
       .environmentPolicy(name)
-      .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)));
-  }
-
-  /**
-   * Export the environment policy. Requires EXPORT access.
-   */
-  public @NotNull Optional<PolicyDocument> exportEnvironmentPolicy(@NotNull String name) {
-    Preconditions.checkNotNull(name, "Name must not be null");
-
-    return this.source
-      .environmentPolicy(name)
-      .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.EXPORT)))
-      .map(PolicyDocument::new);
-  }
-
-  /**
-   * Check if the current subject is allowed to export the environment policy.
-   * Requires EXPORT access.
-   */
-  public boolean canExportEnvironmentPolicy(@NotNull String name) { // TODO: test, or return "Env" object instead
-    return this.source
-      .environmentPolicy(name)
-      .map(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.EXPORT)))
-      .orElse(false);
+      .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
+      .map(policy -> new Environment(policy, this.subject));
   }
 
   /**
    * List system policies for which the subject has VIEW access.
    */
-  public @NotNull Collection<SystemPolicy> systems(@NotNull String environmentName) {
+  public @NotNull Collection<SystemPolicy> systems(@NotNull String environmentName) { // TODO: Move to environments?
     Preconditions.checkNotNull(environmentName, "Environment must not be null");
 
     return this.source
@@ -149,7 +127,7 @@ public class Catalog {
         .execute()
         .isAccessAllowed(PolicyAnalysis.AccessOptions.DEFAULT))
       .map(grp -> new JitGroup(provisioner.get(), grp, this.subject))
-      .sorted(Comparator.comparing(g -> g.group().id()))
+      .sorted(Comparator.comparing(g -> g.policy().id()))
       .toList();
   }
 

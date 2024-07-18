@@ -23,6 +23,7 @@ package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
 import com.google.solutions.jitaccess.catalog.Catalog;
+import com.google.solutions.jitaccess.catalog.Environment;
 import com.google.solutions.jitaccess.catalog.policy.PolicyDocument;
 import com.google.solutions.jitaccess.catalog.policy.PolicyHeader;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
@@ -55,7 +56,7 @@ public class EnvironmentsResource {
   public @NotNull EnvironmentsResource.EnvironmentsInfo list() {
     var environments = this.catalog.environments()
       .stream()
-      .map(env -> EnvironmentInfo.fromPolicy(env, null, false))
+      .map(env -> EnvironmentInfo.fromPolicyHeader(env))
       //TODO: sort
       .collect(Collectors.toList());
 
@@ -78,13 +79,12 @@ public class EnvironmentsResource {
 
     return this.catalog
       .environment(environment)
-      .map(env -> EnvironmentInfo.fromPolicy(
+      .map(env -> EnvironmentInfo.fromEnvironment(
         env,
         filteredSystems
           .stream()
           .map(sys -> SystemsResource.SystemInfo.fromPolicy(sys, null))
-          .toList(),
-          this.catalog.canExportEnvironmentPolicy(environment)))
+          .toList()))
       .orElseThrow(() -> new AccessDeniedException(
         "The environment does not exist or access is denied"));
   }
@@ -100,7 +100,8 @@ public class EnvironmentsResource {
     @PathParam("environment") @NotNull String environment
   ) throws AccessDeniedException {
     return this.catalog
-      .exportEnvironmentPolicy(environment)
+      .environment(environment)
+      .flatMap(Environment::export)
       .map(PolicyDocument::toString)
       .orElseThrow(() -> new AccessDeniedException(
         "The environment does not exist or access is denied"));
@@ -124,16 +125,28 @@ public class EnvironmentsResource {
     @Nullable List<SystemsResource.SystemInfo> systems
   ) implements CatalogInfo {
 
-    static EnvironmentInfo fromPolicy(
-      @NotNull PolicyHeader policy,
-      @Nullable List<SystemsResource.SystemInfo> systems,
-      boolean canExport
+    static EnvironmentInfo fromPolicyHeader(
+      @NotNull PolicyHeader policy
     ) {
       return new EnvironmentInfo(
         new Link("environments/%s", policy.name()),
-        canExport ? new Link("/api/catalog/environments/%s/policy", policy.name()) : null,
+        null,
         policy.name(),
         policy.description(),
+        null);
+    }
+
+    static EnvironmentInfo fromEnvironment(
+      @NotNull Environment environment,
+      @NotNull List<SystemsResource.SystemInfo> systems
+    ) {
+      return new EnvironmentInfo(
+        new Link("environments/%s", environment.policy().name()),
+        environment.canExport()
+          ? new Link("/api/catalog/environments/%s/policy", environment.policy().name())
+          : null,
+        environment.policy().name(),
+        environment.policy().description(),
         systems);
     }
   }

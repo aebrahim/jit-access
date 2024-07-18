@@ -29,7 +29,7 @@ import java.util.Optional;
 /**
  * Pseudo-principal identifier.
  */
-public class SystemId implements PrincipalId, Comparable<SystemId> {
+public class SystemId implements PrincipalId, Comparable<SystemId> { // TODO: rename to... runtime? session?
   public static final String TYPE = "system";
   private static final String TYPE_PREFIX = TYPE + ":";
 
@@ -44,9 +44,8 @@ public class SystemId implements PrincipalId, Comparable<SystemId> {
     this.value = value;
   }
 
-
   /**
-   * Parse a user ID that uses the syntax user:email.
+   * Parse a user ID that uses prefixed syntax.
    */
   public static Optional<SystemId> parse(@Nullable String s) {
     if (s == null || s.isBlank()) {

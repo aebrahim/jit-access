@@ -170,7 +170,7 @@ public class GroupsResource {
     @NotNull SystemsResource.SystemInfo system,
     @Nullable GroupsResource.JoinInfo access
   ) implements CatalogInfo {
-    static GroupInfo fromPolicy(@NotNull JitGroup g) {
+    static GroupInfo fromPolicy(@NotNull JitGroup g) { // TODO: rename to fromGroup
       var joinOp = g.join();
       var analysis = joinOp.dryRun();
 
@@ -201,24 +201,21 @@ public class GroupsResource {
       return new GroupInfo(
         new Link(
           "environments/%s/systems/%s/groups/%s",
-          g.group().id().environment(),
-          g.group().id().system(),
-          g.group().id().name()),
-        g.group().id().toString(),
-        g.group().name(),
-        g.group().description(),
+          g.policy().id().environment(),
+          g.policy().id().system(),
+          g.policy().id().name()),
+        g.policy().id().toString(),
+        g.policy().name(),
+        g.policy().description(),
         g.cloudIdentityGroupId().email,
-        g.group()
+        g.policy()
           .privileges()
           .stream()
           .map(PrivilegeInfo::fromPrivilege)
           .toList(),
-        EnvironmentsResource.EnvironmentInfo.fromPolicy(
-          g.group().system().environment(),
-          null, // Don't list nested systems.
-          false),
+        EnvironmentsResource.EnvironmentInfo.fromPolicyHeader(g.policy().system().environment()),
         SystemsResource.SystemInfo.fromPolicy(
-          g.group().system(),
+          g.policy().system(),
           null), // Don't list nested groups.
         joinInfo);
     }

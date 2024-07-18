@@ -88,10 +88,7 @@ public class SystemsResource {
         new Link("environments/%s/systems/%s", policy.environment().name(), policy.name()),
         policy.name(),
         policy.description(),
-        EnvironmentsResource.EnvironmentInfo.fromPolicy(
-          policy.environment(),
-          null, // Don't list nested systems.
-          false),
+        EnvironmentsResource.EnvironmentInfo.fromPolicyHeader(policy.environment()),
         groups);
     }
   }
