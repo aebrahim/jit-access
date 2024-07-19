@@ -30,11 +30,11 @@ import org.jetbrains.annotations.NotNull;
  */
 public class SystemView {
   private final @NotNull SystemPolicy policy;
-  private final @NotNull Subject subject;
+  private final @NotNull EnvironmentView environmentView;
 
-  SystemView(@NotNull SystemPolicy policy, @NotNull Subject subject) {
+  SystemView(@NotNull SystemPolicy policy, @NotNull EnvironmentView environmentView) {
     this.policy = policy;
-    this.subject = subject;
+    this.environmentView = environmentView;
   }
 
   /**

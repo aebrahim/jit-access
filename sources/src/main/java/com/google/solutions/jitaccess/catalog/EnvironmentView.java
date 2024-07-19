@@ -40,10 +40,16 @@ import java.util.Optional;
 public class EnvironmentView {
   private final @NotNull EnvironmentPolicy policy;
   private final @NotNull Subject subject;
+  private final @NotNull Provisioner provisioner;
 
-  EnvironmentView(@NotNull EnvironmentPolicy policy, @NotNull Subject subject) {
+  EnvironmentView(
+    @NotNull EnvironmentPolicy policy,
+    @NotNull Subject subject,
+    @NotNull Provisioner provisioner
+  ) {
     this.policy = policy;
     this.subject = subject;
+    this.provisioner = provisioner;
   }
 
   /**
@@ -82,7 +88,7 @@ public class EnvironmentView {
       .systems()
       .stream()
       .filter(sys -> sys.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
-      .map(sys -> new SystemView(sys, this.subject))
+      .map(sys -> new SystemView(sys, this))
       .toList();
   }
 
@@ -95,6 +101,6 @@ public class EnvironmentView {
     return this.policy
       .system(name)
       .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
-      .map(sys -> new SystemView(sys, this.subject));
+      .map(sys -> new SystemView(sys, this));
   }
 }

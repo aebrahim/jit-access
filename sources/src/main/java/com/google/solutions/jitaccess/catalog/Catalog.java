@@ -70,10 +70,12 @@ public class Catalog {
   public @NotNull Optional<EnvironmentView> environment(@NotNull String name) {
     Preconditions.checkArgument(name != null, "Environment name must not be null");
 
+    var provisioner = this.source.provisioner(this, name);
+
     return this.source
       .environmentPolicy(name)
       .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
-      .map(policy -> new EnvironmentView(policy, this.subject));
+      .map(policy -> new EnvironmentView(policy, this.subject, provisioner.get()));
   }
 
   /**

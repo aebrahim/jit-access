@@ -24,6 +24,7 @@ package com.google.solutions.jitaccess.catalog;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.util.List;
@@ -154,7 +155,8 @@ public class TestEnvironmentView {
       new Policy.Metadata("test", Instant.EPOCH));
     var environment = new EnvironmentView(
       policy,
-      Subjects.create(SAMPLE_USER));
+      Subjects.create(SAMPLE_USER),
+      Mockito.mock(Provisioner.class));
 
     assertFalse(environment.canExport());
     assertFalse(environment.export().isPresent());
@@ -172,7 +174,8 @@ public class TestEnvironmentView {
       new Policy.Metadata("test", Instant.EPOCH));
     var environment = new EnvironmentView(
       policy,
-      Subjects.create(SAMPLE_USER));
+      Subjects.create(SAMPLE_USER),
+      Mockito.mock(Provisioner.class));
 
     assertTrue(environment.canExport());
     assertTrue(environment.export().isPresent());
