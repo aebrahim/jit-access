@@ -22,6 +22,8 @@
 package com.google.solutions.jitaccess.catalog.auth;
 
 import com.google.api.services.cloudidentity.v1.model.Membership;
+import com.google.api.services.cloudidentity.v1.model.MembershipRelation;
+import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
 import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.apis.clients.CloudIdentityGroupsClient;
 import com.google.solutions.jitaccess.apis.clients.ResourceNotFoundException;
@@ -156,10 +158,24 @@ public class SubjectResolver {
     // Find the user's direct group memberships. This includes all
     // groups, JIT role groups and others.
     //
-    var allMemberships = this.groupsClient
-      .listMembershipsByUser(user)
-      .stream()
-      .toList();
+    List<MembershipRelation> allMemberships;
+    try {
+      allMemberships = this.groupsClient
+        .listMembershipsByUser(user)
+        .stream()
+        .toList();
+    }
+    catch (ResourceNotFoundException e) {
+      //
+      // This user doesn't exist. This shouldn't happen outside development mode
+      // as IAP pre-authenticates all users.
+      //
+      // NB. If the user exists, but not in this Cloud Identity account, we should
+      // get an empty response, not a 404.
+      //
+      throw new AccessDeniedException(
+        "Resolving group membership failed because the user does not exist");
+    }
 
     //
     // Separate memberships into two buckets:

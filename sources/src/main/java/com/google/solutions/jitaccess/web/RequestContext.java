@@ -1,5 +1,6 @@
 package com.google.solutions.jitaccess.web;
 
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.auth.*;
 import jakarta.enterprise.context.RequestScoped;
@@ -65,9 +66,7 @@ public class RequestContext {
             }
             // TODO: ResourceNotFoundException -> external user, allow?
             catch (AccessException | IOException e) {
-              throw new RuntimeException(
-                String.format("Resolving principals for user %s failed", this.user()),
-                e);
+              throw new UncheckedExecutionException(e);
             }
           }
 
