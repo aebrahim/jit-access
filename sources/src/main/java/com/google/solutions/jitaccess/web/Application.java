@@ -36,6 +36,7 @@ import com.google.solutions.jitaccess.ApplicationVersion;
 import com.google.solutions.jitaccess.apis.clients.*;
 import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.Logger;
+import com.google.solutions.jitaccess.catalog.auth.CachedSubjectResolver;
 import com.google.solutions.jitaccess.catalog.auth.GroupMapping;
 import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
@@ -331,8 +332,13 @@ public class Application {
   }
 
   @Produces
-  public GoogleCredentials produceApplicationCredentials() {
-    return applicationCredentials;
+  public @NotNull CachedSubjectResolver.Options produceCachedSubjectResolverOptions() {
+    //
+    // Use a cache duration that's long enough so that a subsequent page
+    // load can benefit from it, but short enough so that new group
+    // memberships are applied without substantial extra delay.
+    //
+    return new CachedSubjectResolver.Options(Duration.ofSeconds(30));
   }
 
   @Produces
@@ -341,6 +347,11 @@ public class Application {
       this.configuration.backendConnectTimeout.value(),
       this.configuration.backendReadTimeout.value(),
       this.configuration.backendWriteTimeout.value());
+  }
+
+  @Produces
+  public GoogleCredentials produceApplicationCredentials() {
+    return applicationCredentials;
   }
 
   @Produces

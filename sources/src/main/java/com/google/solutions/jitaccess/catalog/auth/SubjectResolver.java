@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 /**
  * Resolves information necessary to build a subject from a user ID.
  */
-@Singleton
 public class SubjectResolver {
   private final @NotNull CloudIdentityGroupsClient groupsClient;
   private final @NotNull GroupMapping groupMapping;
