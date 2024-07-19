@@ -37,6 +37,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,8 +57,8 @@ public class EnvironmentsResource {
   public @NotNull EnvironmentsResource.EnvironmentsInfo list() {
     var environments = this.catalog.environments()
       .stream()
+      .sorted(Comparator.comparing(env -> env.name()))
       .map(env -> EnvironmentInfo.createSummary(env))
-      //TODO: sort
       .collect(Collectors.toList());
 
     return new EnvironmentsInfo(
@@ -107,7 +108,7 @@ public class EnvironmentsResource {
   public record EnvironmentsInfo(
     @NotNull Link self,
     @NotNull List<EnvironmentInfo> environments
-  ) implements CatalogInfo {
+  ) implements ObjectInfo {
   }
 
   public record EnvironmentInfo(
@@ -116,7 +117,7 @@ public class EnvironmentsResource {
     @NotNull String name,
     @NotNull String description,
     @Nullable List<SystemsResource.SystemInfo> systems
-  ) implements CatalogInfo {
+  ) implements ObjectInfo {
 
     /**
      * Create EnvironmentInfo with summary information only.
@@ -145,6 +146,7 @@ public class EnvironmentsResource {
         environment.policy().description(),
         environment.systems()
           .stream()
+          .sorted(Comparator.comparing(sys -> sys.policy().name()))
           .map(sys -> SystemsResource.SystemInfo.createSummary(sys.policy()))
           .toList());
     }

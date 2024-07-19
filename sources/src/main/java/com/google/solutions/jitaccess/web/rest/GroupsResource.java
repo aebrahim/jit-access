@@ -169,7 +169,7 @@ public class GroupsResource {
     @NotNull EnvironmentsResource.EnvironmentInfo environment,
     @NotNull SystemsResource.SystemInfo system,
     @Nullable GroupsResource.JoinInfo access
-  ) implements CatalogInfo {
+  ) implements ObjectInfo {
     static GroupInfo create(@NotNull JitGroupView g) {
       var joinOp = g.join();
       var analysis = joinOp.dryRun();

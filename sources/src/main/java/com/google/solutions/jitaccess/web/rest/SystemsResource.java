@@ -36,6 +36,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Dependent
@@ -74,7 +75,7 @@ public class SystemsResource {
     @NotNull String description,
     @Nullable EnvironmentsResource.EnvironmentInfo environment,
     @Nullable List<GroupsResource.GroupInfo> groups
-  ) implements CatalogInfo {
+  ) implements ObjectInfo {
 
     /**
      * Create SystemInfo with summary information only.
@@ -103,6 +104,7 @@ public class SystemsResource {
         EnvironmentsResource.EnvironmentInfo.createSummary(policy.environment()),
         system.groups()
           .stream()
+          .sorted(Comparator.comparing(grp -> grp.policy().name()))
           .map(GroupsResource.GroupInfo::create)
           .toList());
     }

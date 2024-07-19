@@ -158,6 +158,44 @@ public class TestSystemsResource {
   }
 
   @Test
+  public void get_returnsSortedListOfGroups() throws Exception {
+    var environment = new EnvironmentPolicy(
+      "env-1",
+      "Env 1",
+      new Policy.Metadata("test", Instant.EPOCH));
+    var system = new SystemPolicy("system-1", "System 1");
+    system.add(new JitGroupPolicy(
+      "group-2",
+      "Two",
+      AccessControlList.EMPTY,
+      Map.of(),
+      List.of()));
+    system.add(new JitGroupPolicy(
+      "group-3",
+      "Three",
+      AccessControlList.EMPTY,
+      Map.of(),
+      List.of()));
+    system.add(new JitGroupPolicy(
+      "group-1",
+      "One",
+      AccessControlList.EMPTY,
+      Map.of(),
+      List.of()));
+    environment.add(system);
+
+    var resource = new SystemsResource();
+    resource.catalog = createCatalog(environment, Subjects.create(SAMPLE_USER));
+
+    var systemInfo = resource.get(environment.name(), system.name());
+    var groups = List.copyOf(systemInfo.groups());
+
+    assertEquals("group-1", groups.get(0).name());
+    assertEquals("group-2", groups.get(1).name());
+    assertEquals("group-3", groups.get(2).name());
+  }
+
+  @Test
   public void get_whenGroupJoined() throws Exception {
     var group = Policies.createJitGroupPolicy(
       "g-1",

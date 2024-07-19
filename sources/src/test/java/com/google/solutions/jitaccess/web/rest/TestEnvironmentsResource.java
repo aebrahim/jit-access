@@ -46,23 +46,27 @@ public class TestEnvironmentsResource {
   //---------------------------------------------------------------------------
 
   @Test
-  public void environments() {
+  public void environments_returnsSortedList() {
     var resource = new EnvironmentsResource();
     resource.catalog = Mockito.mock(Catalog.class);
 
     when(resource.catalog.environments())
       .thenReturn(List.of(
-        new EnvironmentPolicy("env-1", "Env 1", METADATA),
-        new EnvironmentPolicy("env-2", "Env 2", METADATA)));
+        new EnvironmentPolicy("env-1", "One", METADATA),
+        new EnvironmentPolicy("env-3", "Three", METADATA),
+        new EnvironmentPolicy("env-2", "Two", METADATA)));
 
     var envInfo = resource.list();
-    assertEquals(2, envInfo.environments().size());
+    assertEquals(3, envInfo.environments().size());
 
     assertEquals("env-1", envInfo.environments().get(0).name());
-    assertEquals("Env 1", envInfo.environments().get(0).description());
+    assertEquals("One", envInfo.environments().get(0).description());
 
     assertEquals("env-2", envInfo.environments().get(1).name());
-    assertEquals("Env 2", envInfo.environments().get(1).description());
+    assertEquals("Two", envInfo.environments().get(1).description());
+
+    assertEquals("env-3", envInfo.environments().get(2).name());
+    assertEquals("Three", envInfo.environments().get(2).description());
   }
 
   //---------------------------------------------------------------------------
@@ -152,6 +156,28 @@ public class TestEnvironmentsResource {
 
     assertEquals(1, environmentInfo.systems().size());
     assertSame(allowedSystem.name(), environmentInfo.systems().stream().findFirst().get().name());
+  }
+
+  @Test
+  public void get_returnsSortedListOfSystems() throws Exception {
+    var environment = new EnvironmentPolicy(
+      "env-1",
+      "Env 1",
+      new Policy.Metadata("test", Instant.EPOCH));
+    environment.add(new SystemPolicy("system-2", "Two"));
+    environment.add(new SystemPolicy("system-3", "Three"));
+    environment.add(new SystemPolicy("system-1", "One"));
+
+    var resource = new EnvironmentsResource();
+    resource.catalog = new Catalog(
+      Subjects.create(SAMPLE_USER),
+      CatalogSources.create(environment));
+
+    var environmentInfo = resource.get(environment.name());
+    var systems = List.copyOf(environmentInfo.systems());
+    assertEquals("system-1", systems.get(0).name());
+    assertEquals("system-2", systems.get(1).name());
+    assertEquals("system-3", systems.get(2).name());
   }
 
   //---------------------------------------------------------------------------
