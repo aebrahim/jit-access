@@ -64,7 +64,6 @@ public class RequestContext {
             try {
               this.cachedPrincipals = subjectResolver.resolve(this.user()).principals();
             }
-            // TODO: ResourceNotFoundException -> external user, allow?
             catch (AccessException | IOException e) {
               throw new UncheckedExecutionException(e);
             }

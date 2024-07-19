@@ -101,6 +101,9 @@ abstract class AbstractPolicy implements Policy {
     return constraints;
   }
 
+  /**
+   * Metadata describing the source of this policy.
+   */
   @Override
   public @NotNull Metadata metadata() {
     Preconditions.checkState(this.parent != null, "A policy must have a parent or provide metadata");
@@ -127,7 +130,8 @@ abstract class AbstractPolicy implements Policy {
    * be used during initialization.
    */
   protected void setParent(@NotNull Policy parent) {
-    Preconditions.checkArgument(this.parent == null, "Parent has been set already"); // TODO: test
+    Preconditions.checkArgument(parent != this, "Parent must not be the same policy");
+    Preconditions.checkArgument(this.parent == null, "Parent has been set already");
     this.parent = parent;
   }
 
