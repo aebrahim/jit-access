@@ -214,7 +214,7 @@ public class GroupsResource {
           .map(PrivilegeInfo::fromPrivilege)
           .toList(),
         EnvironmentsResource.EnvironmentInfo.fromPolicyHeader(g.policy().system().environment()),
-        SystemsResource.SystemInfo.fromSystemView(g.policy().system()), // Don't list nested groups.
+        SystemsResource.SystemInfo.fromPolicy(g.policy().system()), // Don't list nested groups.
         joinInfo);
     }
   }

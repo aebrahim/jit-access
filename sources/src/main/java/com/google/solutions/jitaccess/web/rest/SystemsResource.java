@@ -79,17 +79,17 @@ public class SystemsResource {
     @NotNull Link self,
     @NotNull String name,
     @NotNull String description,
-    @NotNull EnvironmentsResource.EnvironmentInfo environment,
+    @Nullable EnvironmentsResource.EnvironmentInfo environment,
     @Nullable List<GroupsResource.GroupInfo> groups
   ) implements CatalogInfo {
-    static SystemInfo fromSystemView(
+    static SystemInfo fromPolicy(
       @NotNull SystemPolicy policy
     ) {
       return new SystemInfo(
         new Link("environments/%s/systems/%s", policy.environment().name(), policy.name()),
         policy.name(),
         policy.description(),
-        EnvironmentsResource.EnvironmentInfo.fromPolicyHeader(policy.environment()),
+        null, // TODO: test that this is null
         null);
     }
 
