@@ -24,9 +24,8 @@ package com.google.solutions.jitaccess.catalog.policy;
 import com.google.api.client.json.GenericJson;
 import com.google.solutions.jitaccess.apis.IamRole;
 import com.google.solutions.jitaccess.apis.ProjectId;
-import com.google.solutions.jitaccess.catalog.auth.SystemId;
+import com.google.solutions.jitaccess.catalog.auth.UserClassId;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
-import org.checkerframework.checker.units.qual.N;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -63,7 +62,7 @@ public class TestPolicyDocument {
         "  name: \"env\"\n" +
         "  description: \"\"\n" +
         "  access:\n" +
-        "  - principal: \"system:allAuthenticatedUsers\"\n" +
+        "  - principal: \"class:authenticatedUsers\"\n" +
         "    allow: \"VIEW\"\n" +
         "  systems: []\n",
       new PolicyDocument(policy).toString());
@@ -306,7 +305,7 @@ public class TestPolicyDocument {
 
       var aces = List.copyOf(policy.get().accessControlList().get().entries());
       assertEquals(1, aces.size());
-      assertEquals(SystemId.ALL_AUTHENTICATED, aces.get(0).principal);
+      assertEquals(UserClassId.AUTHENTICATED_USERS, aces.get(0).principal);
       assertEquals(PolicyPermission.VIEW.toMask(), aces.get(0).accessRights);
     }
 

@@ -31,11 +31,10 @@ import com.google.solutions.jitaccess.apis.IamRole;
 import com.google.solutions.jitaccess.apis.ProjectId;
 import com.google.solutions.jitaccess.catalog.auth.GroupId;
 import com.google.solutions.jitaccess.catalog.auth.PrincipalId;
-import com.google.solutions.jitaccess.catalog.auth.SystemId;
+import com.google.solutions.jitaccess.catalog.auth.UserClassId;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.util.Coalesce;
 import com.google.solutions.jitaccess.util.NullaryOptional;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -632,7 +631,7 @@ public class PolicyDocument {
             return Optional.<PrincipalId>empty()
               .or(() -> UserId.parse(s))
               .or(() -> GroupId.parse(s))
-              .or(() -> SystemId.parse(s))
+              .or(() -> UserClassId.parse(s))
               .orElse(null);
           }
           catch (IllegalArgumentException e) {

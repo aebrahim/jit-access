@@ -29,7 +29,7 @@ import com.google.solutions.jitaccess.apis.ProjectId;
 import com.google.solutions.jitaccess.catalog.EventIds;
 import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.auth.GroupId;
-import com.google.solutions.jitaccess.catalog.auth.SystemId;
+import com.google.solutions.jitaccess.catalog.auth.UserClassId;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import org.junit.jupiter.api.Nested;
@@ -67,7 +67,7 @@ public class TestLegacyPolicy {
 
     var aces = List.copyOf(policy.accessControlList().get().entries());
     assertEquals(1, aces.size());
-    assertEquals(SystemId.ALL_AUTHENTICATED, aces.get(0).principal);
+    assertEquals(UserClassId.AUTHENTICATED_USERS, aces.get(0).principal);
     assertEquals(PolicyPermission.VIEW.toMask(), aces.get(0).accessRights);
   }
 
@@ -103,7 +103,7 @@ public class TestLegacyPolicy {
     assertEquals(new UserId("admin-1@example.com"), aces.get(0).principal);
     assertEquals(PolicyPermission.EXPORT.toMask(), aces.get(0).accessRights);
 
-    assertEquals(SystemId.ALL_AUTHENTICATED, aces.get(1).principal);
+    assertEquals(UserClassId.AUTHENTICATED_USERS, aces.get(1).principal);
     assertEquals(PolicyPermission.VIEW.toMask(), aces.get(1).accessRights);
   }
 

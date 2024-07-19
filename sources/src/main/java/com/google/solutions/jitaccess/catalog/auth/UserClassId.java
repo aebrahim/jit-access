@@ -27,10 +27,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 /**
- * Pseudo-principal identifier.
+ * Pseudo-principal identifier for a class of users.
  */
-public class SystemId implements PrincipalId, Comparable<SystemId> { // TODO: rename to... runtime? session?
-  public static final String TYPE = "system";
+public class UserClassId implements PrincipalId, Comparable<UserClassId> {
+  public static final String TYPE = "class";
   private static final String TYPE_PREFIX = TYPE + ":";
 
   private final @NotNull String value;
@@ -38,24 +38,24 @@ public class SystemId implements PrincipalId, Comparable<SystemId> { // TODO: re
   /**
    * Principal identifier that identifies all users.
    */
-  public static final @NotNull SystemId ALL_AUTHENTICATED = new SystemId("allAuthenticatedUsers");
+  public static final @NotNull UserClassId AUTHENTICATED_USERS = new UserClassId("authenticatedUsers");
 
-  private SystemId(@NotNull String value) {
+  private UserClassId(@NotNull String value) {
     this.value = value;
   }
 
   /**
    * Parse a user ID that uses prefixed syntax.
    */
-  public static Optional<SystemId> parse(@Nullable String s) {
+  public static Optional<UserClassId> parse(@Nullable String s) {
     if (s == null || s.isBlank()) {
       return Optional.empty();
     }
 
     s = s.trim();
 
-    if (s.equalsIgnoreCase(ALL_AUTHENTICATED.toString())) {
-      return Optional.of(ALL_AUTHENTICATED);
+    if (s.equalsIgnoreCase(AUTHENTICATED_USERS.toString())) {
+      return Optional.of(AUTHENTICATED_USERS);
     }
     else {
       return Optional.empty();
@@ -96,12 +96,12 @@ public class SystemId implements PrincipalId, Comparable<SystemId> { // TODO: re
       return false;
     }
 
-    SystemId id = (SystemId) o;
+    UserClassId id = (UserClassId) o;
     return value.equals(id.value);
   }
 
   @Override
-  public int compareTo(@NotNull SystemId o) {
+  public int compareTo(@NotNull UserClassId o) {
     return this.value.compareTo(o.value());
   }
 }

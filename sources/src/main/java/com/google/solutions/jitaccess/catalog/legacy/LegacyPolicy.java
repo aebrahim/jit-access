@@ -32,7 +32,7 @@ import com.google.solutions.jitaccess.catalog.EventIds;
 import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.auth.GroupId;
 import com.google.solutions.jitaccess.catalog.auth.PrincipalId;
-import com.google.solutions.jitaccess.catalog.auth.SystemId;
+import com.google.solutions.jitaccess.catalog.auth.UserClassId;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import com.google.solutions.jitaccess.util.Exceptions;
@@ -114,7 +114,7 @@ public class LegacyPolicy extends EnvironmentPolicy {
             //
             // Allow all users to VIEW.
             //
-            Stream.of(new AccessControlList.AllowedEntry(SystemId.ALL_AUTHENTICATED, PolicyPermission.VIEW.toMask())))
+            Stream.of(new AccessControlList.AllowedEntry(UserClassId.AUTHENTICATED_USERS, PolicyPermission.VIEW.toMask())))
           .toList()
       ),
       Map.of(

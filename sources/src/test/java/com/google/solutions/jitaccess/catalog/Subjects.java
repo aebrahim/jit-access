@@ -38,7 +38,7 @@ public class Subjects {
   ) {
     var defaultPrincipals = Stream.of(
       new Principal(user),
-      new Principal(SystemId.ALL_AUTHENTICATED));
+      new Principal(UserClassId.AUTHENTICATED_USERS));
 
     var subject = Mockito.mock(Subject.class);
     when(subject.user()).thenReturn(user);

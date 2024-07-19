@@ -27,14 +27,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestSystemId {
+public class TestUserClassId {
   // -------------------------------------------------------------------------
   // toString.
   // -------------------------------------------------------------------------
 
   @Test
   public void toString_returnsPrefixedValue() {
-    assertEquals("system:allAuthenticatedUsers", SystemId.ALL_AUTHENTICATED.toString());
+    assertEquals("class:authenticatedUsers", UserClassId.AUTHENTICATED_USERS.toString());
   }
 
   // -------------------------------------------------------------------------
@@ -43,8 +43,8 @@ public class TestSystemId {
 
   @Test
   public void equals_whenObjectAreEquivalent() {
-    SystemId id1 = SystemId.ALL_AUTHENTICATED;
-    SystemId id2 = SystemId.ALL_AUTHENTICATED;
+    UserClassId id1 = UserClassId.AUTHENTICATED_USERS;
+    UserClassId id2 = UserClassId.AUTHENTICATED_USERS;
 
     assertTrue(id1.equals(id2));
     assertEquals(id1.hashCode(), id2.hashCode());
@@ -53,13 +53,13 @@ public class TestSystemId {
 
   @Test
   public void equals_whenObjectIsNull() {
-    assertFalse(SystemId.ALL_AUTHENTICATED.equals(null));
+    assertFalse(UserClassId.AUTHENTICATED_USERS.equals(null));
   }
 
   @Test
   public void equals_whenObjectIsDifferentType() {
-    assertFalse(SystemId.ALL_AUTHENTICATED.equals(""));
-    assertFalse(SystemId.ALL_AUTHENTICATED.equals(new UserId("user@example.com")));
+    assertFalse(UserClassId.AUTHENTICATED_USERS.equals(""));
+    assertFalse(UserClassId.AUTHENTICATED_USERS.equals(new UserId("user@example.com")));
   }
 
   // -------------------------------------------------------------------------
@@ -68,12 +68,12 @@ public class TestSystemId {
 
   @Test
   public void value() {
-    assertEquals("allAuthenticatedUsers", SystemId.ALL_AUTHENTICATED.value());
+    assertEquals("authenticatedUsers", UserClassId.AUTHENTICATED_USERS.value());
   }
 
   @Test
   public void iamPrincipalId() {
-    assertFalse(SystemId.ALL_AUTHENTICATED instanceof IamPrincipalId);
+    assertFalse(UserClassId.AUTHENTICATED_USERS instanceof IamPrincipalId);
   }
 
   // -------------------------------------------------------------------------
@@ -83,21 +83,22 @@ public class TestSystemId {
   @ParameterizedTest
   @ValueSource(strings = {
     "",
-    "system",
-    "system:",
-    "system"
+    "class",
+    "class:",
+    " class:  authenticatedUsers",
+    "class"
   })
   public void parse_whenInvalid(String s) {
-    assertFalse(SystemId.parse(null).isPresent());
-    assertFalse(SystemId.parse(s).isPresent());
+    assertFalse(UserClassId.parse(null).isPresent());
+    assertFalse(UserClassId.parse(s).isPresent());
   }
 
   @ParameterizedTest
   @ValueSource(strings = {
-    " system:allAuthenticatedUsers",
-    "system:ALLAUTHENTICATEDUSERS  "
+    " class:authenticatedUsers",
+    "class:AUTHENTICATEDUSERS  "
   })
   public void parse(String s) {
-    assertEquals(SystemId.ALL_AUTHENTICATED, SystemId.parse(s).get());
+    assertEquals(UserClassId.AUTHENTICATED_USERS, UserClassId.parse(s).get());
   }
 }
