@@ -89,7 +89,7 @@ public class SystemsResource {
         new Link("environments/%s/systems/%s", policy.environment().name(), policy.name()),
         policy.name(),
         policy.description(),
-        null, // TODO: test that this is null
+        null,
         null);
     }
 

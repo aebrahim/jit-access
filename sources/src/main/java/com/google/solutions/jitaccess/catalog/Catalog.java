@@ -68,7 +68,7 @@ public class Catalog {
    * Get environment policy. Requires VIEW access.
    */
   public @NotNull Optional<EnvironmentView> environment(@NotNull String name) {
-    Preconditions.checkNotNull(name, "Name must not be null");
+    Preconditions.checkArgument(name != null, "Environment name must not be null");
 
     return this.source
       .environmentPolicy(name)
@@ -84,6 +84,7 @@ public class Catalog {
     @NotNull String systemName
   ) {
     Preconditions.checkArgument(environmentName != null, "Environment name must not be null");
+    Preconditions.checkArgument(systemName != null, "System name must not be null");
 
     var provisioner = this.source.provisioner(this, environmentName);
 

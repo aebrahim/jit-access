@@ -109,6 +109,8 @@ public class TestGroupsResource {
     assertEquals(group.system().description(), groupInfo.system().description());
     assertEquals(group.system().environment().name(), groupInfo.environment().name());
     assertEquals(group.system().environment().description(), groupInfo.environment().description());
+    assertNull(groupInfo.system().environment());
+    assertNull(groupInfo.system().groups());
   }
 
   //---------------------------------------------------------------------------
