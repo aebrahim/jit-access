@@ -71,16 +71,6 @@ public class TestJitGroupId {
   }
 
   @Test
-  public void equals_whenObjectAreEquivalentButDifferInCasing() {
-    JitGroupId id1 = new JitGroupId("env", "system", "name");
-    JitGroupId id2 = new JitGroupId("env", "system", "Name");
-
-    assertTrue(id1.equals(id2));
-    assertEquals(id1.hashCode(), id2.hashCode());
-    assertEquals(0, id1.compareTo(id2));
-  }
-
-  @Test
   public void equals_whenObjectAreSame() {
     JitGroupId id1 = new JitGroupId("env", "system", "name");
 

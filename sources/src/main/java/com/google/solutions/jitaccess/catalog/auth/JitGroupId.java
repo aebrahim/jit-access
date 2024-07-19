@@ -55,11 +55,23 @@ public class JitGroupId implements Comparable<JitGroupId>, PrincipalId {
       "name must not be blank");
 
     //
-    // Use lower-case as canonical format.
+    // All names must be lower-case as some backend
+    // systems (in particular, group names) aren't case-sensitive.
     //
-    this.environment = environment.toLowerCase();
-    this.system = system.toLowerCase();
-    this.name = name.toLowerCase();
+
+    Preconditions.checkArgument(
+      environment.toLowerCase().equals(environment),
+      "environment must be a lowe-case name");
+    Preconditions.checkArgument(
+      system.toLowerCase().equals(system),
+      "system must be a lowe-case name");
+    Preconditions.checkArgument(
+      name.toLowerCase().equals(name),
+      "name must be a lowe-case name");
+
+    this.environment = environment;
+    this.system = system;
+    this.name = name;
   }
 
   /**

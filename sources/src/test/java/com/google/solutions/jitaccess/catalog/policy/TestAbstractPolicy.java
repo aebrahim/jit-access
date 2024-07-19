@@ -34,6 +34,22 @@ import static org.mockito.Mockito.when;
 public class TestAbstractPolicy {
 
   //---------------------------------------------------------------------------
+  // name.
+  //---------------------------------------------------------------------------
+
+  @Test
+  public void name_whenMixedCase() {
+    var policy = new AbstractPolicy(
+      "Policy-With-Mixed-Case",
+      "description",
+      AccessControlList.EMPTY,
+      Map.of()) {
+    };
+
+    assertEquals("policy-with-mixed-case", policy.name());
+  }
+
+  //---------------------------------------------------------------------------
   // metadata.
   //---------------------------------------------------------------------------
 

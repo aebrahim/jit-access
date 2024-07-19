@@ -46,7 +46,7 @@ abstract class AbstractPolicy implements Policy {
     @Nullable AccessControlList acl,
     @NotNull Map<ConstraintClass, Collection<Constraint>> constraints
   ) {
-    this.name = name;
+    this.name = name.toLowerCase();
     this.description = description;
     this.acl = acl;
     this.constraints = constraints;

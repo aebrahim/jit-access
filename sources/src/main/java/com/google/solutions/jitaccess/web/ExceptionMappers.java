@@ -201,7 +201,7 @@ public class ExceptionMappers {
   }
 
   @Provider
-  public class UncheckedExecutionExceptionMapper implements ExceptionMapper<UncheckedExecutionException> {
+  public static class UncheckedExecutionExceptionMapper implements ExceptionMapper<UncheckedExecutionException> {
     @Context
     private Providers providers;
 
