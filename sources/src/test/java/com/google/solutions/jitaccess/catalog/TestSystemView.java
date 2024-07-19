@@ -21,20 +21,9 @@
 
 package com.google.solutions.jitaccess.catalog;
 
-import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
-import com.google.solutions.jitaccess.catalog.policy.AccessControlList;
-import com.google.solutions.jitaccess.catalog.policy.EnvironmentPolicy;
-import com.google.solutions.jitaccess.catalog.policy.Policy;
-import com.google.solutions.jitaccess.catalog.policy.PolicyPermission;
-import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-public class TestSystem {
+public class TestSystemView {
   private static final UserId SAMPLE_USER_1 = new UserId("user-1@example.com");
 
   // -------------------------------------------------------------------------

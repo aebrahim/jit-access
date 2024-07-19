@@ -67,13 +67,13 @@ public class Catalog {
   /**
    * Get environment policy. Requires VIEW access.
    */
-  public @NotNull Optional<Environment> environment(@NotNull String name) {
+  public @NotNull Optional<EnvironmentView> environment(@NotNull String name) {
     Preconditions.checkNotNull(name, "Name must not be null");
 
     return this.source
       .environmentPolicy(name)
       .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
-      .map(policy -> new Environment(policy, this.subject));
+      .map(policy -> new EnvironmentView(policy, this.subject));
   }
 
   /**

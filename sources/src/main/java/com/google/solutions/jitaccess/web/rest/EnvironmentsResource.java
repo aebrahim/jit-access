@@ -23,7 +23,7 @@ package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
 import com.google.solutions.jitaccess.catalog.Catalog;
-import com.google.solutions.jitaccess.catalog.Environment;
+import com.google.solutions.jitaccess.catalog.EnvironmentView;
 import com.google.solutions.jitaccess.catalog.policy.PolicyDocument;
 import com.google.solutions.jitaccess.catalog.policy.PolicyHeader;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
@@ -94,7 +94,7 @@ public class EnvironmentsResource {
   ) throws AccessDeniedException {
     return this.catalog
       .environment(environment)
-      .flatMap(Environment::export)
+      .flatMap(EnvironmentView::export)
       .map(PolicyDocument::toString)
       .orElseThrow(() -> new AccessDeniedException(
         "The environment does not exist or access is denied"));
@@ -129,7 +129,7 @@ public class EnvironmentsResource {
         null);
     }
 
-    static EnvironmentInfo fromEnvironment(@NotNull Environment environment) {
+    static EnvironmentInfo fromEnvironment(@NotNull EnvironmentView environment) {
       return new EnvironmentInfo(
         new Link("environments/%s", environment.policy().name()),
         environment.canExport()
