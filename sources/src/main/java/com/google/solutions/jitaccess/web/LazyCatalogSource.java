@@ -43,9 +43,9 @@ import java.util.Set;
 import java.util.function.Function;
 
 /**
- * Loads and caches environments.
+ * Catalog source that lazily loads policies on demand and caches them.
  */
-public class CatalogSource implements Catalog.Source {
+public class LazyCatalogSource implements Catalog.Source {
   private final @NotNull LoadingCache<String, Entry> environmentCache;
   private final @NotNull GroupMapping groupMapping;
   private final @NotNull Set<String> environmentNames;
@@ -54,7 +54,7 @@ public class CatalogSource implements Catalog.Source {
   private final @NotNull CloudIdentityGroupsClient groupsClient;
   private final @NotNull Logger logger;
 
-  CatalogSource(
+  LazyCatalogSource(
     @NotNull Set<String> environmentNames,
     @NotNull Function<String, EnvironmentPolicy> producePolicy,
     @NotNull Function<EnvironmentPolicy, ResourceManagerClient> produceResourceManagerClient,

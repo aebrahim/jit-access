@@ -357,7 +357,7 @@ public class Application {
   @RequestScoped
   public @NotNull Catalog produceCatalog(
     @NotNull Subject subject,
-    @NotNull CatalogSource catalogSource
+    @NotNull LazyCatalogSource catalogSource
   ) {
     return new Catalog(
       subject,
@@ -372,7 +372,7 @@ public class Application {
 
   @Produces
   @Singleton
-  public @NotNull CatalogSource produceEnvironments(
+  public @NotNull LazyCatalogSource produceEnvironments(
     @NotNull GroupMapping groupMapping,
     @NotNull CloudIdentityGroupsClient groupsClient
     ) {
@@ -524,7 +524,7 @@ public class Application {
           }));
     }
 
-    return new CatalogSource(
+    return new LazyCatalogSource(
       configurations.keySet(),
       envName -> configurations.get(envName).loadPolicy.get(),
       policy -> new ResourceManagerClient(

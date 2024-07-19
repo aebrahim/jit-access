@@ -42,14 +42,14 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class TestCatalogSource {
+public class TestLazyCatalogSource {
   // -------------------------------------------------------------------------
   // environments.
   // -------------------------------------------------------------------------
 
   @Test
   public void environments() {
-    var loader = new CatalogSource(
+    var loader = new LazyCatalogSource(
       Set.of("one", "two"),
       env -> { throw new UnsupportedOperationException(); },
       policy -> { throw new UnsupportedOperationException(); },
@@ -83,7 +83,7 @@ public class TestCatalogSource {
   public void lookup_whenEnvironmentInvalid() {
     var logger = Mockito.mock(Logger.class);
 
-    var loader = new CatalogSource(
+    var loader = new LazyCatalogSource(
       Set.of(),
       env -> { throw new UnsupportedOperationException(); },
       policy -> { throw new UnsupportedOperationException(); },
@@ -106,7 +106,7 @@ public class TestCatalogSource {
   public void lookup_whenProducingPolicyThrowsUnsupportedOperationException() {
     var logger = Mockito.mock(Logger.class);
 
-    var loader = new CatalogSource(
+    var loader = new LazyCatalogSource(
       Set.of("env"),
       env -> { throw new UnsupportedOperationException(); },
       policy -> { throw new UnsupportedOperationException(); },
@@ -129,7 +129,7 @@ public class TestCatalogSource {
   public void lookup_whenProducingPolicyThrowsFileNotFoundException() {
     var logger = Mockito.mock(Logger.class);
 
-    var loader = new CatalogSource(
+    var loader = new LazyCatalogSource(
       Set.of("env"),
       env -> { throw new UncheckedExecutionException(new FileNotFoundException()); },
       policy -> { throw new UnsupportedOperationException(); },
@@ -152,7 +152,7 @@ public class TestCatalogSource {
   public void lookup_whenEnvironmentNameMismatchesWithPolicy() throws Exception {
     var logger = Mockito.mock(Logger.class);
 
-    var loader = new CatalogSource(
+    var loader = new LazyCatalogSource(
       Set.of("env"),
       env -> new EnvironmentPolicy("different", "", new Policy.Metadata("mock", Instant.now())),
       policy -> { throw new UnsupportedOperationException(); },
@@ -175,7 +175,7 @@ public class TestCatalogSource {
   public void lookup() {
     var logger = Mockito.mock(Logger.class);
 
-    var loader = new CatalogSource(
+    var loader = new LazyCatalogSource(
       Set.of("env"),
       env -> new EnvironmentPolicy("env", "", new Policy.Metadata("mock", Instant.now())),
       policy -> Mockito.mock(ResourceManagerClient.class),
