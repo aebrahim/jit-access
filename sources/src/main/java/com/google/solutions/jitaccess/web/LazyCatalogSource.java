@@ -47,11 +47,7 @@ import java.util.function.Function;
  */
 public class LazyCatalogSource implements Catalog.Source {
   private final @NotNull LoadingCache<String, Entry> environmentCache;
-  private final @NotNull GroupMapping groupMapping;
   private final @NotNull Set<String> environmentNames;
-  private final @NotNull Function<String, EnvironmentPolicy> producePolicy;
-  private final @NotNull Function<EnvironmentPolicy, ResourceManagerClient> produceResourceManagerClient;
-  private final @NotNull CloudIdentityGroupsClient groupsClient;
   private final @NotNull Logger logger;
 
   LazyCatalogSource(
@@ -64,10 +60,6 @@ public class LazyCatalogSource implements Catalog.Source {
     @NotNull Logger logger
   ) {
     this.environmentNames = environmentNames;
-    this.producePolicy = producePolicy;
-    this.produceResourceManagerClient = produceResourceManagerClient;
-    this.groupMapping = groupMapping;
-    this.groupsClient = groupsClient;
     this.logger = logger;
 
     //

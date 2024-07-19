@@ -43,10 +43,6 @@ public class Catalog {
   private final @NotNull Catalog.Source source;
   private final @NotNull Subject subject;
 
-  @NotNull Subject subject() {
-    return this.subject;
-  }
-
   public Catalog(
     @NotNull Subject subject,
     @NotNull Catalog.Source source

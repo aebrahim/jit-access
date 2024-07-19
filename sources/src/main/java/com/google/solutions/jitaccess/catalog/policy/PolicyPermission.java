@@ -94,8 +94,7 @@ public enum PolicyPermission {
    */
   public static @NotNull EnumSet<PolicyPermission> parse(@NotNull String list) {
     return EnumSet.copyOf(
-      Arrays.asList(list.split(","))
-        .stream()
+      Arrays.stream(list.split(","))
         .map(String::trim)
         .map(String::toUpperCase)
         .filter(s -> !s.isBlank())

@@ -81,9 +81,7 @@ public interface Policy extends PolicyHeader {
          policy.isPresent();
          policy = policy.get().parent()) {
       var acl = policy.get().accessControlList();
-      if (acl.isPresent()) {
-        aclAncestry.addFirst(acl.get());
-      }
+      acl.ifPresent(aclAncestry::addFirst);
     }
 
     //

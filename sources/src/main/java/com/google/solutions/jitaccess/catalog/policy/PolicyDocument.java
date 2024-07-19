@@ -117,7 +117,7 @@ public class PolicyDocument {
       //
       assert (policy.isPresent() || issues.containsErrors());
 
-      if (!policy.isPresent() || issues.containsErrors()) {
+      if (policy.isEmpty() || issues.containsErrors()) {
         throw new SyntaxException(
           "The policy document contains errors",
           issues.issues());
@@ -639,7 +639,7 @@ public class PolicyDocument {
           }
         });
 
-      if (!principalId.isPresent()) {
+      if (principalId.isEmpty()) {
         issues.error(
           Issue.Code.ACL_INVALID_PRINCIPAL,
           "The principal '%s' is invalid",
@@ -950,7 +950,7 @@ public class PolicyDocument {
 
     @NotNull Optional<IamRoleBinding> toPolicy(@NotNull IssueCollection issues) {
       var projectId = ProjectId.parse(this.project);
-      if (!projectId.isPresent()) {
+      if (projectId.isEmpty()) {
         issues.error(
           Issue.Code.PRIVILEGE_INVALID_RESOURCE_ID,
           "The project ID '%s' is invalid",
@@ -958,7 +958,7 @@ public class PolicyDocument {
       }
 
       var role = IamRole.parse(this.role);
-      if (!role.isPresent()) {
+      if (role.isEmpty()) {
         issues.error(
           Issue.Code.PRIVILEGE_INVALID_ROLE,
           "The IAM role '%s' is invalid",

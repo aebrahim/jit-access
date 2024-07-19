@@ -206,7 +206,7 @@ public class LegacyPolicy extends EnvironmentPolicy {
           for (var binding : this.loadBindings.get()) {
             try {
               var role = RolePolicy.fromBinding(this.projectId, binding);
-              if (!role.isPresent()) {
+              if (role.isEmpty()) {
                 //
                 // Not a JIT- or MPA eligible role, ignore.
                 //
