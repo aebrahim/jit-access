@@ -52,14 +52,6 @@ public class EnvironmentView {
     this.provisioner = provisioner;
   }
 
-  Subject subject() {
-    return subject;
-  }
-
-  Provisioner provisioner() {
-    return provisioner;
-  }
-
   /**
    * Get environment policy.
    */
@@ -96,7 +88,7 @@ public class EnvironmentView {
       .systems()
       .stream()
       .filter(sys -> sys.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
-      .map(sys -> new SystemView(sys, this))
+      .map(sys -> new SystemView(sys, this.subject, this.provisioner))
       .toList();
   }
 
@@ -109,6 +101,6 @@ public class EnvironmentView {
     return this.policy
       .system(name)
       .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
-      .map(sys -> new SystemView(sys, this));
+      .map(sys -> new SystemView(sys, this.subject, this.provisioner));
   }
 }

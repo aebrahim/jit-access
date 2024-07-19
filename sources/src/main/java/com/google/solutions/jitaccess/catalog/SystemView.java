@@ -39,11 +39,17 @@ import java.util.Optional;
  */
 public class SystemView {
   private final @NotNull SystemPolicy policy;
-  private final @NotNull EnvironmentView environmentView;
+  private final @NotNull Subject subject;
+  private final @NotNull Provisioner provisioner;
 
-  SystemView(@NotNull SystemPolicy policy, @NotNull EnvironmentView environmentView) {
+  SystemView(
+    @NotNull SystemPolicy policy,
+    @NotNull Subject subject,
+    @NotNull Provisioner provisioner
+  ) {
     this.policy = policy;
-    this.environmentView = environmentView;
+    this.subject = subject;
+    this.provisioner = provisioner;
   }
 
   /**
@@ -61,13 +67,10 @@ public class SystemView {
       .groups()
       .stream()
       .filter(grp -> grp
-        .analyze(this.environmentView.subject(), EnumSet.of(PolicyPermission.VIEW))
+        .analyze(this.subject, EnumSet.of(PolicyPermission.VIEW))
         .execute()
         .isAccessAllowed(PolicyAnalysis.AccessOptions.DEFAULT))
-      .map(grp -> new JitGroupView(
-        this.environmentView.provisioner(),
-        grp,
-        this.environmentView.subject()))
+      .map(grp -> new JitGroupView(grp, this.subject, this.provisioner))
       .sorted(Comparator.comparing(g -> g.policy().id()))
       .toList();
   }
@@ -81,12 +84,9 @@ public class SystemView {
     return this.policy
       .group(name)
       .filter(grp -> grp
-        .analyze(this.environmentView.subject(), EnumSet.of(PolicyPermission.VIEW))
+        .analyze(this.subject, EnumSet.of(PolicyPermission.VIEW))
         .execute()
         .isAccessAllowed(PolicyAnalysis.AccessOptions.DEFAULT))
-      .map(grp -> new JitGroupView(
-        this.environmentView.provisioner(),
-        grp,
-        this.environmentView.subject()));
+      .map(grp -> new JitGroupView(grp, this.subject, this.provisioner));
   }
 }

@@ -88,9 +88,9 @@ public class TestJitGroupView {
       List.of());
 
     var group = new JitGroupView(
-      Mockito.mock(Provisioner.class),
       deniedGroup,
-      subject);
+      subject,
+      Mockito.mock(Provisioner.class));
 
     createEnvironmentPolicy()
       .add(new SystemPolicy("system-1", "System")
@@ -128,9 +128,9 @@ public class TestJitGroupView {
         .add(deniedGroup));
 
     var joinOp = new JitGroupView(
-      Mockito.mock(Provisioner.class),
       deniedGroup,
-      subject).join();
+      subject,
+      Mockito.mock(Provisioner.class)).join();
     assertFalse(joinOp.requiresApproval());
 
     var analysis = joinOp.dryRun();
@@ -165,9 +165,9 @@ public class TestJitGroupView {
         .add(deniedGroup));
 
     var joinOp = new JitGroupView(
-      Mockito.mock(Provisioner.class),
       deniedGroup,
-      subject).join();
+      subject,
+      Mockito.mock(Provisioner.class)).join();
     assertTrue(joinOp.requiresApproval());
 
     var analysis = joinOp.dryRun();

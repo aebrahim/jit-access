@@ -42,10 +42,10 @@ public class JitGroupView {
   private final @NotNull Subject subject;
   private final @NotNull Provisioner provisioner;
 
-  JitGroupView( // TODO: use EnvironmentView
-    @NotNull Provisioner provisioner,
+  JitGroupView(
     @NotNull JitGroupPolicy policy,
-    @NotNull Subject subject
+    @NotNull Subject subject,
+    @NotNull Provisioner provisioner
   ) {
     this.provisioner = provisioner;
     this.policy = policy;
