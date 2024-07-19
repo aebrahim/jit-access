@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-public class TestJitGroup {
+public class TestJitGroupView {
   private static final UserId SAMPLE_USER = new UserId("user@example.com");
 
   private static EnvironmentPolicy createEnvironmentPolicy() {
@@ -87,7 +87,7 @@ public class TestJitGroup {
       Map.of(),
       List.of());
 
-    var group = new JitGroup(
+    var group = new JitGroupView(
       Mockito.mock(Provisioner.class),
       deniedGroup,
       subject);
@@ -127,7 +127,7 @@ public class TestJitGroup {
       .add(new SystemPolicy("system-1", "System")
         .add(deniedGroup));
 
-    var joinOp = new JitGroup(
+    var joinOp = new JitGroupView(
       Mockito.mock(Provisioner.class),
       deniedGroup,
       subject).join();
@@ -164,7 +164,7 @@ public class TestJitGroup {
       .add(new SystemPolicy("system-1", "System")
         .add(deniedGroup));
 
-    var joinOp = new JitGroup(
+    var joinOp = new JitGroupView(
       Mockito.mock(Provisioner.class),
       deniedGroup,
       subject).join();

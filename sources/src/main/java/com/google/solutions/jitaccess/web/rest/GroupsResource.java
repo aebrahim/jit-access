@@ -25,7 +25,7 @@ package com.google.solutions.jitaccess.web.rest;
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
 import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.Catalog;
-import com.google.solutions.jitaccess.catalog.JitGroup;
+import com.google.solutions.jitaccess.catalog.JitGroupView;
 import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.auth.JitGroupId;
 import com.google.solutions.jitaccess.catalog.policy.PolicyAnalysis;
@@ -74,7 +74,7 @@ public class GroupsResource {
 
     return this.catalog
       .group(groupId)
-      .map(GroupInfo::fromPolicy)
+      .map(GroupInfo::fromGroupView)
       .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
   }
 
@@ -119,7 +119,7 @@ public class GroupsResource {
       else {
         var principal = joinOp.execute();
 
-        return GroupInfo.fromPolicy(
+        return GroupInfo.fromGroupView(
           group,
           new JoinInfo(
             JoinStatusInfo.JOIN_APPROVED,
@@ -170,7 +170,7 @@ public class GroupsResource {
     @NotNull SystemsResource.SystemInfo system,
     @Nullable GroupsResource.JoinInfo access
   ) implements CatalogInfo {
-    static GroupInfo fromPolicy(@NotNull JitGroup g) { // TODO: rename to fromGroup
+    static GroupInfo fromGroupView(@NotNull JitGroupView g) { // TODO: rename to fromGroup
       var joinOp = g.join();
       var analysis = joinOp.dryRun();
 
@@ -188,15 +188,15 @@ public class GroupsResource {
         status = JoinStatusInfo.JOIN_ALLOWED_WITHOUT_APPROVAL;
       }
 
-      return fromPolicy(
+      return fromGroupView(
         g,
         JoinInfo.fromAnalysis(
           status,
           analysis));
     }
 
-    static GroupInfo fromPolicy(
-      @NotNull JitGroup g,
+    static GroupInfo fromGroupView(
+      @NotNull JitGroupView g,
       @NotNull GroupsResource.JoinInfo joinInfo) {
       return new GroupInfo(
         new Link(

@@ -37,12 +37,12 @@ import java.util.List;
 /**
  * JIT Group in the context of a specific subject.
  */
-public class JitGroup { // TODO: Rename to JitGroupView
+public class JitGroupView {
   private final @NotNull JitGroupPolicy policy;
   private final @NotNull Subject subject;
   private final @NotNull Provisioner provisioner;
 
-  JitGroup(
+  JitGroupView(
     @NotNull Provisioner provisioner,
     @NotNull JitGroupPolicy policy,
     @NotNull Subject subject
@@ -155,7 +155,7 @@ public class JitGroup { // TODO: Rename to JitGroupView
         .execute()
         .verifyAccessAllowed(PolicyAnalysis.AccessOptions.DEFAULT);
 
-      return new ApprovalOperation(JitGroup.this.subject);
+      return new ApprovalOperation(JitGroupView.this.subject);
     }
 
     /**
@@ -190,19 +190,19 @@ public class JitGroup { // TODO: Rename to JitGroupView
         .orElseThrow(() -> new UnsupportedOperationException(
           String.format(
             "The group %s doesn't specify an expiry constraint",
-            JitGroup.this.policy().id())));
+            JitGroupView.this.policy().id())));
 
       //
       // Provision group membership.
       //
-      var group = JitGroup.this;
+      var group = JitGroupView.this;
       group.provisioner.provisionAccess(
         group.policy,
         group.subject.user(),
         expiry);
 
       return new Principal(
-        JitGroup.this.policy.id(),
+        JitGroupView.this.policy.id(),
         expiry);
     }
   }

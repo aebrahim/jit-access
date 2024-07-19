@@ -79,7 +79,7 @@ public class Catalog {
   /**
    * List JIT groups for which the subject has VIEW access.
    */
-  public @NotNull Collection<JitGroup> groups(
+  public @NotNull Collection<JitGroupView> groups(
     @NotNull String environmentName,
     @NotNull String systemName
   ) {
@@ -97,7 +97,7 @@ public class Catalog {
         .analyze(this.subject, EnumSet.of(PolicyPermission.VIEW))
         .execute()
         .isAccessAllowed(PolicyAnalysis.AccessOptions.DEFAULT))
-      .map(grp -> new JitGroup(provisioner.get(), grp, this.subject))
+      .map(grp -> new JitGroupView(provisioner.get(), grp, this.subject))
       .sorted(Comparator.comparing(g -> g.policy().id()))
       .toList();
   }
@@ -107,7 +107,7 @@ public class Catalog {
    *
    * @return group details
    */
-  public @NotNull Optional<JitGroup> group(
+  public @NotNull Optional<JitGroupView> group(
     @NotNull JitGroupId groupId
   ) {
     Preconditions.checkArgument(groupId != null, "Group ID must not be null");
@@ -122,7 +122,7 @@ public class Catalog {
         .analyze(this.subject, EnumSet.of(PolicyPermission.VIEW))
         .execute()
       .isAccessAllowed(PolicyAnalysis.AccessOptions.DEFAULT))
-      .map(grp -> new JitGroup(environment.get(), grp, this.subject));
+      .map(grp -> new JitGroupView(environment.get(), grp, this.subject));
   }
 
   /**

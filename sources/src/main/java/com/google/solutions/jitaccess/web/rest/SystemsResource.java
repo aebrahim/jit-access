@@ -65,7 +65,7 @@ public class SystemsResource {
         sys,
         filteredGroups
           .stream()
-          .map(GroupsResource.GroupInfo::fromPolicy)
+          .map(GroupsResource.GroupInfo::fromGroupView)
           .toList()))
       .orElseThrow(() -> new AccessDeniedException(
         "The system does not exist or access is denied"));
