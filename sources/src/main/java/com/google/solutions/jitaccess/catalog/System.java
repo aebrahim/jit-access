@@ -21,7 +21,6 @@
 
 package com.google.solutions.jitaccess.catalog;
 
-import com.google.common.base.Preconditions;
 import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.policy.EnvironmentPolicy;
 import com.google.solutions.jitaccess.catalog.policy.PolicyDocument;
@@ -30,70 +29,25 @@ import com.google.solutions.jitaccess.catalog.policy.SystemPolicy;
 import com.google.solutions.jitaccess.util.NullaryOptional;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Optional;
 
 /**
- * Environment in the context of a specific subject.
+ * System in the context of a specific subject.
  */
-public class Environment {
-  private final @NotNull EnvironmentPolicy policy;
+public class System {
+  private final @NotNull SystemPolicy policy;
   private final @NotNull Subject subject;
 
-  Environment(@NotNull EnvironmentPolicy policy, @NotNull Subject subject) {
+  System(@NotNull SystemPolicy policy, @NotNull Subject subject) {
     this.policy = policy;
     this.subject = subject;
   }
 
   /**
-   * Get environment policy.
+   * Get system policy.
    */
-  public @NotNull EnvironmentPolicy policy() {
+  public @NotNull SystemPolicy policy() {
     return this.policy;
-  }
-
-  /**
-   * Check if the current user is allowed to export the policy.
-   *
-   * Requires EXPORT access.
-   */
-  public boolean canExport() {
-    return this.policy.isAllowedByAccessControlList(
-      this.subject,
-      EnumSet.of(PolicyPermission.EXPORT));
-  }
-
-  /**
-   * Export the environment policy. Requires EXPORT access.
-   */
-  public Optional<PolicyDocument> export() {
-    return NullaryOptional
-      .ifTrue(canExport())
-      .map(() -> new PolicyDocument(this.policy));
-  }
-
-  /**
-   * List system policies for which the subject has VIEW access.
-   */
-  public @NotNull Collection<SystemPolicy> systems() {
-
-    return this.policy
-      .systems()
-      .stream()
-      .filter(sys -> sys.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
-      .toList();
-  }
-
-  /**
-   * Get system policy. Requires VIEW access.
-   */
-  public @NotNull Optional<SystemPolicy> system(@NotNull String name
-  ) {
-    Preconditions.checkArgument(name != null, "Name must not be null");
-
-    return this.policy
-      .system(name)
-      .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)));
   }
 }

@@ -77,36 +77,6 @@ public class Catalog {
   }
 
   /**
-   * List system policies for which the subject has VIEW access.
-   */
-  public @NotNull Collection<SystemPolicy> systems(@NotNull String environmentName) { // TODO: Move to environments?
-    Preconditions.checkNotNull(environmentName, "Environment must not be null");
-
-    return this.source
-      .environmentPolicy(environmentName)
-      .stream()
-      .flatMap(env -> env.systems().stream())
-      .filter(sys -> sys.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
-      .toList();
-  }
-
-  /**
-   * Get system policy. Requires VIEW access.
-   */
-  public @NotNull Optional<SystemPolicy> system(
-    @NotNull String environmentName,
-    @NotNull String name
-  ) {
-    Preconditions.checkArgument(environmentName != null, "Environment must not be null");
-    Preconditions.checkArgument(name != null, "Name must not be null");
-
-    return this.source
-      .environmentPolicy(environmentName)
-      .flatMap(env -> env.system(name))
-      .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)));
-  }
-
-  /**
    * List JIT groups for which the subject has VIEW access.
    */
   public @NotNull Collection<JitGroup> groups(

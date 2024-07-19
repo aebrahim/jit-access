@@ -23,19 +23,126 @@ package com.google.solutions.jitaccess.catalog;
 
 import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
-import com.google.solutions.jitaccess.catalog.policy.AccessControlList;
-import com.google.solutions.jitaccess.catalog.policy.EnvironmentPolicy;
-import com.google.solutions.jitaccess.catalog.policy.Policy;
-import com.google.solutions.jitaccess.catalog.policy.PolicyPermission;
+import com.google.solutions.jitaccess.catalog.policy.*;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestEnvironment {
-  private static final UserId SAMPLE_USER_1 = new UserId("user-1@example.com");
+  private static final UserId SAMPLE_USER = new UserId("user-1@example.com");
+
+
+  // -------------------------------------------------------------------------
+  // systems.
+  // -------------------------------------------------------------------------
+
+  @Test
+  public void systems_whenAccessPartiallyDenied_thenResultIsFiltered() {
+    var allowedSystemPolicy = new SystemPolicy(
+      "allowed-1",
+      "",
+      new AccessControlList(List.of(
+        new AccessControlList.AllowedEntry(SAMPLE_USER, PolicyPermission.VIEW.toMask())
+      )),
+      Map.of());
+    var deniedSystemPolicy = new SystemPolicy(
+      "denied-1",
+      "",
+      new AccessControlList(List.of(
+        new AccessControlList.DeniedEntry(SAMPLE_USER, PolicyPermission.VIEW.toMask())
+      )),
+      Map.of());
+
+    var environmentPolicy = new EnvironmentPolicy(
+      "env-1",
+      "Env-1",
+      new Policy.Metadata("test", Instant.EPOCH));
+
+    environmentPolicy.add(allowedSystemPolicy);
+    environmentPolicy.add(deniedSystemPolicy);
+
+    var catalog = new Catalog(
+      Subjects.create(SAMPLE_USER),
+      CatalogSources.create(List.of(environmentPolicy)));
+
+    var environment = catalog.environment(environmentPolicy.name()).get();
+    var systems = environment.systems();
+
+    assertEquals(1, systems.size());
+    assertSame(allowedSystemPolicy, systems.stream().findFirst().get());
+  }
+
+  // -------------------------------------------------------------------------
+  // system.
+  // -------------------------------------------------------------------------
+
+  @Test
+  public void system_whenNotFound() {
+    var environmentPolicy = new EnvironmentPolicy(
+      "env-1",
+      "Env-1",
+      new Policy.Metadata("test", Instant.EPOCH));
+
+    var catalog = new Catalog(
+      Subjects.create(SAMPLE_USER),
+      CatalogSources.create(environmentPolicy));
+
+    var environment = catalog.environment(environmentPolicy.name()).get();
+    assertFalse(environment.system("notfound").isPresent());
+  }
+
+  @Test
+  public void system_whenAccessDenied() {
+    var environmentPolicy = new EnvironmentPolicy(
+      "env-1",
+      "Env-1",
+      new Policy.Metadata("test", Instant.EPOCH));
+    var systemPolicy = new SystemPolicy(
+      "system-1",
+      "System 1",
+      new AccessControlList.Builder()
+        .deny(SAMPLE_USER, -1)
+        .build(),
+      Map.of());
+    environmentPolicy.add(systemPolicy);
+
+    var catalog = new Catalog(
+      Subjects.create(SAMPLE_USER),
+      CatalogSources.create(environmentPolicy));
+
+    var environment = catalog.environment(environmentPolicy.name()).get();
+    assertFalse(environment.system(systemPolicy.name()).isPresent());
+  }
+
+  @Test
+  public void system() {
+    var subject = Subjects.create(SAMPLE_USER);
+
+    var environmentPolicy = new EnvironmentPolicy(
+      "env-1",
+      "Env-1",
+      new Policy.Metadata("test", Instant.EPOCH));
+    var systemPolicy = new SystemPolicy(
+      "system-1",
+      "System 1",
+      new AccessControlList(List.of(new AccessControlList.AllowedEntry(
+        SAMPLE_USER,
+        PolicyPermission.VIEW.toMask()))),
+      Map.of());
+    environmentPolicy.add(systemPolicy);
+
+    var catalog = new Catalog(
+      subject,
+      CatalogSources.create(environmentPolicy));
+
+    var environment = catalog.environment(environmentPolicy.name()).get();
+    assertTrue(environment.system(systemPolicy.name()).isPresent());
+  }
 
   // -------------------------------------------------------------------------
   // export.
@@ -49,7 +156,7 @@ public class TestEnvironment {
       new Policy.Metadata("test", Instant.EPOCH));
     var environment = new Environment(
       policy,
-      Subjects.create(SAMPLE_USER_1));
+      Subjects.create(SAMPLE_USER));
 
     assertFalse(environment.canExport());
     assertFalse(environment.export().isPresent());
@@ -61,13 +168,13 @@ public class TestEnvironment {
       "env",
       "env",
       new AccessControlList.Builder()
-        .allow(SAMPLE_USER_1, PolicyPermission.EXPORT.toMask())
+        .allow(SAMPLE_USER, PolicyPermission.EXPORT.toMask())
         .build(),
       Map.of(),
       new Policy.Metadata("test", Instant.EPOCH));
     var environment = new Environment(
       policy,
-      Subjects.create(SAMPLE_USER_1));
+      Subjects.create(SAMPLE_USER));
 
     assertTrue(environment.canExport());
     assertTrue(environment.export().isPresent());

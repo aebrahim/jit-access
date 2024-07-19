@@ -75,16 +75,9 @@ public class EnvironmentsResource {
   public @NotNull EnvironmentInfo get(
     @PathParam("environment") @NotNull String environment
   ) throws AccessDeniedException {
-    var filteredSystems = this.catalog.systems(environment);
-
     return this.catalog
       .environment(environment)
-      .map(env -> EnvironmentInfo.fromEnvironment(
-        env,
-        filteredSystems
-          .stream()
-          .map(sys -> SystemsResource.SystemInfo.fromPolicy(sys, null))
-          .toList()))
+      .map(env -> EnvironmentInfo.fromEnvironment(env))
       .orElseThrow(() -> new AccessDeniedException(
         "The environment does not exist or access is denied"));
   }
@@ -136,10 +129,7 @@ public class EnvironmentsResource {
         null);
     }
 
-    static EnvironmentInfo fromEnvironment(
-      @NotNull Environment environment,
-      @NotNull List<SystemsResource.SystemInfo> systems
-    ) {
+    static EnvironmentInfo fromEnvironment(@NotNull Environment environment) {
       return new EnvironmentInfo(
         new Link("environments/%s", environment.policy().name()),
         environment.canExport()
@@ -147,7 +137,10 @@ public class EnvironmentsResource {
           : null,
         environment.policy().name(),
         environment.policy().description(),
-        systems);
+        environment.systems()
+          .stream()
+          .map(sys -> SystemsResource.SystemInfo.fromPolicy(sys, null))
+          .toList());
     }
   }
 }

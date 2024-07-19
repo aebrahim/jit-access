@@ -58,7 +58,8 @@ public class SystemsResource {
     var filteredGroups = this.catalog.groups(environment, system);
 
     return this.catalog
-      .system(environment, system)
+      .environment(environment)
+      .flatMap(env -> env.system(system))
       .map(sys -> SystemInfo.fromPolicy(
         sys,
         filteredGroups
