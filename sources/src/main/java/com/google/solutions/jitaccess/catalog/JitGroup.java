@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * JIT Group in the context of a specific subject.
  */
-public class JitGroup {
+public class JitGroup { // TODO: Rename to JitGroupView
   private final @NotNull JitGroupPolicy policy;
   private final @NotNull Subject subject;
   private final @NotNull Provisioner provisioner;

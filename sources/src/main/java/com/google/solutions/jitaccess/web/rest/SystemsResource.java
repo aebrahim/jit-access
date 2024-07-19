@@ -23,6 +23,7 @@ package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
 import com.google.solutions.jitaccess.catalog.Catalog;
+import com.google.solutions.jitaccess.catalog.SystemView;
 import com.google.solutions.jitaccess.catalog.policy.SystemPolicy;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
 import jakarta.enterprise.context.Dependent;
@@ -60,7 +61,7 @@ public class SystemsResource {
     return this.catalog
       .environment(environment)
       .flatMap(env -> env.system(system))
-      .map(sys -> SystemInfo.fromPolicy(
+      .map(sys -> SystemInfo.fromSystemView(
         sys,
         filteredGroups
           .stream()
@@ -81,10 +82,23 @@ public class SystemsResource {
     @NotNull EnvironmentsResource.EnvironmentInfo environment,
     @Nullable List<GroupsResource.GroupInfo> groups
   ) implements CatalogInfo {
-    static SystemInfo fromPolicy(
-      @NotNull SystemPolicy policy,
+    static SystemInfo fromSystemView(
+      @NotNull SystemPolicy policy
+    ) {
+      return new SystemInfo(
+        new Link("environments/%s/systems/%s", policy.environment().name(), policy.name()),
+        policy.name(),
+        policy.description(),
+        EnvironmentsResource.EnvironmentInfo.fromPolicyHeader(policy.environment()),
+        null);
+    }
+
+    static SystemInfo fromSystemView(
+      @NotNull SystemView system,
       @Nullable List<GroupsResource.GroupInfo> groups
     ) {
+      var policy = system.policy();
+
       return new SystemInfo(
         new Link("environments/%s/systems/%s", policy.environment().name(), policy.name()),
         policy.name(),

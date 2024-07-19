@@ -72,7 +72,7 @@ public class TestEnvironmentView {
     var systems = environment.systems();
 
     assertEquals(1, systems.size());
-    assertSame(allowedSystemPolicy, systems.stream().findFirst().get());
+    assertSame(allowedSystemPolicy, systems.stream().findFirst().get().policy());
   }
 
   // -------------------------------------------------------------------------

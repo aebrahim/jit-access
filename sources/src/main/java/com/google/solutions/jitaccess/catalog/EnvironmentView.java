@@ -76,24 +76,25 @@ public class EnvironmentView {
   /**
    * List system policies for which the subject has VIEW access.
    */
-  public @NotNull Collection<SystemPolicy> systems() {
+  public @NotNull Collection<SystemView> systems() {
 
     return this.policy
       .systems()
       .stream()
       .filter(sys -> sys.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
+      .map(sys -> new SystemView(sys, this.subject))
       .toList();
   }
 
   /**
    * Get system policy. Requires VIEW access.
    */
-  public @NotNull Optional<SystemPolicy> system(@NotNull String name
-  ) {
+  public @NotNull Optional<SystemView> system(@NotNull String name) {
     Preconditions.checkArgument(name != null, "Name must not be null");
 
     return this.policy
       .system(name)
-      .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)));
+      .filter(env -> env.isAllowedByAccessControlList(this.subject, EnumSet.of(PolicyPermission.VIEW)))
+      .map(sys -> new SystemView(sys, this.subject));
   }
 }
