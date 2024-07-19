@@ -28,7 +28,6 @@ import com.google.api.services.cloudasset.v1.model.PolicyInfo;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.base.Preconditions;
 import com.google.solutions.jitaccess.ApplicationVersion;
-import com.google.solutions.jitaccess.apis.ProjectId;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

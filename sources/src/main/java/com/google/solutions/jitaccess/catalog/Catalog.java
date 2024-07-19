@@ -24,11 +24,12 @@ package com.google.solutions.jitaccess.catalog;
 import com.google.common.base.Preconditions;
 import com.google.solutions.jitaccess.catalog.auth.JitGroupId;
 import com.google.solutions.jitaccess.catalog.auth.Subject;
-import com.google.solutions.jitaccess.catalog.policy.*;
+import com.google.solutions.jitaccess.catalog.policy.EnvironmentPolicy;
+import com.google.solutions.jitaccess.catalog.policy.PolicyHeader;
+import com.google.solutions.jitaccess.catalog.policy.PolicyPermission;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Optional;
 
@@ -96,7 +97,7 @@ public class Catalog {
   /**
    * Source for environment configuration.
    */
-  public interface Source { // TODO: Make Catalog abstract instead?
+  public interface Source {
     /**
      * Get list of summaries for available policies.
      */

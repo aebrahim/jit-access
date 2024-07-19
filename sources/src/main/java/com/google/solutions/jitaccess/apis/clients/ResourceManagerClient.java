@@ -37,10 +37,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Adapter for Resource Manager API.

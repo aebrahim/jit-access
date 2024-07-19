@@ -22,7 +22,6 @@
 package com.google.solutions.jitaccess.catalog;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
-import com.google.solutions.jitaccess.catalog.auth.Principal;
 import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
@@ -32,10 +31,8 @@ import org.mockito.Mockito;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 public class TestCatalog {
   private static final UserId SAMPLE_USER = new UserId("user@example.com");
