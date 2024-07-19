@@ -56,17 +56,10 @@ public class SystemsResource {
     @PathParam("environment") @NotNull String environment,
     @PathParam("system") @NotNull String system
   ) throws AccessDeniedException {
-    var filteredGroups = this.catalog.groups(environment, system);
-
     return this.catalog
       .environment(environment)
       .flatMap(env -> env.system(system))
-      .map(sys -> SystemInfo.fromSystemView(
-        sys,
-        filteredGroups
-          .stream()
-          .map(GroupsResource.GroupInfo::fromGroupView)
-          .toList()))
+      .map(sys -> SystemInfo.fromSystemView(sys))
       .orElseThrow(() -> new AccessDeniedException(
         "The system does not exist or access is denied"));
   }
@@ -93,10 +86,7 @@ public class SystemsResource {
         null);
     }
 
-    static SystemInfo fromSystemView(
-      @NotNull SystemView system,
-      @Nullable List<GroupsResource.GroupInfo> groups
-    ) {
+    static SystemInfo fromSystemView(@NotNull SystemView system) { // TODO: rename to createDetailed, createSumamry
       var policy = system.policy();
 
       return new SystemInfo(
@@ -104,7 +94,10 @@ public class SystemsResource {
         policy.name(),
         policy.description(),
         EnvironmentsResource.EnvironmentInfo.fromPolicyHeader(policy.environment()),
-        groups);
+        system.groups()
+          .stream()
+          .map(GroupsResource.GroupInfo::fromGroupView)
+          .toList());
     }
   }
 }

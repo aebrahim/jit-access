@@ -42,7 +42,7 @@ public class JitGroupView {
   private final @NotNull Subject subject;
   private final @NotNull Provisioner provisioner;
 
-  JitGroupView(
+  JitGroupView( // TODO: use EnvironmentView
     @NotNull Provisioner provisioner,
     @NotNull JitGroupPolicy policy,
     @NotNull Subject subject

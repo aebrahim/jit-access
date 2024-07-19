@@ -52,6 +52,14 @@ public class EnvironmentView {
     this.provisioner = provisioner;
   }
 
+  Subject subject() {
+    return subject;
+  }
+
+  Provisioner provisioner() {
+    return provisioner;
+  }
+
   /**
    * Get environment policy.
    */

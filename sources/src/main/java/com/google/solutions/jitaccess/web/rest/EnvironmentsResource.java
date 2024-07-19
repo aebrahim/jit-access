@@ -139,7 +139,7 @@ public class EnvironmentsResource {
         environment.policy().description(),
         environment.systems()
           .stream()
-          .map(sys -> SystemsResource.SystemInfo.fromSystemView(sys, null))
+          .map(sys -> SystemsResource.SystemInfo.fromPolicy(sys.policy()))
           .toList());
     }
   }

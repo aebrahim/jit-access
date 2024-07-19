@@ -112,93 +112,52 @@ public class TestCatalog {
   }
 
   // -------------------------------------------------------------------------
-  // groups.
-  // -------------------------------------------------------------------------
-
-  @Test
-  public void groups_whenAccessToSomeGroupsDenied_thenResultIsFiltered() throws Exception {
-    var environment = createEnvironmentPolicy("env-1");
-    var system = new SystemPolicy("system-1", "System 1");
-    var allowedGroup = new JitGroupPolicy(
-      "allowed-1",
-      "Group 1",
-      new AccessControlList(
-        List.of(new AccessControlList.AllowedEntry(
-          SAMPLE_USER,
-          PolicyPermission.VIEW.toMask()))),
-      Map.of(),
-      List.of());
-    var deniedGroup = new JitGroupPolicy(
-      "group-1",
-      "Group 1",
-      new AccessControlList.Builder()
-        .deny(SAMPLE_USER, -1)
-        .build(),
-      Map.of(),
-      List.of());
-    system.add(allowedGroup);
-    system.add(deniedGroup);
-    environment.add(system);
-
-    var catalog = new Catalog(
-      Subjects.create(SAMPLE_USER),
-      CatalogSources.create(environment));
-
-    var groups = catalog.groups(environment.name(), system.name());
-    assertEquals(1, groups.size());
-    assertSame(allowedGroup, groups.stream().findFirst().get().policy());
-  }
-
-  // -------------------------------------------------------------------------
   // group.
   // -------------------------------------------------------------------------
 
   @Test
   public void group_whenAccessDenied_thenReturnsEmpty() throws AccessDeniedException {
-    var environment = createEnvironmentPolicy("env-1");
-    var system = new SystemPolicy("system-1", "System 1");
-    var group = new JitGroupPolicy(
+    var environmentPolicy = createEnvironmentPolicy("env-1");
+    var systemPolicy = new SystemPolicy("system-1", "System 1");
+    var groupPolicy = new JitGroupPolicy(
       "group-1",
       "Group 1",
-      AccessControlList.EMPTY, // Empty ACL -> deny all
+      new AccessControlList.Builder()
+        .deny(SAMPLE_USER, PolicyPermission.VIEW.toMask())
+        .build(),
       Map.of(),
       List.of());
-    system.add(group);
-    environment.add(system);
+    systemPolicy.add(groupPolicy);
+    environmentPolicy.add(systemPolicy);
 
     var catalog = new Catalog(
-      Mockito.mock(Subject.class),
-      CatalogSources.create(environment));
+      Subjects.create(SAMPLE_USER),
+      CatalogSources.create(environmentPolicy));
 
-    assertFalse(catalog.group(group.id()).isPresent());
+    assertFalse(catalog.group(groupPolicy.id()).isPresent());
   }
 
   @Test
   public void group_whenAccessAllowed_thenReturnsDetails() throws Exception {
-    var subject = Mockito.mock(Subject.class);
-    when(subject.principals())
-      .thenReturn(Set.of(new Principal(SAMPLE_USER)));
-
-    var environment =createEnvironmentPolicy("env-1");
-    var system = new SystemPolicy("system-1", "System 1");
-    var group = new JitGroupPolicy(
+    var environmentPolicy = createEnvironmentPolicy("env-1");
+    var systemPolicy = new SystemPolicy("system-1", "System 1");
+    var groupPolicy = new JitGroupPolicy(
       "group-1",
       "Group 1",
-      new AccessControlList(
-        List.of(new AccessControlList.AllowedEntry(
-          SAMPLE_USER,
-          PolicyPermission.VIEW.toMask()))),
+      new AccessControlList.Builder()
+        .allow(SAMPLE_USER, PolicyPermission.VIEW.toMask())
+        .build(),
       Map.of(),
       List.of());
-    system.add(group);
-    environment.add(system);
+    systemPolicy.add(groupPolicy);
+    environmentPolicy.add(systemPolicy);
 
     var catalog = new Catalog(
-      subject,
-      CatalogSources.create(environment));
+      Subjects.create(SAMPLE_USER),
+      CatalogSources.create(environmentPolicy));
 
-    var details = catalog.group(group.id());
+    var details = catalog.group(groupPolicy.id());
     assertTrue(details.isPresent());
-    assertEquals(group, details.get().policy());
+    assertEquals(groupPolicy, details.get().policy());
   }
 }

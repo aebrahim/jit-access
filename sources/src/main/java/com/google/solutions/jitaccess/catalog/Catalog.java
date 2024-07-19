@@ -79,32 +79,6 @@ public class Catalog {
   }
 
   /**
-   * List JIT groups for which the subject has VIEW access.
-   */
-  public @NotNull Collection<JitGroupView> groups(
-    @NotNull String environmentName,
-    @NotNull String systemName
-  ) {
-    Preconditions.checkArgument(environmentName != null, "Environment name must not be null");
-    Preconditions.checkArgument(systemName != null, "System name must not be null");
-
-    var provisioner = this.source.provisioner(this, environmentName);
-
-    return this.source
-      .environmentPolicy(environmentName)
-      .flatMap(env -> env.system(systemName))
-      .stream()
-      .flatMap(sys -> sys.groups().stream())
-      .filter(grp -> grp
-        .analyze(this.subject, EnumSet.of(PolicyPermission.VIEW))
-        .execute()
-        .isAccessAllowed(PolicyAnalysis.AccessOptions.DEFAULT))
-      .map(grp -> new JitGroupView(provisioner.get(), grp, this.subject))
-      .sorted(Comparator.comparing(g -> g.policy().id()))
-      .toList();
-  }
-
-  /**
    * Get details for a JIT group. Requires VIEW access.
    *
    * @return group details
@@ -114,17 +88,9 @@ public class Catalog {
   ) {
     Preconditions.checkArgument(groupId != null, "Group ID must not be null");
 
-    var environment = this.source.provisioner(this, groupId.environment());
-
-    return this.source
-      .environmentPolicy(groupId.environment())
+    return environment(groupId.environment())
       .flatMap(env -> env.system(groupId.system()))
-      .flatMap(sys -> sys.group(groupId.name()))
-      .filter(grp -> grp
-        .analyze(this.subject, EnumSet.of(PolicyPermission.VIEW))
-        .execute()
-      .isAccessAllowed(PolicyAnalysis.AccessOptions.DEFAULT))
-      .map(grp -> new JitGroupView(environment.get(), grp, this.subject));
+      .flatMap(sys -> sys.group(groupId.name()));
   }
 
   /**
