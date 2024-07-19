@@ -56,7 +56,7 @@ public class EnvironmentsResource {
   public @NotNull EnvironmentsResource.EnvironmentsInfo list() {
     var environments = this.catalog.environments()
       .stream()
-      .map(env -> EnvironmentInfo.fromPolicyHeader(env))
+      .map(env -> EnvironmentInfo.createSummary(env))
       //TODO: sort
       .collect(Collectors.toList());
 
@@ -77,7 +77,7 @@ public class EnvironmentsResource {
   ) throws AccessDeniedException {
     return this.catalog
       .environment(environment)
-      .map(env -> EnvironmentInfo.fromEnvironmentView(env))
+      .map(env -> EnvironmentInfo.create(env))
       .orElseThrow(() -> new AccessDeniedException(
         "The environment does not exist or access is denied"));
   }
@@ -118,7 +118,10 @@ public class EnvironmentsResource {
     @Nullable List<SystemsResource.SystemInfo> systems
   ) implements CatalogInfo {
 
-    static EnvironmentInfo fromPolicyHeader(
+    /**
+     * Create EnvironmentInfo with summary information only.
+     */
+    static EnvironmentInfo createSummary(
       @NotNull PolicyHeader policy
     ) {
       return new EnvironmentInfo(
@@ -129,7 +132,10 @@ public class EnvironmentsResource {
         null);
     }
 
-    static EnvironmentInfo fromEnvironmentView(@NotNull EnvironmentView environment) {
+    /**
+     * Create EnvironmentInfo with full details.
+     */
+    static EnvironmentInfo create(@NotNull EnvironmentView environment) {
       return new EnvironmentInfo(
         new Link("environments/%s", environment.policy().name()),
         environment.canExport()
@@ -139,7 +145,7 @@ public class EnvironmentsResource {
         environment.policy().description(),
         environment.systems()
           .stream()
-          .map(sys -> SystemsResource.SystemInfo.fromPolicy(sys.policy()))
+          .map(sys -> SystemsResource.SystemInfo.createSummary(sys.policy()))
           .toList());
     }
   }

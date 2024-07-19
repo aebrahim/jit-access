@@ -96,7 +96,7 @@ public class Catalog {
   /**
    * Source for environment configuration.
    */
-  public interface Source {
+  public interface Source { // TODO: Make Catalog abstract instead?
     /**
      * Get list of summaries for available policies.
      */

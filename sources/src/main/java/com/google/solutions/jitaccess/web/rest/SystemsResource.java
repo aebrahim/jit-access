@@ -59,7 +59,7 @@ public class SystemsResource {
     return this.catalog
       .environment(environment)
       .flatMap(env -> env.system(system))
-      .map(sys -> SystemInfo.fromSystemView(sys))
+      .map(sys -> SystemInfo.create(sys))
       .orElseThrow(() -> new AccessDeniedException(
         "The system does not exist or access is denied"));
   }
@@ -75,7 +75,11 @@ public class SystemsResource {
     @Nullable EnvironmentsResource.EnvironmentInfo environment,
     @Nullable List<GroupsResource.GroupInfo> groups
   ) implements CatalogInfo {
-    static SystemInfo fromPolicy(
+
+    /**
+     * Create SystemInfo with summary information only.
+     */
+    static SystemInfo createSummary(
       @NotNull SystemPolicy policy
     ) {
       return new SystemInfo(
@@ -86,17 +90,20 @@ public class SystemsResource {
         null);
     }
 
-    static SystemInfo fromSystemView(@NotNull SystemView system) { // TODO: rename to createDetailed, createSumamry
+    /**
+     * Create SystemInfo with full details.
+     */
+    static SystemInfo create(@NotNull SystemView system) {
       var policy = system.policy();
 
       return new SystemInfo(
         new Link("environments/%s/systems/%s", policy.environment().name(), policy.name()),
         policy.name(),
         policy.description(),
-        EnvironmentsResource.EnvironmentInfo.fromPolicyHeader(policy.environment()),
+        EnvironmentsResource.EnvironmentInfo.createSummary(policy.environment()),
         system.groups()
           .stream()
-          .map(GroupsResource.GroupInfo::fromGroupView)
+          .map(GroupsResource.GroupInfo::create)
           .toList());
     }
   }

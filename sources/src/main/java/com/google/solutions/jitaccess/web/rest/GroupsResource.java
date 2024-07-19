@@ -74,7 +74,7 @@ public class GroupsResource {
 
     return this.catalog
       .group(groupId)
-      .map(GroupInfo::fromGroupView)
+      .map(GroupInfo::create)
       .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
   }
 
@@ -119,7 +119,7 @@ public class GroupsResource {
       else {
         var principal = joinOp.execute();
 
-        return GroupInfo.fromGroupView(
+        return GroupInfo.create(
           group,
           new JoinInfo(
             JoinStatusInfo.JOIN_APPROVED,
@@ -170,7 +170,7 @@ public class GroupsResource {
     @NotNull SystemsResource.SystemInfo system,
     @Nullable GroupsResource.JoinInfo access
   ) implements CatalogInfo {
-    static GroupInfo fromGroupView(@NotNull JitGroupView g) { // TODO: rename to fromGroup
+    static GroupInfo create(@NotNull JitGroupView g) {
       var joinOp = g.join();
       var analysis = joinOp.dryRun();
 
@@ -188,14 +188,14 @@ public class GroupsResource {
         status = JoinStatusInfo.JOIN_ALLOWED_WITHOUT_APPROVAL;
       }
 
-      return fromGroupView(
+      return create(
         g,
         JoinInfo.fromAnalysis(
           status,
           analysis));
     }
 
-    static GroupInfo fromGroupView(
+    static GroupInfo create(
       @NotNull JitGroupView g,
       @NotNull GroupsResource.JoinInfo joinInfo) {
       return new GroupInfo(
@@ -213,8 +213,8 @@ public class GroupsResource {
           .stream()
           .map(PrivilegeInfo::fromPrivilege)
           .toList(),
-        EnvironmentsResource.EnvironmentInfo.fromPolicyHeader(g.policy().system().environment()),
-        SystemsResource.SystemInfo.fromPolicy(g.policy().system()), // Don't list nested groups.
+        EnvironmentsResource.EnvironmentInfo.createSummary(g.policy().system().environment()),
+        SystemsResource.SystemInfo.createSummary(g.policy().system()), // Don't list nested groups.
         joinInfo);
     }
   }
