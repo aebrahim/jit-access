@@ -57,6 +57,12 @@ public record IamRole(
     if (s.startsWith(PREDEFINED_ROLE_PREFIX) && s.length() > PREDEFINED_ROLE_PREFIX.length()) {
       return Optional.of(new IamRole(s));
     }
+    else if (s.startsWith(CUSTOM_ORG_ROLE_PREFIX) && s.length() > CUSTOM_ORG_ROLE_PREFIX.length()) {
+      return Optional.of(new IamRole(s));
+    }
+    else if (s.startsWith(CUSTOM_PROJECT_ROLE_PREFIX) && s.length() > CUSTOM_PROJECT_ROLE_PREFIX.length()) {
+      return Optional.of(new IamRole(s));
+    }
     else {
       return Optional.empty();
     }

@@ -43,17 +43,40 @@ public class TestIamRole {
   // -------------------------------------------------------------------------
 
   @ParameterizedTest
-  @ValueSource(strings = {" ", "roles/", "role/x", "ROLES/x", "x"})
+  @ValueSource(strings = {
+    " ",
+    "roles/",
+    "role/x",
+    "ROLES/x",
+    "x",
+    "organizations/",
+    "  projects/  "})
   public void whenRoleInvalid(String s) {
     assertFalse(IamRole.parse(null).isPresent());
     assertFalse(IamRole.parse(s).isPresent());
   }
 
   @Test
-  public void parse() {
+  public void parse_whenPredefinedRole() {
     var role = IamRole.parse("  roles/viewer  ");
 
     assertTrue(role.isPresent());
     assertEquals("roles/viewer", role.get().name());
+  }
+
+  @Test
+  public void parse_whenCustomProjectRole() {
+    var role = IamRole.parse(" projects/project-1/roles/CustomRole ");
+
+    assertTrue(role.isPresent());
+    assertEquals("projects/project-1/roles/CustomRole", role.get().name());
+  }
+
+  @Test
+  public void parse_whenCustomOrgRole() {
+    var role = IamRole.parse(" organizations/123/roles/CustomRole ");
+
+    assertTrue(role.isPresent());
+    assertEquals("organizations/123/roles/CustomRole", role.get().name());
   }
 }
