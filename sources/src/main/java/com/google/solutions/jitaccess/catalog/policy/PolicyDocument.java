@@ -24,6 +24,9 @@ package com.google.solutions.jitaccess.catalog.policy;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.PropertyBindingException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Strings;
@@ -113,7 +116,29 @@ public class PolicyDocument {
         .call()
         .toPolicy(issues, metadata);
 
-    } catch (JsonProcessingException e) {
+    }
+    catch (PropertyBindingException e) {
+      //
+      // Use friendly error and void mentioning class names.
+      //
+      issues.error(
+        Issue.Code.FILE_UNKNOWN_PROPERTY,
+        String.format("Unrecognized field '%s' at %s (Valid fields are %s)",
+          e.getPropertyName(),
+          e.getLocation().offsetDescription(),
+          e.getKnownPropertyIds()));
+      throw new SyntaxException("The policy document is malformed", issues.issues);
+    }
+    catch (JsonMappingException e) {
+      //
+      // Use friendly error and void mentioning class names.
+      //
+      issues.error(
+        Issue.Code.FILE_UNKNOWN_PROPERTY,
+        String.format("Unrecognized field at %s", e.getLocation().offsetDescription()));
+      throw new SyntaxException("The policy document is malformed", issues.issues);
+    }
+    catch (JsonProcessingException e) {
       //
       // The exception messages tend to be very convoluted, so only
       // use the innermost exception.
@@ -211,6 +236,7 @@ public class PolicyDocument {
       FILE_INVALID,
       FILE_INVALID_SYNTAX,
       FILE_INVALID_VERSION,
+      FILE_UNKNOWN_PROPERTY,
       ENVIRONMENT_MISSING,
       ENVIRONMENT_INVALID,
       SYSTEM_INVALID,

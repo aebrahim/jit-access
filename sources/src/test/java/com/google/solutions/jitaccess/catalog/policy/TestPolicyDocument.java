@@ -72,15 +72,22 @@ public class TestPolicyDocument {
   // fromString.
   //---------------------------------------------------------------------------
 
-  @ParameterizedTest
-  @ValueSource(strings = {
-    "  ",
-    "}"
-  })
-  public void fromString_whenYamlMalformed(String yaml) {
+  @Test
+  public void fromString_whenYamlIsEmpty() {
     var e = assertThrows(
       PolicyDocument.SyntaxException.class,
-      () -> PolicyDocument.fromString(yaml));
+      () -> PolicyDocument.fromString("  "));
+    assertTrue(e.issues().get(0).error());
+    assertEquals(
+      PolicyDocument.Issue.Code.FILE_UNKNOWN_PROPERTY,
+      e.issues().get(0).code());
+  }
+
+  @Test
+  public void fromString_whenYamlMalformed() {
+    var e = assertThrows(
+      PolicyDocument.SyntaxException.class,
+      () -> PolicyDocument.fromString("}"));
     assertTrue(e.issues().get(0).error());
     assertEquals(
       PolicyDocument.Issue.Code.FILE_INVALID_SYNTAX,
@@ -96,7 +103,7 @@ public class TestPolicyDocument {
       () -> PolicyDocument.fromString(yaml));
     assertTrue(e.issues().get(0).error());
     assertEquals(
-      PolicyDocument.Issue.Code.FILE_INVALID_SYNTAX,
+      PolicyDocument.Issue.Code.FILE_UNKNOWN_PROPERTY,
       e.issues().get(0).code());
   }
 
