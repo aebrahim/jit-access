@@ -56,7 +56,8 @@ abstract class AbstractPolicy implements Policy {
   }
 
   /**
-   * Unique name of the policy.
+   * Name of the policy, used as display name and to uniquely identify the group
+   * within a system. Names must be lower-case.
    */
   @NotNull
   @Override
@@ -65,7 +66,7 @@ abstract class AbstractPolicy implements Policy {
   }
 
   /**
-   * Friendly name or description of the policy.
+   * Description of the policy, for informational purposes only.
    */
   @NotNull
   @Override
@@ -77,7 +78,7 @@ abstract class AbstractPolicy implements Policy {
    * Parent policy, if any.
    *
    * If a policy has a parent, the parent's ACL and constraints
-   * are inherited.
+   * are inherited, with the current policy taking precedence.
    */
   @Override
   public @NotNull Optional<Policy> parent() {
@@ -87,10 +88,8 @@ abstract class AbstractPolicy implements Policy {
   /**
    * Access control list.
    *
-   * A policy that doesn't have an ACL grants access to everybody.
-   *
-   * A policy with an empty ACL (that is, the ACL contains no ACEs)
-   * grants access to nobody.
+   * Subjects aren't allowed to view or use the policy unless
+   * the ACL (or one of its ancestors' ACLs) grants them access.
    */
   @Override
   public @NotNull Optional<AccessControlList> accessControlList() {
@@ -98,19 +97,21 @@ abstract class AbstractPolicy implements Policy {
   }
 
   /**
-   * List of constraints.
-   */
-  Map<ConstraintClass, Collection<Constraint>> constraints() {
-    return constraints;
-  }
-
-  /**
    * Metadata describing the source of this policy.
    */
   @Override
   public @NotNull Metadata metadata() {
-    Preconditions.checkState(this.parent != null, "A policy must have a parent or provide metadata");
+    Preconditions.checkState(
+      this.parent != null,
+      "A policy must have a parent or provide metadata");
     return this.parent.metadata();
+  }
+
+  /**
+   * Raw map of constraints.
+   */
+  Map<ConstraintClass, Collection<Constraint>> constraints() {
+    return constraints;
   }
 
   /**
@@ -118,7 +119,7 @@ abstract class AbstractPolicy implements Policy {
    *
    * Constraints must have a unique name. If a parent and child policy
    * both contain a constraint with the same class and name, the child's
-   * policy's constraint wins.
+   * policy's constraint takes priority.
    */
   @Override
   public @NotNull Collection<Constraint> constraints(ConstraintClass c) {
