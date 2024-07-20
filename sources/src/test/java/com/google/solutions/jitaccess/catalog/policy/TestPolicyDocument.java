@@ -223,13 +223,13 @@ public class TestPolicyDocument {
   public static class Issue {
     @Test
     public void toString_whenError() {
-      var issue = new PolicyDocument.Issue(true, PolicyDocument.Issue.Code.FILE_INVALID, "Error!!1");
+      var issue = new PolicyDocument.Issue(true, null, PolicyDocument.Issue.Code.FILE_INVALID, "Error!!1");
       assertEquals("ERROR FILE_INVALID: Error!!1", issue.toString());
     }
 
     @Test
     public void toString_whenWarning() {
-      var issue = new PolicyDocument.Issue(false, PolicyDocument.Issue.Code.FILE_INVALID, "Warning!!1");
+      var issue = new PolicyDocument.Issue(false, null, PolicyDocument.Issue.Code.FILE_INVALID, "Warning!!1");
       assertEquals("WARNING FILE_INVALID: Warning!!1", issue.toString());
     }
   }

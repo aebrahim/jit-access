@@ -98,7 +98,14 @@ public enum PolicyPermission {
         .map(String::trim)
         .map(String::toUpperCase)
         .filter(s -> !s.isBlank())
-        .map(PolicyPermission::valueOf)
+        .map(s -> {
+          try {
+            return PolicyPermission.valueOf(s);
+          }
+          catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(s);
+          }
+        })
         .toList());
   }
 

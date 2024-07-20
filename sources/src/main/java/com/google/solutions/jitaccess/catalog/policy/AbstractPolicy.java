@@ -46,6 +46,9 @@ abstract class AbstractPolicy implements Policy {
     @Nullable AccessControlList acl,
     @NotNull Map<ConstraintClass, Collection<Constraint>> constraints
   ) {
+    Preconditions.checkArgument(
+      name != null && !name.isBlank(),
+      "The policy must have a name");
     this.name = name.toLowerCase();
     this.description = description;
     this.acl = acl;

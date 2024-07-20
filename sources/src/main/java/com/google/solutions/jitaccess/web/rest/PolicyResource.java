@@ -82,11 +82,16 @@ public class PolicyResource {
 
   public record IssueInfo(
     boolean error,
+    @Nullable String scope,
     @NotNull String code,
     @NotNull String details
   ) {
     static IssueInfo fromIssue(@NotNull PolicyDocument.Issue issue) {
-      return new IssueInfo(issue.error(), issue.code().toString(), issue.details());
+      return new IssueInfo(
+        issue.error(),
+        issue.scope(),
+        issue.code().toString(),
+        issue.details());
     }
   }
 }

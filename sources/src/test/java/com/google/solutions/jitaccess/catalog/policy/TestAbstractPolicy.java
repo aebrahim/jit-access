@@ -22,6 +22,8 @@
 package com.google.solutions.jitaccess.catalog.policy;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
 import java.time.Instant;
@@ -36,6 +38,30 @@ public class TestAbstractPolicy {
   //---------------------------------------------------------------------------
   // name.
   //---------------------------------------------------------------------------
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "",
+    " "
+  })
+  public void name_whenNameIsNullOrBlank(String name) {
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> new AbstractPolicy(
+        null,
+        "description",
+        AccessControlList.EMPTY,
+        Map.of()) {
+      });
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> new AbstractPolicy(
+        name,
+        "description",
+        AccessControlList.EMPTY,
+        Map.of()) {
+      });
+  }
 
   @Test
   public void name_whenMixedCase() {

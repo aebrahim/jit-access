@@ -230,6 +230,11 @@ main .mdc-button {
     display: block !important;
 }
 
+.mdc-data-table__cell {
+    white-space: normal; /* Allows text to wrap */
+    word-wrap: break-word; /* Breaks long words if needed */
+}
+
 /* ==== Debug === */
 
 #debug-pane {

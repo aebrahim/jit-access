@@ -34,6 +34,7 @@ import com.google.solutions.jitaccess.catalog.auth.PrincipalId;
 import com.google.solutions.jitaccess.catalog.auth.UserClassId;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.util.Coalesce;
+import com.google.solutions.jitaccess.util.Exceptions;
 import com.google.solutions.jitaccess.util.NullaryOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -103,35 +104,43 @@ public class PolicyDocument {
   ) throws SyntaxException {
     var issues = new IssueCollection();
 
+    Optional<EnvironmentPolicy> policy;
     try {
       //
       // Parse YAML and validate it.
       //
-      var policy = parser
+      policy = parser
         .call()
         .toPolicy(issues, metadata);
 
-      //
-      // If there were any validation errors, we should
-      // have received an empty result.
-      //
-      assert (policy.isPresent() || issues.containsErrors());
-
-      if (policy.isEmpty() || issues.containsErrors()) {
-        throw new SyntaxException(
-          "The policy document contains errors",
-          issues.issues());
-      }
-
-      return new PolicyDocument(policy.get(), issues.issues);
     } catch (JsonProcessingException e) {
-      issues.error(Issue.Code.FILE_INVALID_SYNTAX, e.getMessage());
+      //
+      // The exception messages tend to be very convoluted, so only
+      // use the innermost exception.
+      //
+      var cause = Exceptions.rootCause(e);
+
+      issues.error(Issue.Code.FILE_INVALID_SYNTAX, cause.getMessage());
       throw new SyntaxException("The policy document is malformed", issues.issues);
     }
     catch (Exception e) {
       issues.error(Issue.Code.FILE_INVALID, e.getMessage());
       throw new SyntaxException("Parsing the policy document failed", issues.issues);
     }
+
+    //
+    // If there were any validation errors, we should
+    // have received an empty result.
+    //
+    assert (policy.isPresent() || issues.containsErrors());
+
+    if (policy.isEmpty() || issues.containsErrors()) {
+      throw new SyntaxException(
+        "The policy document contains errors",
+        issues.issues());
+    }
+
+    return new PolicyDocument(policy.get(), issues.issues);
   }
 
   /**
@@ -188,11 +197,13 @@ public class PolicyDocument {
    * Warning or error affecting a policy.
    *
    * @param error indicates if this is a fatal error
+   * @param scope scope in which the issue was encountered
    * @param code unique code for the issue
    * @param details textual description
    */
   public record Issue(
     boolean error,
+    @Nullable String scope,
     @NotNull Code code,
     @NotNull String details) {
 
@@ -230,10 +241,10 @@ public class PolicyDocument {
    */
   static class IssueCollection {
     private final @NotNull List<Issue> issues = new LinkedList<>();
-    private @NotNull String currentContext = "file";
+    private @NotNull String currentScope = "file";
 
-    void setContext(@NotNull String context) {
-      this.currentContext = context;
+    void setScope(@NotNull String context) {
+      this.currentScope = context;
     }
 
     List<Issue> issues() {
@@ -255,8 +266,9 @@ public class PolicyDocument {
 
       this.issues.add(new Issue(
         true,
+        this.currentScope,
         code,
-        String.format("[%s] %s", this.currentContext, description)));
+        description));
     }
 
     private void warning(
@@ -270,8 +282,9 @@ public class PolicyDocument {
 
       this.issues.add(new Issue(
         false,
+        this.currentScope,
         code,
-        String.format("[%s] %s", this.currentContext, description)));
+        description));
     }
   }
 
@@ -391,7 +404,7 @@ public class PolicyDocument {
     @NotNull Optional<EnvironmentPolicy> toPolicy(
       @NotNull IssueCollection issues,
       @NotNull Policy.Metadata metadata) {
-      issues.setContext(Coalesce.nonEmpty(this.name, "Unnamed environment"));
+      issues.setScope(Coalesce.nonEmpty(this.name, "Unnamed environment"));
 
       var systems = Coalesce
         .emptyIfNull(this.systems)
@@ -470,7 +483,7 @@ public class PolicyDocument {
     }
 
     @NotNull Optional<SystemPolicy> toPolicy(@NotNull IssueCollection issues) {
-      issues.setContext(Coalesce.nonEmpty(this.name, "Unnamed system"));
+      issues.setScope(Coalesce.nonEmpty(this.name, "Unnamed system"));
 
       var groups = Coalesce
         .emptyIfNull(this.groups)
@@ -551,7 +564,7 @@ public class PolicyDocument {
     }
 
     @NotNull Optional<JitGroupPolicy> toPolicy(@NotNull IssueCollection issues) {
-      issues.setContext(Coalesce.nonEmpty(this.name, "Unnamed group"));
+      issues.setScope(Coalesce.nonEmpty(this.name, "Unnamed group"));
 
       if (this.acl == null) {
         issues.error(
@@ -681,10 +694,17 @@ public class PolicyDocument {
           }
         });
 
-      if (allowedMask.isPresent() == deniedMask.isPresent()) {
+      if (!allowedMask.isPresent() && !deniedMask.isPresent()) {
         issues.error(
           Issue.Code.ACL_INVALID_PERMISSION,
-          "The access control entry can either allow or deny access, but not both");
+          "The access control entry for '%s' must allow or deny access",
+          principalId.orElse(null));
+      }
+      else if (allowedMask.isPresent() == deniedMask.isPresent()) {
+        issues.error(
+          Issue.Code.ACL_INVALID_PERMISSION,
+          "The access control entry for '%s' can either allow or deny access, but not both",
+          principalId.orElse(null));
       }
 
       return NullaryOptional

@@ -60,4 +60,14 @@ public class Exceptions {
 
     return e;
   }
+
+
+  public static @NotNull Exception rootCause(@NotNull Exception e) {
+    if (e.getCause() instanceof Exception cause) {
+      return rootCause(cause);
+    }
+    else {
+      return e;
+    }
+  }
 }
