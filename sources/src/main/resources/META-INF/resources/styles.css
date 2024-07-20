@@ -122,6 +122,12 @@ a {
     vertical-align: text-bottom;
 }
 
+.jit-policy-editor {
+    width: 80vh;
+    height: 80vh;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
 .mdc-text-field {
     margin-top: 10px !important;
     width: 100%;

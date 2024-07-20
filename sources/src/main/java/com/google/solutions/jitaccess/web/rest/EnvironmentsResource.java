@@ -85,18 +85,18 @@ public class EnvironmentsResource {
 
 
   /**
-   * Export the environment policy.
+   * Get policy source.
    */
   @GET
-  @Produces(MediaType.TEXT_PLAIN)
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("environments/{environment}/policy")
-  public @NotNull String export(
+  public @NotNull EnvironmentsResource.PolicyInfo getPolicy(
     @PathParam("environment") @NotNull String environment
   ) throws AccessDeniedException {
     return this.catalog
       .environment(environment)
       .flatMap(EnvironmentView::export)
-      .map(PolicyDocument::toString)
+      .map(doc -> PolicyInfo.create(doc))
       .orElseThrow(() -> new AccessDeniedException(
         "The environment does not exist or access is denied"));
   }
@@ -113,7 +113,7 @@ public class EnvironmentsResource {
 
   public record EnvironmentInfo(
     @NotNull Link self,
-    @Nullable Link export,
+    @Nullable Link policy,
     @NotNull String name,
     @NotNull String description,
     @Nullable List<SystemsResource.SystemInfo> systems
@@ -140,7 +140,7 @@ public class EnvironmentsResource {
       return new EnvironmentInfo(
         new Link("environments/%s", environment.policy().name()),
         environment.canExport()
-          ? new Link("/api/catalog/environments/%s/policy", environment.policy().name())
+          ? new Link("environments/%s/policy", environment.policy().name())
           : null,
         environment.policy().name(),
         environment.policy().description(),
@@ -149,6 +149,19 @@ public class EnvironmentsResource {
           .sorted(Comparator.comparing(sys -> sys.policy().name()))
           .map(sys -> SystemsResource.SystemInfo.createSummary(sys.policy()))
           .toList());
+    }
+  }
+
+  public record PolicyInfo(
+    @NotNull Link self,
+    @NotNull EnvironmentInfo environment,
+    @NotNull String source
+  ) implements ObjectInfo {
+    static PolicyInfo create(@NotNull PolicyDocument doc) {
+      return new PolicyInfo(
+        new Link("environments/%s", doc.policy().name()),
+        EnvironmentInfo.createSummary(doc.policy()),
+        doc.toString());
     }
   }
 }

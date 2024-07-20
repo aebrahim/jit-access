@@ -181,11 +181,11 @@ public class TestEnvironmentsResource {
   }
 
   //---------------------------------------------------------------------------
-  // export.
+  // getPolicy.
   //---------------------------------------------------------------------------
 
   @Test
-  public void export_whenEnvironmentInvalid() throws Exception {
+  public void getPolicy_whenEnvironmentInvalid() throws Exception {
     var environment = new EnvironmentPolicy(
       "env-1",
       "Env 1",
@@ -198,11 +198,11 @@ public class TestEnvironmentsResource {
 
     assertThrows(
       IllegalArgumentException.class,
-      () -> resource.export(null));
+      () -> resource.getPolicy(null));
   }
 
   @Test
-  public void export_whenEnvironmentNotFound() throws Exception {
+  public void getPolicy_whenEnvironmentNotFound() throws Exception {
     var resource = new EnvironmentsResource();
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
@@ -210,11 +210,11 @@ public class TestEnvironmentsResource {
 
     assertThrows(
       AccessDeniedException.class,
-      () ->  resource.export("unknown"));
+      () ->  resource.getPolicy("unknown"));
   }
 
   @Test
-  public void export_whenAccessToEnvironmentDenied() {
+  public void getPolicy_whenAccessToEnvironmentDenied() {
     var environment = new EnvironmentPolicy(
       "env-1",
       "Env 1",
@@ -229,11 +229,11 @@ public class TestEnvironmentsResource {
 
     assertThrows(
       AccessDeniedException.class,
-      () ->  resource.export(environment.name()));
+      () ->  resource.getPolicy(environment.name()));
   }
 
   @Test
-  public void export() throws AccessDeniedException {
+  public void getPolicy() throws AccessDeniedException {
     var subject = Subjects.create(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(
@@ -249,7 +249,11 @@ public class TestEnvironmentsResource {
       subject,
       CatalogSources.create(environment));
 
-    var yaml = resource.export(environment.name());
-    assertTrue(yaml.contains("schemaVersion: 1"));
+    var policy = resource.getPolicy(environment.name());
+    assertTrue(policy.source().contains("schemaVersion: 1"));
+
+    assertEquals("env-1", policy.environment().name());
+    assertEquals("Env-1", policy.environment().description());
+    assertNull(policy.environment().systems());
   }
 }
