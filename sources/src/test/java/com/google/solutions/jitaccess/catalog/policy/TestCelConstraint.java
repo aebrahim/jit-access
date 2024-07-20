@@ -105,6 +105,34 @@ public class TestCelConstraint {
   }
 
   //---------------------------------------------------------------------------
+  // lint.
+  //---------------------------------------------------------------------------
+
+  @Test
+  public void lint_whenExpressionInvalid() {
+    var constraint = new CelConstraint(
+      "name",
+      "display name",
+      List.of(),
+      "has(");
+
+    var issues = constraint.lint();
+    assertFalse(issues.isEmpty());
+  }
+
+  @Test
+  public void lint() {
+    var constraint = new CelConstraint(
+      "name",
+      "display name",
+      List.of(new CelConstraint.StringVariable("test", "Test variable", 1, 10)),
+      "has(input.test)");
+
+    var issues = constraint.lint();
+    assertTrue(issues.isEmpty());
+  }
+
+  //---------------------------------------------------------------------------
   // Check.
   //---------------------------------------------------------------------------
 

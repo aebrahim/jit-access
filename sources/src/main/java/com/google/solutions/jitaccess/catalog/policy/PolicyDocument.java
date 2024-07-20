@@ -814,8 +814,6 @@ public class PolicyDocument {
             .stream()
             .map(CelVariableElement::fromPolicy)
             .toList());
-
-        // TODO: lint expression
       }
       else {
         throw new UnsupportedOperationException("The constraint type is not supported");
@@ -864,11 +862,21 @@ public class PolicyDocument {
 
             if (variables.stream().allMatch(Optional::isPresent)) {
               try {
-                yield new CelConstraint(
+                var constraint = new CelConstraint(
                   this.name,
                   this.displayName,
                   variables.stream().map(Optional::get).toList(),
                   this.celExpression);
+
+                for (var issue : constraint.lint()) {
+                  issues.error(
+                    Issue.Code.CONSTRAINT_INVALID_EXPRESSION,
+                    "The constraint '%s' uses an invalid CEL expression: %s",
+                    this.name,
+                    issue.getMessage());
+                }
+
+                yield constraint;
               }
               catch (Exception e) {
                 issues.error(

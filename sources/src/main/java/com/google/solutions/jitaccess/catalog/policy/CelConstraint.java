@@ -25,8 +25,11 @@ import com.google.api.client.json.GenericJson;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.solutions.jitaccess.cel.ExtractFunction;
+import dev.cel.common.CelIssue;
 import dev.cel.common.CelValidationException;
+import dev.cel.common.CelValidationResult;
 import dev.cel.common.types.CelTypes;
+import dev.cel.compiler.CelCompiler;
 import dev.cel.compiler.CelCompilerFactory;
 import dev.cel.parser.CelStandardMacro;
 import dev.cel.runtime.CelEvaluationException;
@@ -124,6 +127,13 @@ public class CelConstraint implements Constraint {
     return new Check();
   }
 
+  /**
+   * Lint the expression without evaluating it.
+   */
+  Collection<CelIssue> lint() {
+    return new Check().compile().getAllIssues();
+  }
+
   private class Check implements Constraint.Check {
     private final @NotNull Map<String, GenericJson> variables = new HashMap<>();
     private final @NotNull List<Property> input;
@@ -164,15 +174,7 @@ public class CelConstraint implements Constraint {
       };
     }
 
-    @Override
-    public boolean execute() throws ConstraintException {
-      for (var input : this.input) {
-        if (input.isRequired() && input.get() == null) {
-          throw new IllegalArgumentException(
-            String.format("Input missing for '%s'", input.displayName()));
-        }
-      }
-
+    private CelValidationResult compile() {
       //
       // Allow all the standard macros like has().
       //
@@ -184,8 +186,20 @@ public class CelConstraint implements Constraint {
         compiler.addVar(variable, CelTypes.createMap(CelTypes.STRING, CelTypes.ANY));
       }
 
+      return compiler.build().compile(expression);
+    }
+
+    @Override
+    public boolean execute() throws ConstraintException {
+      for (var input : this.input) {
+        if (input.isRequired() && input.get() == null) {
+          throw new IllegalArgumentException(
+            String.format("Input missing for '%s'", input.displayName()));
+        }
+      }
+
       try {
-        var ast = compiler.build().compile(expression).getAst();
+        var ast = compile().getAst();
 
         return (Boolean)CEL_RUNTIME
           .createProgram(ast)
