@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.solutions.jitaccess.catalog.auth.JitGroupId;
 import com.google.solutions.jitaccess.catalog.auth.Subject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -42,7 +43,7 @@ public class JitGroupPolicy extends AbstractPolicy {
   protected JitGroupPolicy(
     @NotNull String name,
     @NotNull String description,
-    @NotNull AccessControlList acl,
+    @Nullable AccessControlList acl,
     @NotNull Map<ConstraintClass, Collection<Constraint>> constraints,
     @NotNull List<Privilege> privileges,
     int maxNameLength
@@ -56,7 +57,6 @@ public class JitGroupPolicy extends AbstractPolicy {
     Preconditions.checkArgument(
       name.length() <= maxNameLength,
       "JIT group names must not exceed " + maxNameLength + " characters");
-    Preconditions.checkNotNull(acl, "JIT groups must have an ACL");
     Preconditions.checkNotNull(privileges, "Privileges must not be null");
 
     this.privileges = privileges;
@@ -65,11 +65,18 @@ public class JitGroupPolicy extends AbstractPolicy {
   public JitGroupPolicy(
     @NotNull String name,
     @NotNull String description,
-    @NotNull AccessControlList acl,
+    @Nullable AccessControlList acl,
     @NotNull Map<ConstraintClass, Collection<Constraint>> constraints,
     @NotNull List<Privilege> privileges
   ) {
     this(name, description, acl, constraints, privileges, NAME_MAX_LENGTH);
+  }
+
+  public JitGroupPolicy(
+    @NotNull String name,
+    @NotNull String description
+  ) {
+    this(name, description, null, Map.of(), List.of());
   }
 
   public @NotNull JitGroupId id() {

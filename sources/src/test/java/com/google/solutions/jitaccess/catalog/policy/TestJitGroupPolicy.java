@@ -56,12 +56,7 @@ public class TestJitGroupPolicy {
   public void constructor_whenNameInvalid_throwsException(String name) {
     assertThrows(
       IllegalArgumentException.class,
-      () -> new JitGroupPolicy(
-        name,
-        "description",
-        AccessControlList.EMPTY,
-        Map.of(),
-        List.of()));
+      () -> new JitGroupPolicy(name, "description"));
   }
 
   @Test
@@ -70,10 +65,7 @@ public class TestJitGroupPolicy {
       IllegalArgumentException.class,
       () -> new JitGroupPolicy(
         new String(new char[JitGroupPolicy.NAME_MAX_LENGTH + 1]).replace('\0', 'a'),
-        "description",
-        AccessControlList.EMPTY,
-        Map.of(),
-        List.of()));
+        "description"));
   }
 
   //---------------------------------------------------------------------------
@@ -82,12 +74,7 @@ public class TestJitGroupPolicy {
 
   @Test
   public void toStringReturnsName() {
-    var group = new JitGroupPolicy(
-      "group-1",
-      "description",
-      AccessControlList.EMPTY,
-      Map.of(),
-      List.of());
+    var group = new JitGroupPolicy("group-1", "description");
 
     assertEquals(
       "group-1",
@@ -100,12 +87,7 @@ public class TestJitGroupPolicy {
 
   @Test
   public void id() {
-    var group = new JitGroupPolicy(
-      "group-1",
-      "description",
-      AccessControlList.EMPTY,
-      Map.of(),
-      List.of());
+    var group = new JitGroupPolicy("group-1", "description");
 
     createEnvironmentPolicy()
       .add(new SystemPolicy("system-1", "")
