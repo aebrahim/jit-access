@@ -974,6 +974,7 @@ public class PolicyDocument {
         issues.error(
           Issue.Code.CONSTRAINT_INVALID_VARIABLE_DECLARATION,
           "The variable declaration '%s' is invalid: %s",
+          this.name,
           e.getMessage());
         return Optional.empty();
       }

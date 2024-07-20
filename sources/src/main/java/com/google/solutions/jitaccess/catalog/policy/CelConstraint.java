@@ -278,6 +278,11 @@ public class CelConstraint implements Constraint {
       int maxLength
     ) {
       super(name, displayName);
+
+      Preconditions.checkArgument(
+        minLength <= maxLength,
+        "The minimum length must be smaller than the maximum length");
+
       this.minLength = minLength;
       this.maxLength = maxLength;
     }
@@ -323,6 +328,11 @@ public class CelConstraint implements Constraint {
       @Nullable Long maxInclusive
     ) {
       super(name, displayName);
+
+      Preconditions.checkArgument(
+        minInclusive <= maxInclusive,
+        "The minimum value must be smaller than the maximum value");
+
       this.minInclusive = minInclusive;
       this.maxInclusive = maxInclusive;
     }
