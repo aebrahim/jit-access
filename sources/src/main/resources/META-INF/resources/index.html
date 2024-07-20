@@ -601,7 +601,7 @@
 
                         this._showLintingResult(await model.postback(
                             `source=${encodeURIComponent(editor.getValue())}`,
-                            '/lint'));
+                            'policy/lint'));
                     }
                     catch (e) {
                         document.appbar.showError(e, false);
