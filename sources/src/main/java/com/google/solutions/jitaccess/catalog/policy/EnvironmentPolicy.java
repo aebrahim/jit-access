@@ -52,13 +52,21 @@ public class EnvironmentPolicy extends AbstractPolicy {
   public EnvironmentPolicy(
     @NotNull String name,
     @NotNull String description,
-    @Nullable AccessControlList acl,
+    @NotNull AccessControlList acl,
     @NotNull Map<Policy.ConstraintClass, Collection<Constraint>> constraints,
     @NotNull Metadata metadata
   ) {
     super(name, description, acl, constraints);
 
+    //
+    // NB. An environment policies is the root of a policy hierarchy. If the
+    // environment policy doesn't have an ACL or uses an empty ACL, then
+    // none of the descendant policies can be accessed.
+    //
+
     Preconditions.checkNotNull(name, "Name must not be null");
+    Preconditions.checkNotNull(acl, "An environment policy must have an ACL");
+    Preconditions.checkNotNull(!acl.entries().isEmpty(), "The ACL must not be empty");
     Preconditions.checkArgument(
       name.matches(NAME_PATTERN),
       "Environment names must consist of letters, numbers, and hyphens, and must not exceed 16 characters");
@@ -74,6 +82,10 @@ public class EnvironmentPolicy extends AbstractPolicy {
     this(name, description, DEFAULT_ACCESS_CONTROL_LIST, Map.of(), metadata);
   }
 
+  /**
+   * Add a system policy. This method should only be used during
+   * initialization.
+   */
   public @NotNull EnvironmentPolicy add(@NotNull SystemPolicy system) {
     Preconditions.checkArgument(
       !this.systems.containsKey(system.name()),
@@ -84,10 +96,16 @@ public class EnvironmentPolicy extends AbstractPolicy {
     return this;
   }
 
+  /**
+   * Get the list of system policies.
+   */
   public @NotNull Collection<SystemPolicy> systems() {
     return Collections.unmodifiableCollection(this.systems.values());
   }
 
+  /**
+   * Lookup a system policy by name.
+   */
   public @NotNull Optional<SystemPolicy> system(@NotNull String name) {
     return Optional.ofNullable(this.systems.get(name));
   }

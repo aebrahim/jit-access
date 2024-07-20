@@ -27,9 +27,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Utility class for Exceptions.
+ */
 public class Exceptions {
   private Exceptions() {}
 
+  /**
+   * Create a message that includes details for all nested
+   * exceptions.
+   */
   public static @NotNull String fullMessage(@Nullable Throwable e) {
     var buffer = new StringBuilder();
 
@@ -51,6 +58,9 @@ public class Exceptions {
     return buffer.toString();
   }
 
+  /**
+   * Remove common wrapper exception to reveal the actual exception.
+   */
   public static @NotNull Exception unwrap(@NotNull Exception e) {
     while ((e instanceof UncheckedExecutionException || e instanceof ExecutionException) &&
       e.getCause() != null &&
@@ -61,7 +71,9 @@ public class Exceptions {
     return e;
   }
 
-
+  /**
+   * Get the innermost cause of an exception.
+   */
   public static @NotNull Exception rootCause(@NotNull Exception e) {
     if (e.getCause() instanceof Exception cause) {
       return rootCause(cause);

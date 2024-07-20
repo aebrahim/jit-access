@@ -27,7 +27,7 @@ import java.time.Duration;
 import java.util.LinkedList;
 
 /**
- * Contains utility methods for formatting durations.
+ * Utility class for formatting durations.
  */
 public class DurationFormatter {
   private DurationFormatter() {}

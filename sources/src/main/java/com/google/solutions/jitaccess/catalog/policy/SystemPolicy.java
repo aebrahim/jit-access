@@ -61,6 +61,10 @@ public class SystemPolicy extends AbstractPolicy {
     this(name, description, null, Map.of());
   }
 
+  /**
+   * Add a group policy. This method should only be used during
+   * initialization.
+   */
   public @NotNull SystemPolicy add(@NotNull JitGroupPolicy group) {
     Preconditions.checkArgument(
       !this.groups.containsKey(group.name()),
@@ -71,15 +75,24 @@ public class SystemPolicy extends AbstractPolicy {
     return this;
   }
 
-  public @NotNull Collection<JitGroupPolicy> groups() {
-    return Collections.unmodifiableCollection(this.groups.values());
-  }
-
+  /**
+   * Get the parent policy.
+   */
   public @NotNull EnvironmentPolicy environment() {
     Preconditions.checkNotNull(this.parent().isPresent(), "Parent must be set");
     return (EnvironmentPolicy)this.parent().get();
   }
 
+  /**
+   * Get the list of group policies.
+   */
+  public @NotNull Collection<JitGroupPolicy> groups() {
+    return Collections.unmodifiableCollection(this.groups.values());
+  }
+
+  /**
+   * Lookup a group policy by name.
+   */
   public Optional<JitGroupPolicy> group(@NotNull String name) {
     return Optional.ofNullable(this.groups.get(name));
   }

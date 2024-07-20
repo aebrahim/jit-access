@@ -65,14 +65,14 @@ public enum PolicyPermission {
   }
 
   /**
-   * @return bit field representation.
+   * Get the bit mask.
    */
   public int toMask() {
     return this.value;
   }
 
   /**
-   * @return bit field representation.
+   * Convert EnumSet to the equivalent bit mask representation.
    */
   public static int toMask(@NotNull EnumSet<PolicyPermission> actions) {
     int mask = 0;
@@ -82,6 +82,9 @@ public enum PolicyPermission {
     return mask;
   }
 
+  /**
+   * Convert a bit mask to an EnumSet.
+   */
   public static EnumSet<PolicyPermission> fromMask(int mask) {
     return EnumSet.copyOf(
       Arrays.stream(PolicyPermission.values())

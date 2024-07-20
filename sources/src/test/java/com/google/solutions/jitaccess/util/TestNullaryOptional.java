@@ -35,11 +35,13 @@ public class TestNullaryOptional {
   @Test
   public void ifTrue_whenTrue() {
     assertTrue(NullaryOptional.ifTrue(true).isPresent());
+    assertFalse(NullaryOptional.ifTrue(true).isEmpty());
   }
 
   @Test
   public void ifTrue_whenFalse() {
     assertFalse(NullaryOptional.ifTrue(false).isPresent());
+    assertTrue(NullaryOptional.ifTrue(false).isEmpty());
   }
 
   //---------------------------------------------------------------------------

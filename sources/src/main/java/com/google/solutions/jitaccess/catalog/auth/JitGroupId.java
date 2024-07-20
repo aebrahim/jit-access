@@ -31,6 +31,11 @@ import java.util.Optional;
 
 /**
  * Identifier of a JIT group.
+ *
+ * A JitGroupId uniquely identifies a group across
+ * all environments and systems.
+ *
+ * JitGroupIds are principals, but they can't be used for IAM.
  */
 public class JitGroupId implements Comparable<JitGroupId>, PrincipalId {
   public static final String TYPE = "jit-group";

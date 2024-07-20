@@ -63,4 +63,8 @@ public class NullaryOptional {
   public boolean isPresent() {
     return this.present;
   }
+
+  public boolean isEmpty() {
+    return !this.present;
+  }
 }

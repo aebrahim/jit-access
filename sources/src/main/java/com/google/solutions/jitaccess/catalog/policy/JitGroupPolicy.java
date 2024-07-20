@@ -79,6 +79,9 @@ public class JitGroupPolicy extends AbstractPolicy {
     this(name, description, null, Map.of(), List.of());
   }
 
+  /**
+   * Get the unique ID of the group.
+   */
   public @NotNull JitGroupId id() {
     return new JitGroupId(
       this.system().environment().name(),
@@ -86,11 +89,17 @@ public class JitGroupPolicy extends AbstractPolicy {
       this.name());
   }
 
+  /**
+   * Get the parent policy.
+   */
   public @NotNull SystemPolicy system() {
     Preconditions.checkNotNull(this.parent().isPresent(), "Parent must be set");
     return (SystemPolicy)this.parent().get();
   }
 
+  /**
+   * Get the list of privileges that a membership of this group grants.
+   */
   public @NotNull Collection<Privilege> privileges() {
     return this.privileges;
   }

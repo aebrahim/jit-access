@@ -247,15 +247,6 @@ public class TestPolicyDocument {
 
   @Nested
   public static class EnvironmentElement {
-    @Test
-    public void fromPolicy_whenAclIsNull() {
-      var policy = new EnvironmentPolicy("env", "Env", null, Map.of(), METADATA);
-      var element = PolicyDocument.EnvironmentElement.fromPolicy(policy);
-
-      assertEquals("env", element.name());
-      assertEquals("Env", element.description());
-      assertNull(element.acl());
-    }
 
     @Test
     public void fromPolicy_whenAclIsEmpty() {

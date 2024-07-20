@@ -24,6 +24,9 @@ package com.google.solutions.jitaccess.util;
 import java.nio.charset.Charset;
 import java.util.Base64;
 
+/**
+ * Utility class for Base64 escaping.
+ */
 public class Base64Escape {
   private Base64Escape() {}
 

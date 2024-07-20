@@ -38,7 +38,7 @@ public record AccessControlList(
   @NotNull Collection<Entry> entries
 ){
   /**
-   * Empty ACL that does not grant access to any principal.
+   * Empty ACL, neither allows nor denies access.
    */
   public static final @NotNull AccessControlList EMPTY = new AccessControlList(List.of());
 

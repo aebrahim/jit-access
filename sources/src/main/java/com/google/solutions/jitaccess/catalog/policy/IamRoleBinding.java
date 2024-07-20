@@ -32,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.charset.Charset;
 
 /**
- * IAM role binding for a certain resource.
+ * IAM role binding for a resource.
  *
  * @param resource resource
  * @param role IAM role
