@@ -124,7 +124,27 @@
                 <span class="jit-material-icons">chevron_right</span>
                 Policy
             </h1>
-            <div class="jit-policy-editor" style="width:800px; height:80vh; border: 1px solid">
+            <div class="jit-policy-editor">
+            </div>
+
+            <button class="mdc-button mdc-button--raised" type="submit">
+                <div class="mdc-button__ripple"></div>
+                <span class="mdc-button__label">Validate</span>
+            </button>
+            <div class="jit-policy-editor-issues">
+                <div class="mdc-data-table">
+                    <div class="mdc-data-table__table-container">
+                        <table class="mdc-data-table__table">
+                            <thead>
+                                <tr class="mdc-data-table__header-row">
+                                    <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="mdc-data-table__content">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -552,6 +572,9 @@
 
                 console.assert(model);
 
+                this.table = new mdc.dataTable.MDCDataTable(this.select('table').get(0));
+                this.table.clearRows();
+
                 this.select('.jit-environment-name')
                     .text(model.content.environment.name)
                     .prop('href', `#!/${model.content.environment.self.href}`);
@@ -559,14 +582,58 @@
                 require.config({ paths: { vs: 'thirdparty/monaco-0.50.0/vs' } });
 
                 const editorDiv = this.select('.jit-policy-editor').get(0);
+                let editor;
                 require(['vs/editor/editor.main'], function () {
-                    var editor = monaco.editor.create(
+                    editor = monaco.editor.create(
                         editorDiv,
                         {
                             value: model.content.source,
                             language: 'yaml'
                         });
+                });
+
+
+                this.select('button[type="submit"]').unbind('click').click(async () => {
+                    var dialog = new WaitDialog();
+                    dialog.showAsync();
+
+                    try {
+
+                        this._showLintingResult(await model.postback(
+                            `source=${encodeURIComponent(editor.getValue())}`,
+                            '/lint'));
+                    }
+                    catch (e) {
+                        document.appbar.showError(e, false);
+                    }
+                    finally {
+                        dialog.close();
+                    }
+                });
+
+                this._showLintingResult({ successful: true });
+            }
+
+            _showLintingResult(result) {
+                this.table.clearRows();
+                if (result.successful) {
+                    this.table.addRow(
+                        "",
+                        [
+                            { text: 'OK', icon: 'check' }
+                        ],
+                        false);
+                }
+                else {
+                    result.issues.forEach(issue => {
+                        this.table.addRow(
+                            "",
+                            [
+                                { text: issue.details, icon: issue.error ? 'error' : 'warning' }
+                            ],
+                            false);
                     });
+                }
             }
         }
 

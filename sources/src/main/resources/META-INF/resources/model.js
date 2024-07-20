@@ -77,10 +77,10 @@ class Model {
         }
     }
 
-    async postback(data) {
+    async postback(data, resource = null) {
         try {
             return await $.ajax({
-                url: `/api/catalog${this.resource}`,
+                url: `/api/catalog${resource ? resource : this.resource}`,
                 type: 'POST',
                 data: data,
                 dataType: "json",

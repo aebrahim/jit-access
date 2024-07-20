@@ -29,10 +29,7 @@ import com.google.solutions.jitaccess.catalog.policy.PolicyHeader;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -83,14 +80,13 @@ public class EnvironmentsResource {
         "The environment does not exist or access is denied"));
   }
 
-
   /**
    * Get policy source.
    */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("environments/{environment}/policy")
-  public @NotNull EnvironmentsResource.PolicyInfo getPolicy(
+  public @NotNull PolicyInfo getPolicy(
     @PathParam("environment") @NotNull String environment
   ) throws AccessDeniedException {
     return this.catalog
@@ -108,7 +104,7 @@ public class EnvironmentsResource {
   public record EnvironmentsInfo(
     @NotNull Link self,
     @NotNull List<EnvironmentInfo> environments
-  ) implements ObjectInfo {
+  ) implements MediaInfo {
   }
 
   public record EnvironmentInfo(
@@ -117,7 +113,7 @@ public class EnvironmentsResource {
     @NotNull String name,
     @NotNull String description,
     @Nullable List<SystemsResource.SystemInfo> systems
-  ) implements ObjectInfo {
+  ) implements MediaInfo {
 
     /**
      * Create EnvironmentInfo with summary information only.
@@ -156,7 +152,7 @@ public class EnvironmentsResource {
     @NotNull Link self,
     @NotNull EnvironmentInfo environment,
     @NotNull String source
-  ) implements ObjectInfo {
+  ) implements MediaInfo {
     static PolicyInfo create(@NotNull PolicyDocument doc) {
       return new PolicyInfo(
         new Link("environments/%s", doc.policy().name()),

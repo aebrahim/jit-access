@@ -75,7 +75,7 @@ public class SystemsResource {
     @NotNull String description,
     @Nullable EnvironmentsResource.EnvironmentInfo environment,
     @Nullable List<GroupsResource.GroupInfo> groups
-  ) implements ObjectInfo {
+  ) implements MediaInfo {
 
     /**
      * Create SystemInfo with summary information only.
