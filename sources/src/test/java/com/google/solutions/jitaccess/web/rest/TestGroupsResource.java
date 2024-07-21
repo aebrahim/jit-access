@@ -28,6 +28,7 @@ import com.google.solutions.jitaccess.catalog.*;
 import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
+import com.google.solutions.jitaccess.web.EventIds;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 
 public class TestGroupsResource {
@@ -61,6 +65,7 @@ public class TestGroupsResource {
     var group = Policies.createJitGroupPolicy("g-1", AccessControlList.EMPTY, Map.of());
 
     var resource = new GroupsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group);
 
     assertThrows(
@@ -76,6 +81,7 @@ public class TestGroupsResource {
     var group = Policies.createJitGroupPolicy("g-1", AccessControlList.EMPTY, Map.of());
 
     var resource = new GroupsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group);
 
     assertThrows(
@@ -84,6 +90,11 @@ public class TestGroupsResource {
         group.id().environment(),
         group.id().system(),
         "notfound"));
+
+    verify(resource.logger, times(1)).warn(
+      eq(EventIds.API_GROUPS),
+      anyString(),
+      any(Exception.class));
   }
 
   @Test
@@ -97,6 +108,7 @@ public class TestGroupsResource {
         new IamRoleBinding(new ProjectId("project-1"), new IamRole("roles/role-1"), "description", null)));
 
     var resource = new GroupsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group);
 
     var groupInfo = resource.get(group.id().environment(), group.id().system(), group.id().name());
@@ -122,6 +134,7 @@ public class TestGroupsResource {
     var group = Policies.createJitGroupPolicy("g-1", AccessControlList.EMPTY, Map.of());
 
     var resource = new GroupsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group);
 
     assertThrows(
@@ -145,6 +158,7 @@ public class TestGroupsResource {
     var group = Policies.createJitGroupPolicy("g-1", AccessControlList.EMPTY, Map.of());
 
     var resource = new GroupsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group);
 
     assertThrows(
@@ -165,6 +179,7 @@ public class TestGroupsResource {
       Map.of());
 
     var resource = new GroupsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group);
 
     assertThrows(
@@ -191,6 +206,7 @@ public class TestGroupsResource {
       ));
 
     var resource = new GroupsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group);
 
     assertThrows(
@@ -217,6 +233,7 @@ public class TestGroupsResource {
       ));
 
     var resource = new GroupsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group);
 

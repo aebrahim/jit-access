@@ -22,15 +22,14 @@
 package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
-import com.google.solutions.jitaccess.catalog.Catalog;
-import com.google.solutions.jitaccess.catalog.CatalogSources;
-import com.google.solutions.jitaccess.catalog.Policies;
-import com.google.solutions.jitaccess.catalog.Subjects;
+import com.google.solutions.jitaccess.catalog.*;
 import com.google.solutions.jitaccess.catalog.auth.Principal;
 import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
+import com.google.solutions.jitaccess.web.EventIds;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.util.List;
@@ -38,6 +37,9 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class TestSystemsResource {
 
@@ -62,6 +64,7 @@ public class TestSystemsResource {
     var group = Policies.createJitGroupPolicy("g-1", AccessControlList.EMPTY, Map.of());
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group.system().environment());
 
     assertThrows(
@@ -74,6 +77,7 @@ public class TestSystemsResource {
     var group = Policies.createJitGroupPolicy("g-1", AccessControlList.EMPTY, Map.of());
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group.system().environment());
 
     assertThrows(
@@ -86,11 +90,17 @@ public class TestSystemsResource {
     var group = Policies.createJitGroupPolicy("g-1", AccessControlList.EMPTY, Map.of());
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group.system().environment());
 
     assertThrows(
       AccessDeniedException.class,
       () ->  resource.get("unknown", "system"));
+
+    verify(resource.logger, times(1)).warn(
+      eq(EventIds.API_SYSTEMS),
+      anyString(),
+      any(Exception.class));
   }
 
   @Test
@@ -109,11 +119,17 @@ public class TestSystemsResource {
     environment.add(system);
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(environment, Subjects.create(SAMPLE_USER));
 
     assertThrows(
       AccessDeniedException.class,
       () ->  resource.get(environment.name(), system.name()));
+
+    verify(resource.logger, times(1)).warn(
+      eq(EventIds.API_SYSTEMS),
+      anyString(),
+      any(Exception.class));
   }
 
   @Test
@@ -145,6 +161,7 @@ public class TestSystemsResource {
     environment.add(system);
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(environment, Subjects.create(SAMPLE_USER));
 
     var systemInfo = resource.get(environment.name(), system.name());
@@ -185,6 +202,7 @@ public class TestSystemsResource {
     environment.add(system);
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(environment, Subjects.create(SAMPLE_USER));
 
     var systemInfo = resource.get(environment.name(), system.name());
@@ -211,6 +229,7 @@ public class TestSystemsResource {
         new Principal(group.id(), expiry)));
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group.system().environment(), subject);
 
     var systemInfo = resource.get(group.id().environment(), group.id().system());
@@ -234,6 +253,7 @@ public class TestSystemsResource {
       Map.of());
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group.system().environment());
 
     var systemInfo = resource.get(group.id().environment(), group.id().system());
@@ -256,6 +276,7 @@ public class TestSystemsResource {
       Map.of());
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group.system().environment());
 
     var systemInfo = resource.get(group.id().environment(), group.id().system());
@@ -280,6 +301,7 @@ public class TestSystemsResource {
       Map.of());
 
     var resource = new SystemsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = createCatalog(group.system().environment());
 
     var systemInfo = resource.get(group.id().environment(), group.id().system());

@@ -69,13 +69,23 @@ public class GroupsResource {
     @PathParam("environment") @NotNull String environment,
     @PathParam("system") @NotNull String system,
     @PathParam("name") @NotNull String name
-  ) throws AccessDeniedException {
-    var groupId = new JitGroupId(environment, system, name);
+  ) throws Exception {
+    try {
+      var groupId = new JitGroupId(environment, system, name);
 
-    return this.catalog
-      .group(groupId)
-      .map(GroupInfo::create)
-      .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
+      return this.catalog
+        .group(groupId)
+        .map(GroupInfo::create)
+        .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
+    }
+    catch (Exception e) {
+      this.logger.warn(
+        EventIds.API_GROUPS,
+        "Request to access group details failed",
+        e);
+
+      throw (Exception)e.fillInStackTrace();
+    }
   }
 
   /**
@@ -90,12 +100,23 @@ public class GroupsResource {
     @PathParam("system") @NotNull String system,
     @PathParam("name") @NotNull String name,
     @NotNull MultivaluedMap<String, String> inputValues
-  ) throws AccessException, IOException {
-    var groupId = new JitGroupId(environment, system, name);
+  ) throws Exception {
+    JitGroupView group;
+    try {
+      var groupId = new JitGroupId(environment, system, name);
 
-    var group = this.catalog
-      .group(groupId)
-      .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
+      group = this.catalog
+        .group(groupId)
+        .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
+    }
+    catch (Exception e) {
+      this.logger.warn(
+        EventIds.API_GROUPS,
+        "Request to access group details failed",
+        e);
+
+      throw (Exception)e.fillInStackTrace();
+    }
 
     var joinOp = group.join();
 
@@ -153,6 +174,7 @@ public class GroupsResource {
     }
 
     //TODO: log, notify
+
   }
 
   //---------------------------------------------------------------------------

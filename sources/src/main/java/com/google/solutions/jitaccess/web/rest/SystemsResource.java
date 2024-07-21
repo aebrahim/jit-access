@@ -22,9 +22,12 @@
 package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
+import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.Catalog;
+import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.SystemView;
 import com.google.solutions.jitaccess.catalog.policy.SystemPolicy;
+import com.google.solutions.jitaccess.web.EventIds;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
@@ -46,6 +49,9 @@ public class SystemsResource {
   @Inject
   Catalog catalog;
 
+  @Inject
+  Logger logger;
+
   /**
    * Get system details, including the list of groups that
    * the current user is allowed to view.
@@ -56,13 +62,23 @@ public class SystemsResource {
   public @NotNull SystemInfo get(
     @PathParam("environment") @NotNull String environment,
     @PathParam("system") @NotNull String system
-  ) throws AccessDeniedException {
-    return this.catalog
-      .environment(environment)
-      .flatMap(env -> env.system(system))
-      .map(sys -> SystemInfo.create(sys))
-      .orElseThrow(() -> new AccessDeniedException(
-        "The system does not exist or access is denied"));
+  ) throws Exception {
+    try {
+      return this.catalog
+        .environment(environment)
+        .flatMap(env -> env.system(system))
+        .map(sys -> SystemInfo.create(sys))
+        .orElseThrow(() -> new AccessDeniedException(
+          "The system does not exist or access is denied"));
+    }
+    catch (Exception e) {
+      this.logger.warn(
+        EventIds.API_SYSTEMS,
+        "Request to access system details failed",
+        e);
+
+      throw (Exception)e.fillInStackTrace();
+    }
   }
 
   //---------------------------------------------------------------------------

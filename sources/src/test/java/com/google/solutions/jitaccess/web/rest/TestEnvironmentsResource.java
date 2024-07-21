@@ -49,7 +49,7 @@ public class TestEnvironmentsResource {
   //---------------------------------------------------------------------------
 
   @Test
-  public void environments_returnsSortedList() {
+  public void environments_returnsSortedList() throws Exception {
     var resource = new EnvironmentsResource();
     resource.logger = Mockito.mock(Logger.class);
     resource.catalog = Mockito.mock(Catalog.class);
@@ -264,7 +264,7 @@ public class TestEnvironmentsResource {
   }
 
   @Test
-  public void getPolicy() throws AccessException {
+  public void getPolicy() throws Exception {
     var subject = Subjects.create(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(

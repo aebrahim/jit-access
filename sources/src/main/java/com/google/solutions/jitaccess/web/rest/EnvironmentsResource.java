@@ -58,16 +58,26 @@ public class EnvironmentsResource {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("environments")
-  public @NotNull EnvironmentsResource.EnvironmentsInfo list() {
-    var environments = this.catalog.environments()
-      .stream()
-      .sorted(Comparator.comparing(env -> env.name()))
-      .map(env -> EnvironmentInfo.createSummary(env))
-      .collect(Collectors.toList());
+  public @NotNull EnvironmentsResource.EnvironmentsInfo list() throws Exception {
+    try {
+      var environments = this.catalog.environments()
+        .stream()
+        .sorted(Comparator.comparing(env -> env.name()))
+        .map(env -> EnvironmentInfo.createSummary(env))
+        .collect(Collectors.toList());
 
-    return new EnvironmentsInfo(
-      new Link("environments"),
-      environments);
+      return new EnvironmentsInfo(
+        new Link("environments"),
+        environments);
+    }
+    catch (Exception e) {
+      this.logger.warn(
+        EventIds.API_ENVIRONMENTS,
+        "Request to access environment details failed",
+        e);
+
+      throw (Exception)e.fillInStackTrace();
+    }
   }
 
   /**
@@ -79,7 +89,7 @@ public class EnvironmentsResource {
   @Path("environments/{environment}")
   public @NotNull EnvironmentInfo get(
     @PathParam("environment") @NotNull String environment
-  ) throws AccessException {
+  ) throws Exception {
     try {
       return this.catalog
         .environment(environment)
@@ -93,7 +103,7 @@ public class EnvironmentsResource {
         "Request to access environment details failed",
         e);
 
-      throw (AccessException)e.fillInStackTrace();
+      throw (Exception)e.fillInStackTrace();
     }
   }
 
@@ -105,7 +115,7 @@ public class EnvironmentsResource {
   @Path("environments/{environment}/policy")
   public @NotNull PolicyInfo getPolicy(
     @PathParam("environment") @NotNull String environment
-  ) throws AccessException {
+  ) throws Exception {
     try {
       return this.catalog
         .environment(environment)
@@ -120,7 +130,7 @@ public class EnvironmentsResource {
         "Request to export the environment policy failed",
         e);
 
-      throw (AccessException)e.fillInStackTrace();
+      throw (Exception)e.fillInStackTrace();
     }
   }
 
