@@ -77,6 +77,19 @@ public class TestJsonLogger {
       buffer.toString());
   }
 
+  @Test
+  public void warn_whenExceptionPassed() {
+    var buffer = new StringBuilder();
+    var logger = new JsonLogger(buffer);
+    logger.warn("E1", "exception",
+      new IllegalStateException("outer-exception",
+        new IllegalArgumentException("inner-exception")));
+
+    assertEquals(
+      "{\"severity\":\"WARN\",\"message\":\"exception: outer-exception, caused by IllegalArgumentException: inner-exception\",\"logging.googleapis.com/labels\":{\"event\":\"E1\"}}\n",
+      buffer.toString());
+  }
+
   // -------------------------------------------------------------------------
   // error.
   // -------------------------------------------------------------------------

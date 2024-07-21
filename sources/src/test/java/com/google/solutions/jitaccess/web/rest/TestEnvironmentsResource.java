@@ -22,11 +22,14 @@
 package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
+import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.CatalogSources;
+import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.Subjects;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
+import com.google.solutions.jitaccess.web.EventIds;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -35,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class TestEnvironmentsResource {
   private static final UserId SAMPLE_USER = new UserId("user@example.com");
@@ -48,6 +51,7 @@ public class TestEnvironmentsResource {
   @Test
   public void environments_returnsSortedList() {
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = Mockito.mock(Catalog.class);
 
     when(resource.catalog.environments())
@@ -93,6 +97,7 @@ public class TestEnvironmentsResource {
   @Test
   public void get_whenEnvironmentNotFound() throws Exception {
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
       CatalogSources.create(List.of()));
@@ -100,6 +105,11 @@ public class TestEnvironmentsResource {
     assertThrows(
       AccessDeniedException.class,
       () ->  resource.get("unknown"));
+
+    verify(resource.logger, times(1)).warn(
+      eq(EventIds.API_ENVIRONMENTS),
+        anyString(),
+        any(Exception.class));
   }
 
   @Test
@@ -112,6 +122,7 @@ public class TestEnvironmentsResource {
       METADATA);
 
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
       CatalogSources.create(environment));
@@ -119,6 +130,11 @@ public class TestEnvironmentsResource {
     assertThrows(
       AccessDeniedException.class,
       () ->  resource.get(environment.name()));
+
+    verify(resource.logger, times(1)).warn(
+      eq(EventIds.API_ENVIRONMENTS),
+      anyString(),
+      any(Exception.class));
   }
 
   @Test
@@ -146,6 +162,7 @@ public class TestEnvironmentsResource {
     environment.add(deniedSystem);
 
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
       CatalogSources.create(environment));
@@ -169,6 +186,7 @@ public class TestEnvironmentsResource {
     environment.add(new SystemPolicy("system-1", "One"));
 
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
       CatalogSources.create(environment));
@@ -192,6 +210,7 @@ public class TestEnvironmentsResource {
       new Policy.Metadata("test", Instant.EPOCH));
 
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
       CatalogSources.create(environment));
@@ -204,6 +223,7 @@ public class TestEnvironmentsResource {
   @Test
   public void getPolicy_whenEnvironmentNotFound() throws Exception {
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
       CatalogSources.create(List.of()));
@@ -211,6 +231,11 @@ public class TestEnvironmentsResource {
     assertThrows(
       AccessDeniedException.class,
       () ->  resource.getPolicy("unknown"));
+
+    verify(resource.logger, times(1)).warn(
+      eq(EventIds.API_ENVIRONMENTS),
+      anyString(),
+      any(Exception.class));
   }
 
   @Test
@@ -223,6 +248,7 @@ public class TestEnvironmentsResource {
       METADATA);
 
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
       CatalogSources.create(environment));
@@ -230,10 +256,15 @@ public class TestEnvironmentsResource {
     assertThrows(
       AccessDeniedException.class,
       () ->  resource.getPolicy(environment.name()));
+
+    verify(resource.logger, times(1)).warn(
+      eq(EventIds.API_ENVIRONMENTS),
+      anyString(),
+      any(Exception.class));
   }
 
   @Test
-  public void getPolicy() throws AccessDeniedException {
+  public void getPolicy() throws AccessException {
     var subject = Subjects.create(SAMPLE_USER);
 
     var environment = new EnvironmentPolicy(
@@ -245,6 +276,7 @@ public class TestEnvironmentsResource {
       new Policy.Metadata("test", Instant.EPOCH));
 
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = new Catalog(
       subject,
       CatalogSources.create(environment));

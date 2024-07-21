@@ -132,6 +132,19 @@ public class JsonLogger implements Logger {
   }
 
   @Override
+  public void warn(
+    @NotNull String eventId,
+    @NotNull String message,
+    @NotNull Exception exception
+  ) {
+    log(new LogEntry(
+      "WARN",
+      String.format("%s: %s", message, Exceptions.fullMessage(exception)),
+      createLabels(eventId),
+      traceId()));
+  }
+
+  @Override
   public void error(
     @NotNull String eventId,
     @NotNull String message

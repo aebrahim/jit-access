@@ -22,10 +22,13 @@
 package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
+import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.EnvironmentView;
+import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.policy.PolicyDocument;
 import com.google.solutions.jitaccess.catalog.policy.PolicyHeader;
+import com.google.solutions.jitaccess.web.EventIds;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
@@ -45,6 +48,9 @@ import java.util.stream.Collectors;
 public class EnvironmentsResource {
   @Inject
   Catalog catalog;
+
+  @Inject
+  Logger logger;
 
   /**
    * Get list of environments, limited to basic information.
@@ -73,12 +79,22 @@ public class EnvironmentsResource {
   @Path("environments/{environment}")
   public @NotNull EnvironmentInfo get(
     @PathParam("environment") @NotNull String environment
-  ) throws AccessDeniedException {
-    return this.catalog
-      .environment(environment)
-      .map(env -> EnvironmentInfo.create(env))
-      .orElseThrow(() -> new AccessDeniedException(
-        "The environment does not exist or access is denied"));
+  ) throws AccessException {
+    try {
+      return this.catalog
+        .environment(environment)
+        .map(env -> EnvironmentInfo.create(env))
+        .orElseThrow(() -> new AccessDeniedException(
+          "The environment does not exist or access is denied"));
+    }
+    catch (Exception e) {
+      this.logger.warn(
+        EventIds.API_ENVIRONMENTS,
+        "Request to access environment details failed",
+        e);
+
+      throw (AccessException)e.fillInStackTrace();
+    }
   }
 
   /**
@@ -89,13 +105,23 @@ public class EnvironmentsResource {
   @Path("environments/{environment}/policy")
   public @NotNull PolicyInfo getPolicy(
     @PathParam("environment") @NotNull String environment
-  ) throws AccessDeniedException {
-    return this.catalog
-      .environment(environment)
-      .flatMap(EnvironmentView::export)
-      .map(doc -> PolicyInfo.create(doc))
-      .orElseThrow(() -> new AccessDeniedException(
-        "The environment does not exist or access is denied"));
+  ) throws AccessException {
+    try {
+      return this.catalog
+        .environment(environment)
+        .flatMap(EnvironmentView::export)
+        .map(doc -> PolicyInfo.create(doc))
+        .orElseThrow(() -> new AccessDeniedException(
+          "The environment does not exist or access is denied"));
+    }
+    catch (Exception e) {
+      this.logger.warn(
+        EventIds.API_ENVIRONMENTS,
+        "Request to export the environment policy failed",
+        e);
+
+      throw (AccessException)e.fillInStackTrace();
+    }
   }
 
   //---------------------------------------------------------------------------

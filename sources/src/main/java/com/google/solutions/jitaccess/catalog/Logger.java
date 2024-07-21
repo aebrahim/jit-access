@@ -45,6 +45,17 @@ public interface Logger {
    * Log an error event
    * @param eventId unique ID for the event
    * @param message formatted message.
+   * @param exception exception
+   */
+  void warn(
+    @NotNull String eventId,
+    @NotNull String message,
+    @NotNull Exception exception);
+
+  /**
+   * Log an error event
+   * @param eventId unique ID for the event
+   * @param message formatted message.
    */
   void error(
     @NotNull String eventId,

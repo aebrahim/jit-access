@@ -26,6 +26,7 @@ package com.google.solutions.jitaccess.web;
  */
 public class EventIds {
   public static final String API_HEALTH = "api.checkHealth";
+  public static final String API_ENVIRONMENTS = "api.environments";
   public static final String API_CONSTRAINT_FAILURE = "api.constraintFailure";
   public static final String STARTUP = "runtime.startup";
   public static final String LOAD_ENVIRONMENT = "runtime.loadEnvironment";
