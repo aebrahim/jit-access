@@ -124,6 +124,9 @@
                 <span class="jit-material-icons">chevron_right</span>
                 Policy
             </h1>
+            <div class="jit-card-header">
+                <span class="jit-policy-description"></span>
+            </div>
             <div class="jit-policy-editor">
             </div>
 
@@ -579,6 +582,8 @@
                 this.select('.jit-environment-name')
                     .text(model.content.environment.name)
                     .prop('href', `#!/${model.content.environment.self.href}`);
+                this.select('.jit-policy-description')
+                    .text(`${model.content.source} (last modified: ${new Date(model.content.lastModified * 1000).toLocaleString()})`)
 
                 require.config({ paths: { vs: 'thirdparty/monaco-0.50.0/vs' } });
 
@@ -588,7 +593,7 @@
                     editor = monaco.editor.create(
                         editorDiv,
                         {
-                            value: model.content.source,
+                            value: model.content.policy,
                             language: 'yaml',
                             minimap: { enabled: false },
                         });

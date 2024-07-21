@@ -250,10 +250,12 @@ public class TestEnvironmentsResource {
       CatalogSources.create(environment));
 
     var policy = resource.getPolicy(environment.name());
-    assertTrue(policy.source().contains("schemaVersion: 1"));
+    assertTrue(policy.policy().contains("schemaVersion: 1"));
 
     assertEquals("env-1", policy.environment().name());
     assertEquals("Env-1", policy.environment().description());
     assertNull(policy.environment().systems());
+    assertEquals(environment.metadata().source(), policy.source());
+    assertEquals(environment.metadata().lastModified().getEpochSecond(), policy.lastModified());
   }
 }

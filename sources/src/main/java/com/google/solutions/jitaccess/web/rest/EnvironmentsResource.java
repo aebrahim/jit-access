@@ -34,6 +34,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -151,13 +152,17 @@ public class EnvironmentsResource {
   public record PolicyInfo(
     @NotNull Link self,
     @NotNull EnvironmentInfo environment,
-    @NotNull String source
+    @NotNull String policy,
+    @NotNull String source,
+    @NotNull Long lastModified
   ) implements MediaInfo {
     static PolicyInfo create(@NotNull PolicyDocument doc) {
       return new PolicyInfo(
         new Link("environments/%s", doc.policy().name()),
         EnvironmentInfo.createSummary(doc.policy()),
-        doc.toString());
+        doc.toString(),
+        doc.policy().metadata().source(),
+        doc.policy().metadata().lastModified().getEpochSecond());
     }
   }
 }
