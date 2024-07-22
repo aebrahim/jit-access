@@ -2,6 +2,8 @@ package com.google.solutions.jitaccess.catalog;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 public interface Logger {
   /**
    * Log an informational event
@@ -81,4 +83,11 @@ public interface Logger {
     @NotNull String eventId,
     @NotNull String message,
     @NotNull Exception exception);
+
+  /**
+   * Add an extra label to all statements.
+   */
+  void addLabel(
+    @NotNull String label,
+    @NotNull String value);
 }

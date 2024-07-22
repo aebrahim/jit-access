@@ -43,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -105,13 +106,13 @@ public class GroupsResource {
     JitGroupView group;
     try {
       var groupId = new JitGroupId(environment, system, name);
+      this.logger.addLabel("group/id", groupId.value());
 
       group = this.catalog
         .group(groupId)
         .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
     }
     catch (Exception e) {
-      // TODO: Add labels
       this.logger.warn(
         EventIds.API_JOIN_GROUP,
         "Request to access group details failed",
@@ -120,6 +121,9 @@ public class GroupsResource {
       throw (Exception)e.fillInStackTrace();
     }
 
+    //
+    // Attempt to join.
+    //
     var joinOp = group.join();
 
     for (var input : joinOp.input()) {
@@ -133,6 +137,7 @@ public class GroupsResource {
       }
 
       input.set(inputValues.get(input.name()).get(0));
+      this.logger.addLabel("input/" + input.name(), input.get());
     }
 
     try {
@@ -141,6 +146,11 @@ public class GroupsResource {
       }
       else {
         var principal = joinOp.execute();
+
+        this.logger.info(
+          EventIds.API_JOIN_GROUP,
+          "Joined group with expiry %s",
+          principal.expiry().atZone(ZoneOffset.UTC).toString());
 
         return GroupInfo.create(
           group,
@@ -175,7 +185,6 @@ public class GroupsResource {
       throw new AccessDeniedException(e.getMessage(), e);
     }
     catch (Exception e) {
-      // TODO: Add labels
       this.logger.warn(
         EventIds.API_JOIN_GROUP,
         "Joining group failed",
@@ -183,9 +192,6 @@ public class GroupsResource {
 
       throw (Exception)e.fillInStackTrace();
     }
-
-    //TODO: log, notify
-
   }
 
   //---------------------------------------------------------------------------

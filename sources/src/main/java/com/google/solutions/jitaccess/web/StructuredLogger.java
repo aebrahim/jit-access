@@ -43,6 +43,8 @@ abstract class StructuredLogger implements Logger {
 
   protected final @NotNull Appendable output;
 
+  private final @NotNull Map<String, String> extraLabels = new HashMap<>();
+
   StructuredLogger(@NotNull Appendable output) {
     this.output = output;
   }
@@ -65,6 +67,7 @@ abstract class StructuredLogger implements Logger {
 
   protected @NotNull Map<String, String> createLabels(String eventId) {
     var labels = new HashMap<String, String>();
+    labels.putAll(this.extraLabels);
     labels.put("event", eventId);
     return labels;
   }
@@ -184,6 +187,11 @@ abstract class StructuredLogger implements Logger {
       traceId()));
   }
 
+  @Override
+  public void addLabel(@NotNull String label, @NotNull String value) {
+    this.extraLabels.put(label, value);
+  }
+
   //---------------------------------------------------------------------
   // Inner classes.
   //---------------------------------------------------------------------
@@ -225,6 +233,15 @@ abstract class StructuredLogger implements Logger {
 
     ApplicationContextLogger(@NotNull Appendable output) {
       super(output);
+    }
+
+    @Override
+    public void addLabel(@NotNull String label, @NotNull String value) {
+      //
+      // This logger isn't scoped to any particular request or lifetime,
+      // so adding labels might have unexpected effects.
+      //
+      throw new UnsupportedOperationException();
     }
   }
 
