@@ -38,6 +38,11 @@ public interface Policy extends PolicyHeader {
   @NotNull String name();
 
   /**
+   * Display name of policy.
+   */
+  @NotNull String displayName();
+
+  /**
    * Description of policy.
    */
   @NotNull String description();

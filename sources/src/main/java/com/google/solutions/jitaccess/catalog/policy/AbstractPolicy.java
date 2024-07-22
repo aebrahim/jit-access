@@ -35,6 +35,7 @@ import java.util.Optional;
  */
 abstract class AbstractPolicy implements Policy {
   private final @NotNull String name;
+  private final @NotNull String displayName;
   private final @NotNull String description;
   private @Nullable Policy parent;
   private final @Nullable AccessControlList acl;
@@ -50,19 +51,28 @@ abstract class AbstractPolicy implements Policy {
       name != null && !name.isBlank(),
       "The policy must have a name");
     this.name = name.toLowerCase();
+    this.displayName = name;
     this.description = description;
     this.acl = acl;
     this.constraints = constraints;
   }
 
   /**
-   * Name of the policy, used as display name and to uniquely identify the group
-   * within a system. Names must be lower-case.
+   * Name of policy.
    */
   @NotNull
   @Override
   public String name() {
     return name;
+  }
+
+  /**
+   * Display name of policy.
+   */
+  @NotNull
+  @Override
+  public String displayName() {
+    return displayName;
   }
 
   /**

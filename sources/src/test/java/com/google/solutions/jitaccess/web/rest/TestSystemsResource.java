@@ -28,6 +28,7 @@ import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import com.google.solutions.jitaccess.web.EventIds;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -194,11 +195,16 @@ public class TestSystemsResource {
       Map.of(),
       List.of()));
     system.add(new JitGroupPolicy(
-      "group-1",
+      "z-group-1",
       "One",
       AccessControlList.EMPTY,
       Map.of(),
-      List.of()));
+      List.of()) {
+      @Override
+      public @NotNull String displayName() {
+        return "group-1";
+      }
+    });
     environment.add(system);
 
     var resource = new SystemsResource();
@@ -208,7 +214,7 @@ public class TestSystemsResource {
     var systemInfo = resource.get(environment.name(), system.name());
     var groups = List.copyOf(systemInfo.groups());
 
-    assertEquals("group-1", groups.get(0).name());
+    assertEquals("z-group-1", groups.get(0).name());
     assertEquals("group-2", groups.get(1).name());
     assertEquals("group-3", groups.get(2).name());
   }

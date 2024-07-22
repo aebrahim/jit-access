@@ -30,6 +30,7 @@ import com.google.solutions.jitaccess.catalog.Subjects;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import com.google.solutions.jitaccess.web.EventIds;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -85,6 +86,7 @@ public class TestEnvironmentsResource {
       new Policy.Metadata("test", Instant.EPOCH));
 
     var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
     resource.catalog = new Catalog(
       Subjects.create(SAMPLE_USER),
       CatalogSources.create(environment));
@@ -183,7 +185,12 @@ public class TestEnvironmentsResource {
       new Policy.Metadata("test", Instant.EPOCH));
     environment.add(new SystemPolicy("system-2", "Two"));
     environment.add(new SystemPolicy("system-3", "Three"));
-    environment.add(new SystemPolicy("system-1", "One"));
+    environment.add(new SystemPolicy("z-system-1", "One") {
+      @Override
+      public @NotNull String displayName() {
+        return "system-1";
+      }
+    });
 
     var resource = new EnvironmentsResource();
     resource.logger = Mockito.mock(Logger.class);
@@ -193,7 +200,7 @@ public class TestEnvironmentsResource {
 
     var environmentInfo = resource.get(environment.name());
     var systems = List.copyOf(environmentInfo.systems());
-    assertEquals("system-1", systems.get(0).name());
+    assertEquals("z-system-1", systems.get(0).name());
     assertEquals("system-2", systems.get(1).name());
     assertEquals("system-3", systems.get(2).name());
   }

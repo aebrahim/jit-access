@@ -239,6 +239,11 @@ public class LegacyPolicy extends EnvironmentPolicy {
     }
 
     @Override
+    public @NotNull String displayName() {
+      return this.projectId.id();
+    }
+
+    @Override
     public @NotNull SystemPolicy add(@NotNull JitGroupPolicy group) {
       throw new UnsupportedOperationException();
     }

@@ -148,6 +148,7 @@ public class EnvironmentsResource {
     @NotNull Link self,
     @Nullable Link policy,
     @NotNull String name,
+    @NotNull String displayName,
     @NotNull String description,
     @Nullable List<SystemsResource.SystemInfo> systems
   ) implements MediaInfo {
@@ -161,6 +162,7 @@ public class EnvironmentsResource {
       return new EnvironmentInfo(
         new Link("environments/%s", policy.name()),
         null,
+        policy.name(),
         policy.name(),
         policy.description(),
         null);
@@ -176,10 +178,11 @@ public class EnvironmentsResource {
           ? new Link("environments/%s/policy", environment.policy().name())
           : null,
         environment.policy().name(),
+        environment.policy().displayName(),
         environment.policy().description(),
         environment.systems()
           .stream()
-          .sorted(Comparator.comparing(sys -> sys.policy().name()))
+          .sorted(Comparator.comparing(sys -> sys.policy().displayName()))
           .map(sys -> SystemsResource.SystemInfo.createSummary(sys.policy()))
           .toList());
     }

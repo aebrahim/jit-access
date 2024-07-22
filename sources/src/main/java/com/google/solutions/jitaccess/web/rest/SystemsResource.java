@@ -88,6 +88,7 @@ public class SystemsResource {
   public record SystemInfo(
     @NotNull Link self,
     @NotNull String name,
+    @NotNull String displayName,
     @NotNull String description,
     @Nullable EnvironmentsResource.EnvironmentInfo environment,
     @Nullable List<GroupsResource.GroupInfo> groups
@@ -102,6 +103,7 @@ public class SystemsResource {
       return new SystemInfo(
         new Link("environments/%s/systems/%s", policy.environment().name(), policy.name()),
         policy.name(),
+        policy.displayName(),
         policy.description(),
         null,
         null);
@@ -116,11 +118,12 @@ public class SystemsResource {
       return new SystemInfo(
         new Link("environments/%s/systems/%s", policy.environment().name(), policy.name()),
         policy.name(),
+        policy.displayName(),
         policy.description(),
         EnvironmentsResource.EnvironmentInfo.createSummary(policy.environment()),
         system.groups()
           .stream()
-          .sorted(Comparator.comparing(grp -> grp.policy().name()))
+          .sorted(Comparator.comparing(grp -> grp.policy().displayName()))
           .map(GroupsResource.GroupInfo::create)
           .toList());
     }

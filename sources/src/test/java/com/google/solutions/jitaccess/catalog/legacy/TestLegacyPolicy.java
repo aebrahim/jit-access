@@ -157,6 +157,8 @@ public class TestLegacyPolicy {
     var projectPolicy = policy.system(LegacyPolicy.ProjectPolicy.createName(projectNumber));
     assertTrue(projectPolicy.isPresent());
 
+    assertEquals("3039", projectPolicy.get().name());
+    assertEquals("project-1", projectPolicy.get().displayName());
     assertEquals("Project project-1", projectPolicy.get().description());
     assertEquals(0, projectPolicy.get().groups().size());
   }
@@ -216,6 +218,8 @@ public class TestLegacyPolicy {
     var projectPolicy = policy.system(LegacyPolicy.ProjectPolicy.createName(projectNumber));
     assertTrue(projectPolicy.isPresent());
 
+    assertEquals("3039", projectPolicy.get().name());
+    assertEquals("project-1", projectPolicy.get().displayName());
     assertEquals("Project project-1", projectPolicy.get().description());
     var group = List.copyOf(projectPolicy.get().groups()).get(0);
 
@@ -247,6 +251,8 @@ public class TestLegacyPolicy {
     var projectPolicy = policy.system(LegacyPolicy.ProjectPolicy.createName(projectNumber));
     assertTrue(projectPolicy.isPresent());
 
+    assertEquals("3039", projectPolicy.get().name());
+    assertEquals("project-1", projectPolicy.get().displayName());
     assertEquals("Project project-1", projectPolicy.get().description());
     var group = List.copyOf(projectPolicy.get().groups()).get(0);
     assertEquals(1, group.accessControlList().get().entries().size());

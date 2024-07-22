@@ -225,7 +225,7 @@
                 this.table = new mdc.dataTable.MDCDataTable(this.select('table').get(0));
                 this.table.clearRows();
 
-                this.select('h1').text(model.content.name);
+                this.select('h1').text(model.content.displayName);
                 this.select('.jit-environment-description').text(model.content.description);
 
                 this.select('.mdc-button')
@@ -237,7 +237,7 @@
                         this.table.addRow(
                             item.id,
                             [
-                                { text: item.name, icon: 'deployed_code', href: `#!/${item.self.href}` },
+                                { text: item.displayName, icon: 'deployed_code', href: `#!/${item.self.href}` },
                                 { text: item.description, maxLength: 40 }
                             ],
                             false);
@@ -256,9 +256,9 @@
                 this.table.clearRows();
 
                 this.select('.jit-environment-name')
-                    .text(model.content.environment.name)
+                    .text(model.content.environment.displayName)
                     .prop('href', `#!/${model.content.environment.self.href}`);
-                this.select('.jit-system-name').text(model.content.name);
+                this.select('.jit-system-name').text(model.content.displayName);
                 this.select('.jit-system-description').text(model.content.description);
 
                 if (model.content.groups) {
@@ -266,7 +266,7 @@
                         this.table.addRow(
                             item.id,
                             [
-                                { text: item.name, icon: 'group', href: `#!/${item.self.href}` },
+                                { text: item.displayName, icon: 'group', href: `#!/${item.self.href}` },
                                 { text: item.description, maxLength: 70 },
                                 {
                                     text: item.access.membership.active ? this._formatExpiry(item.access.membership.expiry) : "-",
@@ -327,12 +327,12 @@
                 // Details.
                 //
                 this.select('.jit-environment-name')
-                    .text(groupInfo.environment.name)
+                    .text(groupInfo.environment.displayName)
                     .prop('href', `#!/${groupInfo.environment.self.href}`);
                 this.select('.jit-system-name')
-                    .text(groupInfo.system.name)
+                    .text(groupInfo.system.displayName)
                     .prop('href', `#!/${groupInfo.system.self.href}`);
-                this.select('.jit-group-name').text(groupInfo.name);
+                this.select('.jit-group-name').text(groupInfo.displayName);
                 this.select('.jit-group-description').text(groupInfo.description);
 
                 this.details.addRow({
@@ -580,7 +580,7 @@
                 this.table.clearRows();
 
                 this.select('.jit-environment-name')
-                    .text(model.content.environment.name)
+                    .text(model.content.environment.displayName)
                     .prop('href', `#!/${model.content.environment.self.href}`);
                 this.select('.jit-policy-description')
                     .text(`${model.content.source} (last modified: ${new Date(model.content.lastModified * 1000).toLocaleString()})`)

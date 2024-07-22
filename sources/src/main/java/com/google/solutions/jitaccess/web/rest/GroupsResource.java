@@ -195,6 +195,7 @@ public class GroupsResource {
     @NotNull Link self,
     @NotNull String id,
     @NotNull String name,
+    @NotNull String displayName,
     @NotNull String description,
     @NotNull String cloudIdentityGroup,
     @NotNull List<PrivilegeInfo> privileges,
@@ -238,6 +239,7 @@ public class GroupsResource {
           g.policy().id().name()),
         g.policy().id().toString(),
         g.policy().name(),
+        g.policy().displayName(),
         g.policy().description(),
         g.cloudIdentityGroupId().email,
         g.policy()
