@@ -145,10 +145,19 @@ public class CloudIdentityGroupsClient {
         throw new IllegalArgumentException("Invalid argument", e);
       case 401:
         throw new NotAuthenticatedException("Not authenticated", e);
-      case 403:
-        throw new AccessDeniedException("Not found or access denied", e);
+      case 403: {
+        if (e.getDetails() != null) {
+          var message = e.getDetails().get("message");
+          if (message != null && message instanceof String &&
+            (((String) message).contains("3005") || ((String) message).contains("3006"))) {
+            throw new AccessDeniedException("This feature requires a Cloud Identity Premium or Workspace subscription");
+          }
+        }
+
+        throw new AccessDeniedException("The group or membership does not exist, or access is denied", e);
+      }
       case 404:
-        throw new ResourceNotFoundException("Not found", e);
+        throw new ResourceNotFoundException("The group or membership does not exist", e);
       default:
         throw (GoogleJsonResponseException)e.fillInStackTrace();
     }
