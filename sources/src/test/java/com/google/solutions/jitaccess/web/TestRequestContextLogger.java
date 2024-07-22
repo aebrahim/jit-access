@@ -35,17 +35,19 @@ public class TestRequestContextLogger {
   public void info_whenTraceIdAndUserIdSet() {
     var buffer = new StringBuilder();
     var requestContext = new RequestContext(Mockito.mock(SubjectResolver.class));
+    requestContext.initialize("GET", "/", "trace-1");
     requestContext.authenticate(
       new UserId("id"),
       new IapDevice("device-id", List.of()));
     var logger = new RequestContextLogger(buffer, requestContext);
-    logger.setTraceId("trace-1");
 
     logger.info("event-1", "message-1");
 
     assertEquals(
       "{\"severity\":\"INFO\",\"message\":\"message-1\",\"logging.googleapis.com/labels\":" +
-        "{\"device_id\":\"device-id\",\"user_id\":\"id\",\"event\":\"event-1\"," +
+        "{\"device_id\":\"device-id\",\"user_id\":\"id\"," +
+        "\"request_path\":\"/\",\"request_method\":\"GET\"," +
+        "\"event\":\"event-1\"," +
         "\"device_access_levels\":\"\"},\"logging.googleapis.com/trace\":\"trace-1\"}\n",
       buffer.toString());
   }
@@ -54,17 +56,18 @@ public class TestRequestContextLogger {
   public void info_whenTraceIdAndAccessLevelsSet() {
     var buffer = new StringBuilder();
     var requestContext = new RequestContext(Mockito.mock(SubjectResolver.class));
+    requestContext.initialize("GET", "/", "trace-1");
     requestContext.authenticate(
       new UserId("id"),
       new IapDevice("device-id", List.of("level-1", "level-2")));
     var logger = new RequestContextLogger(buffer, requestContext);
-    logger.setTraceId("trace-1");
 
     logger.info("event-1", "message-1");
 
     assertEquals(
       "{\"severity\":\"INFO\",\"message\":\"message-1\",\"logging.googleapis.com/labels\":" +
-        "{\"device_id\":\"device-id\",\"user_id\":\"id\",\"event\":\"event-1\"," +
+        "{\"device_id\":\"device-id\",\"user_id\":\"id\"," +
+        "\"request_path\":\"/\",\"request_method\":\"GET\",\"event\":\"event-1\"," +
         "\"device_access_levels\":\"level-1, level-2\"}," +
         "\"logging.googleapis.com/trace\":\"trace-1\"}\n",
       buffer.toString());

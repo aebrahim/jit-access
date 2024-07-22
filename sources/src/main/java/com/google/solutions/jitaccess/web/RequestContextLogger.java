@@ -46,16 +46,9 @@ class RequestContextLogger extends JsonLogger {
     this(System.out, requestContext);
   }
 
-  /**
-   * Set Trace ID for current request.
-   */
-  void setTraceId(@Nullable String traceId) {
-    this.traceId = traceId;
-  }
-
   @Override
   protected @Nullable String traceId() {
-    return this.traceId;
+    return this.requestContext.requestTraceId();
   }
 
   @Override
@@ -68,6 +61,9 @@ class RequestContextLogger extends JsonLogger {
       labels.put("device_access_levels",
         String.join(", ", requestContext.device().accessLevels()));
     }
+
+    labels.put("request_method", requestContext.requestMethod());
+    labels.put("request_path", requestContext.requestPath());
 
     return labels;
   }

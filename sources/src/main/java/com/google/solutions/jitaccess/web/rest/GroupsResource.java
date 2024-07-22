@@ -33,6 +33,7 @@ import com.google.solutions.jitaccess.catalog.policy.Privilege;
 import com.google.solutions.jitaccess.catalog.policy.Property;
 import com.google.solutions.jitaccess.util.Coalesce;
 import com.google.solutions.jitaccess.web.EventIds;
+import com.google.solutions.jitaccess.web.LogRequest;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
@@ -51,6 +52,7 @@ import java.util.Optional;
 @Dependent
 @Path("/api/catalog")
 @RequireIapPrincipal
+@LogRequest
 public class GroupsResource {
   @Inject
   Catalog catalog;

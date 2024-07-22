@@ -28,6 +28,7 @@ import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.SystemView;
 import com.google.solutions.jitaccess.catalog.policy.SystemPolicy;
 import com.google.solutions.jitaccess.web.EventIds;
+import com.google.solutions.jitaccess.web.LogRequest;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
@@ -45,6 +46,7 @@ import java.util.List;
 @Dependent
 @Path("/api/catalog")
 @RequireIapPrincipal
+@LogRequest
 public class SystemsResource {
   @Inject
   Catalog catalog;

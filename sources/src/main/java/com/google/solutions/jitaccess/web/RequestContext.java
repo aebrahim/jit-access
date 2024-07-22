@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.auth.*;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.validation.constraints.Null;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,9 +31,26 @@ public class RequestContext {
   private final @NotNull AuthenticationContext authenticationContext;
   private final @NotNull SubjectResolver subjectResolver;
 
+  private @Nullable String requestMethod;
+  private @Nullable String requestPath;
+  private @Nullable String requestTraceId;
+
   public RequestContext(@NotNull SubjectResolver subjectResolver) {
     this.authenticationContext = new AuthenticationContext();
     this.subjectResolver = subjectResolver;
+  }
+
+  /**
+   * Initialize request details.
+   */
+  void initialize(
+    @NotNull String method,
+    @NotNull String path,
+    @Nullable String traceId
+  ) {
+    this.requestMethod = method;
+    this.requestPath = path;
+    this.requestTraceId = traceId;
   }
 
   /**
@@ -90,6 +108,18 @@ public class RequestContext {
 
   public @NotNull UserId user() {
     return this.authenticationContext.user();
+  }
+
+  public @Nullable String requestMethod() {
+    return requestMethod;
+  }
+
+  public @Nullable String requestPath() {
+    return requestPath;
+  }
+
+  public @Nullable String requestTraceId() {
+    return requestTraceId;
   }
 
   private static class AuthenticationContext implements Subject {

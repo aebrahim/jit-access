@@ -23,6 +23,7 @@ package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.catalog.policy.Policy;
 import com.google.solutions.jitaccess.catalog.policy.PolicyDocument;
+import com.google.solutions.jitaccess.web.LogRequest;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
 import jakarta.enterprise.context.Dependent;
 import jakarta.ws.rs.*;
@@ -36,6 +37,7 @@ import java.util.List;
 @Dependent
 @Path("/api/catalog")
 @RequireIapPrincipal
+@LogRequest
 public class PolicyResource {
   /**
    * Validate policy document

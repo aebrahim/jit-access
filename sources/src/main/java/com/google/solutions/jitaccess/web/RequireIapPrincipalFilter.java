@@ -77,6 +77,7 @@ public class RequireIapPrincipalFilter implements ContainerRequestFilter {
       );
     }
   }
+
   /**
    * Authenticate request using IAP assertion.
    */

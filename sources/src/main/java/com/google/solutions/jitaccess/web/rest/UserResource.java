@@ -23,6 +23,7 @@ package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.ApplicationVersion;
 import com.google.solutions.jitaccess.web.Application;
+import com.google.solutions.jitaccess.web.LogRequest;
 import com.google.solutions.jitaccess.web.RequestContext;
 import com.google.solutions.jitaccess.web.RequireIapPrincipal;
 import jakarta.enterprise.context.Dependent;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
 @Dependent
 @Path("/api/user")
 @RequireIapPrincipal
+@LogRequest
 public class UserResource {
 
   @Inject
