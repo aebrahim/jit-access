@@ -583,7 +583,7 @@
                     .text(model.content.environment.displayName)
                     .prop('href', `#!/${model.content.environment.self.href}`);
                 this.select('.jit-policy-description')
-                    .text(`${model.content.source} (last modified: ${new Date(model.content.lastModified * 1000).toLocaleString()})`)
+                    .text(`${model.content.source} (${new Date(model.content.lastModified * 1000).toLocaleString()})`)
 
                 require.config({ paths: { vs: 'thirdparty/monaco-0.50.0/vs' } });
 
