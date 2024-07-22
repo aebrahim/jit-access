@@ -50,8 +50,8 @@ import java.util.*;
 public class CloudIdentityGroupsClient {
   public static final String OAUTH_GROUPS_SCOPE = "https://www.googleapis.com/auth/cloud-platform";
   public static final String OAUTH_SETTINGS_SCOPE = "https://www.googleapis.com/auth/apps.groups.settings";
-  private static final String LOCAL_USERS_AND_SERVICE_ACCOUNTS_ONLY =
-    "member.customer_id == groupCustomerId() && (member.type == 1 || member.type == 2)";
+  private static final String PREDICATE_USERS_AND_SERVICE_ACCOUNTS_ONLY =
+    "member.type == 1 || member.type == 2";
   private static final int SEARCH_PAGE_SIZE = 1000;
   public static final String LABEL_DISCUSSION_FORUM = "cloudidentity.googleapis.com/groups.discussion_forum";
   public static final String LABEL_SECURITY = "cloudidentity.googleapis.com/groups.security";
@@ -61,12 +61,16 @@ public class CloudIdentityGroupsClient {
   private final @NotNull HttpTransport.Options httpOptions;
 
   /**
-   * Settings for new groups. These settings disable
-   * most functionality available on groups.google.com.
+   * Settings for new groups:
+   *
+   * - Allow external members.
+   * - Disable most self-service features on groups.google.com to
+   *   the extent possible.
+   *
    */
   private final @NotNull Groups RESTRICTED_SETTINGS = new Groups()
     .setIncludeInGlobalAddressList(Boolean.FALSE.toString())
-    .setAllowExternalMembers(Boolean.FALSE.toString())
+    .setAllowExternalMembers(Boolean.TRUE.toString())
     .setAllowWebPosting(Boolean.FALSE.toString())
     .setShowInGroupDirectory(Boolean.FALSE.toString())
     .setWhoCanAdd("ALL_OWNERS_CAN_ADD")
@@ -305,7 +309,7 @@ public class CloudIdentityGroupsClient {
           String.format("%s/securitySettings", groupKey),
           new SecuritySettings()
             .setMemberRestriction(new MemberRestriction()
-              .setQuery(LOCAL_USERS_AND_SERVICE_ACCOUNTS_ONLY)))
+              .setQuery(PREDICATE_USERS_AND_SERVICE_ACCOUNTS_ONLY)))
           .setUpdateMask("memberRestriction.query")
         .execute();
 
