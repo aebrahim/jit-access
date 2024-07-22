@@ -37,13 +37,13 @@ import java.util.Map;
 /**
  * Basic logger implementation that writes JSON-structured output.
  */
-public class JsonLogger implements Logger {
+abstract class StructuredLogger implements Logger {
   private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
     .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
   protected final @NotNull Appendable output;
 
-  JsonLogger(@NotNull Appendable output) {
+  StructuredLogger(@NotNull Appendable output) {
     this.output = output;
   }
 
@@ -214,6 +214,82 @@ public class JsonLogger implements Logger {
       this.message = message;
       this.traceId = traceId;
       this.labels = labels;
+    }
+  }
+
+  /**
+   * Logger for operations that run in the context of
+   * the application.
+   */
+  static class ApplicationContextLogger extends StructuredLogger {
+
+    ApplicationContextLogger(@NotNull Appendable output) {
+      super(output);
+    }
+  }
+
+  /**
+   * Logger for operations that run in the context of
+   * an environment.
+   */
+  static class EnvironmentContextLogger extends StructuredLogger {
+    private final @NotNull String environmentName;
+
+    EnvironmentContextLogger(
+      @NotNull Appendable output,
+      @NotNull String environmentName) {
+      super(output);
+      this.environmentName = environmentName;
+    }
+
+    @Override
+    protected @NotNull Map<String, String> createLabels(String eventId) {
+      var labels = super.createLabels(eventId);
+      labels.put("environment", this.environmentName);
+      return labels;
+    }
+  }
+
+  /**
+   * Logger for operations that run in the context of
+   * a user request.
+   */
+  static class RequestContextLogger extends StructuredLogger {
+    private final @NotNull RequestContext requestContext;
+    private @Nullable String traceId;
+
+    RequestContextLogger(
+      @NotNull Appendable output,
+      @NotNull RequestContext requestContext
+    ) {
+      super(output);
+      this.requestContext = requestContext;
+    }
+
+    RequestContextLogger(@NotNull RequestContext requestContext) {
+      this(System.out, requestContext);
+    }
+
+    @Override
+    protected @Nullable String traceId() {
+      return this.requestContext.requestTraceId();
+    }
+
+    @Override
+    protected @NotNull Map<String, String> createLabels(String eventId) {
+      var labels = super.createLabels(eventId);
+
+      if (this.requestContext.isAuthenticated()) {
+        labels.put("user_id", requestContext.user().email);
+        labels.put("device_id", requestContext.device().deviceId());
+        labels.put("device_access_levels",
+          String.join(", ", requestContext.device().accessLevels()));
+      }
+
+      labels.put("request_method", requestContext.requestMethod());
+      labels.put("request_path", requestContext.requestPath());
+
+      return labels;
     }
   }
 }

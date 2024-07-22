@@ -103,6 +103,7 @@ public class GroupsResource {
     @PathParam("name") @NotNull String name,
     @NotNull MultivaluedMap<String, String> inputValues
   ) throws Exception {
+
     JitGroupView group;
     try {
       var groupId = new JitGroupId(environment, system, name);

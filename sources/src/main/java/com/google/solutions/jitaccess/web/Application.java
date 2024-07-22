@@ -144,7 +144,7 @@ public class Application {
     // Create a log adapter. We can't rely on injection as we're not in the
     // scope of a specific request here.
     //
-    this.logger = new JsonLogger(System.out);
+    this.logger = new StructuredLogger.ApplicationContextLogger(System.out);
 
     if (!this.configuration.isSmtpConfigured()) {
       logger.warn(
@@ -355,8 +355,8 @@ public class Application {
   }
 
   @Produces
-  public @NotNull RequestContextLogger produceLogger(@NotNull RequestContext context) {
-    return new RequestContextLogger(context);
+  public @NotNull StructuredLogger.RequestContextLogger produceLogger(@NotNull RequestContext context) {
+    return new StructuredLogger.RequestContextLogger(context);
   }
 
   @Produces
