@@ -22,7 +22,6 @@
 package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
-import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.SystemView;
@@ -75,7 +74,7 @@ public class SystemsResource {
     }
     catch (Exception e) {
       this.logger.warn(
-        EventIds.API_SYSTEMS,
+        EventIds.API_VIEW_SYSTEMS,
         "Request to access system details failed",
         e);
 

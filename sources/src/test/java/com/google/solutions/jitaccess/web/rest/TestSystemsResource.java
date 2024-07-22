@@ -99,7 +99,7 @@ public class TestSystemsResource {
       () ->  resource.get("unknown", "system"));
 
     verify(resource.logger, times(1)).warn(
-      eq(EventIds.API_SYSTEMS),
+      eq(EventIds.API_VIEW_SYSTEMS),
       anyString(),
       any(Exception.class));
   }
@@ -128,7 +128,7 @@ public class TestSystemsResource {
       () ->  resource.get(environment.name(), system.name()));
 
     verify(resource.logger, times(1)).warn(
-      eq(EventIds.API_SYSTEMS),
+      eq(EventIds.API_VIEW_SYSTEMS),
       anyString(),
       any(Exception.class));
   }

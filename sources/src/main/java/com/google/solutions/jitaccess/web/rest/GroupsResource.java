@@ -23,7 +23,6 @@
 package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
-import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.JitGroupView;
 import com.google.solutions.jitaccess.catalog.Logger;
@@ -43,7 +42,6 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -82,7 +80,7 @@ public class GroupsResource {
     }
     catch (Exception e) {
       this.logger.warn(
-        EventIds.API_GROUPS,
+        EventIds.API_VIEW_GROUPS,
         "Request to access group details failed",
         e);
 
@@ -115,7 +113,7 @@ public class GroupsResource {
     catch (Exception e) {
       // TODO: Add labels
       this.logger.warn(
-        EventIds.API_GROUPS,
+        EventIds.API_JOIN_GROUP,
         "Request to access group details failed",
         e);
 
@@ -169,7 +167,7 @@ public class GroupsResource {
       //
       for (var detail : e.exceptions()) {
         this.logger.error(
-          EventIds.API_CONSTRAINT_FAILURE,
+          EventIds.API_JOIN_GROUP,
           detail.getMessage(),
           detail);
       }
@@ -179,7 +177,7 @@ public class GroupsResource {
     catch (Exception e) {
       // TODO: Add labels
       this.logger.warn(
-        EventIds.API_GROUPS,
+        EventIds.API_JOIN_GROUP,
         "Joining group failed",
         e);
 

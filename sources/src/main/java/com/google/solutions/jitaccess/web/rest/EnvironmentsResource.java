@@ -22,7 +22,6 @@
 package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
-import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.EnvironmentView;
 import com.google.solutions.jitaccess.catalog.Logger;
@@ -38,7 +37,6 @@ import jakarta.ws.rs.core.MediaType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,7 +72,7 @@ public class EnvironmentsResource {
     }
     catch (Exception e) {
       this.logger.warn(
-        EventIds.API_ENVIRONMENTS,
+        EventIds.API_VIEW_ENVIRONMENTS,
         "Request to access environment details failed",
         e);
 
@@ -101,7 +99,7 @@ public class EnvironmentsResource {
     }
     catch (Exception e) {
       this.logger.warn(
-        EventIds.API_ENVIRONMENTS,
+        EventIds.API_VIEW_ENVIRONMENTS,
         "Request to access environment details failed",
         e);
 
@@ -128,7 +126,7 @@ public class EnvironmentsResource {
     }
     catch (Exception e) {
       this.logger.warn(
-        EventIds.API_ENVIRONMENTS,
+        EventIds.API_VIEW_ENVIRONMENTS,
         "Request to export the environment policy failed",
         e);
 

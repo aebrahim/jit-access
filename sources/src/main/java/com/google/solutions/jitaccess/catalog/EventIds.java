@@ -25,8 +25,8 @@ package com.google.solutions.jitaccess.catalog;
  * Log event IDs used by this package.
  */
 public class EventIds {
-  public static final String SUBJECT_RESOLUTION = "catalog.resolveSubject";
-  public static final String PROVISION_IAM_BINDINGS = "catalog.provisionIamBindings.";
-  public static final String PROVISION_MEMBER = "catalog.provisionMember.";
-  public static final String MAP_LEGACY_ROLE = "catalog.mapLegacyRole.";
+  public static final String SUBJECT_RESOLUTION = "catalog.subject.resolve";
+  public static final String PROVISION_IAM_BINDINGS = "catalog.iam.provision.";
+  public static final String PROVISION_MEMBER = "catalog.member.provision.";
+  public static final String MAP_LEGACY_ROLE = "catalog.legacy.maprole.";
 }

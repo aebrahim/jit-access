@@ -25,11 +25,11 @@ package com.google.solutions.jitaccess.web;
  * Log event IDs used by this package.
  */
 public class EventIds {
-  public static final String API_HEALTH = "api.checkHealth";
-  public static final String API_ENVIRONMENTS = "api.environments";
-  public static final String API_SYSTEMS = "api.systems";
-  public static final String API_GROUPS = "api.groups";
-  public static final String API_CONSTRAINT_FAILURE = "api.constraintFailure";
-  public static final String STARTUP = "runtime.startup";
-  public static final String LOAD_ENVIRONMENT = "runtime.loadEnvironment";
+  public static final String API_CHECK_HEALTH = "api.health.check";
+  public static final String API_VIEW_ENVIRONMENTS = "api.environments.view";
+  public static final String API_VIEW_SYSTEMS = "api.systems.view";
+  public static final String API_VIEW_GROUPS = "api.groups.view";
+  public static final String API_JOIN_GROUP = "api.groups.join";
+  public static final String STARTUP = "application.startup";
+  public static final String LOAD_ENVIRONMENT = "application.environments.load";
 }

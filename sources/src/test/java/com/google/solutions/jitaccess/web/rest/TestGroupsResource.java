@@ -92,7 +92,7 @@ public class TestGroupsResource {
         "notfound"));
 
     verify(resource.logger, times(1)).warn(
-      eq(EventIds.API_GROUPS),
+      eq(EventIds.API_VIEW_GROUPS),
       anyString(),
       any(Exception.class));
   }

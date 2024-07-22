@@ -111,7 +111,7 @@ public class HealthResource {
 
     for (var result : results) {
       if (!result.successful()) {
-        this.logger.warn(EventIds.API_HEALTH, result.toString());
+        this.logger.warn(EventIds.API_CHECK_HEALTH, result.toString());
       }
     }
 

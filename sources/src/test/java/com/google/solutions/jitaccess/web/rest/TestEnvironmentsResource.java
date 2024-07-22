@@ -22,7 +22,6 @@
 package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
-import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.CatalogSources;
 import com.google.solutions.jitaccess.catalog.Logger;
@@ -109,7 +108,7 @@ public class TestEnvironmentsResource {
       () ->  resource.get("unknown"));
 
     verify(resource.logger, times(1)).warn(
-      eq(EventIds.API_ENVIRONMENTS),
+      eq(EventIds.API_VIEW_ENVIRONMENTS),
         anyString(),
         any(Exception.class));
   }
@@ -134,7 +133,7 @@ public class TestEnvironmentsResource {
       () ->  resource.get(environment.name()));
 
     verify(resource.logger, times(1)).warn(
-      eq(EventIds.API_ENVIRONMENTS),
+      eq(EventIds.API_VIEW_ENVIRONMENTS),
       anyString(),
       any(Exception.class));
   }
@@ -240,7 +239,7 @@ public class TestEnvironmentsResource {
       () ->  resource.getPolicy("unknown"));
 
     verify(resource.logger, times(1)).warn(
-      eq(EventIds.API_ENVIRONMENTS),
+      eq(EventIds.API_VIEW_ENVIRONMENTS),
       anyString(),
       any(Exception.class));
   }
@@ -265,7 +264,7 @@ public class TestEnvironmentsResource {
       () ->  resource.getPolicy(environment.name()));
 
     verify(resource.logger, times(1)).warn(
-      eq(EventIds.API_ENVIRONMENTS),
+      eq(EventIds.API_VIEW_ENVIRONMENTS),
       anyString(),
       any(Exception.class));
   }
