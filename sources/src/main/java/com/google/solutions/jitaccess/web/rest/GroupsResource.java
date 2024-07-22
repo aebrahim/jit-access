@@ -110,6 +110,7 @@ public class GroupsResource {
         .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
     }
     catch (Exception e) {
+      // TODO: Add labels
       this.logger.warn(
         EventIds.API_GROUPS,
         "Request to access group details failed",
@@ -171,6 +172,15 @@ public class GroupsResource {
       }
 
       throw new AccessDeniedException(e.getMessage(), e);
+    }
+    catch (Exception e) {
+      // TODO: Add labels
+      this.logger.warn(
+        EventIds.API_GROUPS,
+        "Joining group failed",
+        e);
+
+      throw (Exception)e.fillInStackTrace();
     }
 
     //TODO: log, notify

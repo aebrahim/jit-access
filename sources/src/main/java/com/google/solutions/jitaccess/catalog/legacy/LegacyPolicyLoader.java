@@ -77,7 +77,9 @@ public class LegacyPolicyLoader {
       justificationPattern,
       justificationHint,
       getEffectiveIamPolicies(scope, scope),
-      new Policy.Metadata("Asset Inventory", Instant.now()));
+      new Policy.Metadata(
+        String.format("IAM policies in %s", scope),
+        Instant.now()));
 
     for (var project : this
       .produceResourceManagerClient.get()

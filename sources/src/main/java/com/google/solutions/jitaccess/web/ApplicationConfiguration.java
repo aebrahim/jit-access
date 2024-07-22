@@ -266,7 +266,7 @@ class ApplicationConfiguration {
   /**
    * Names of policy sources.
    */
-  @NotNull Set<String> environmentNames() {
+  @NotNull Set<String> environmentNames() { // TODO: Derive names from service accounts instead to avoid hyhen issue!?
     return this.settingsData.keySet().stream()
       .filter(key -> key.startsWith(ENVIRONMENT_PREFIX))
       .filter(key -> !Strings.isNullOrEmpty(this.settingsData.get(key)))
