@@ -21,16 +21,23 @@
 
 package com.google.solutions.jitaccess.catalog;
 
+import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
+import com.google.solutions.jitaccess.apis.clients.AccessException;
+import com.google.solutions.jitaccess.catalog.auth.JitGroupId;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 public class TestEnvironmentView {
   private static final UserId SAMPLE_USER = new UserId("user-1@example.com");
@@ -179,5 +186,73 @@ public class TestEnvironmentView {
 
     assertTrue(environment.canExport());
     assertTrue(environment.export().isPresent());
+  }
+
+  // -------------------------------------------------------------------------
+  // reconcile.
+  // -------------------------------------------------------------------------
+
+  @Test
+  public void reconcile_whenAccessDenied() throws Exception {
+    var policy = new EnvironmentPolicy(
+      "env",
+      "env",
+      new Policy.Metadata("test", Instant.EPOCH));
+    var environment = new EnvironmentView(
+      policy,
+      Subjects.create(SAMPLE_USER),
+      Mockito.mock(Provisioner.class));
+
+    assertFalse(environment.canReconcile());
+    assertFalse(environment.reconcile().isPresent());
+  }
+
+  @Test
+  public void reconcile() throws Exception {
+    var environmentPolicy = new EnvironmentPolicy(
+      "env",
+      "env",
+      new AccessControlList.Builder()
+        .allow(SAMPLE_USER, PolicyPermission.RECONCILE.toMask())
+        .build(),
+      Map.of(),
+      new Policy.Metadata("test", Instant.EPOCH));
+    var systemPolicy = new SystemPolicy("system", "System");
+    environmentPolicy.add(systemPolicy);
+
+    var orphanedJitGroupId = new JitGroupId("env", "orphaned", "orphaned");
+
+    var compliantJitGroup = new JitGroupPolicy("compliant", "compliant");
+    var brokenJitGroup = new JitGroupPolicy("broken", "broken");
+    systemPolicy.add(compliantJitGroup);
+    systemPolicy.add(brokenJitGroup);
+
+    var provisioner = Mockito.mock(Provisioner.class);
+    when(provisioner.provisionedGroups())
+      .thenReturn(List.of(orphanedJitGroupId, compliantJitGroup.id(), brokenJitGroup.id()));
+    doNothing().when(provisioner).reconcile(eq(compliantJitGroup));
+    doThrow(new AccessDeniedException("mock")).when(provisioner).reconcile(eq(brokenJitGroup));
+
+    var environment = new EnvironmentView(
+      environmentPolicy,
+      Subjects.create(SAMPLE_USER),
+      provisioner);
+
+    assertTrue(environment.canReconcile());
+
+    var result = environment.reconcile();
+    assertTrue(result.isPresent());
+
+    var resultMap = result.get().stream().collect(Collectors.toMap(r -> r.groupId(), r -> r));
+
+    assertTrue(resultMap.get(orphanedJitGroupId).isOrphaned());
+    assertFalse(resultMap.get(orphanedJitGroupId).isCompliant());
+
+    assertTrue(resultMap.get(compliantJitGroup.id()).isCompliant());
+
+    assertFalse(resultMap.get(brokenJitGroup.id()).isCompliant());
+    assertInstanceOf(
+      AccessDeniedException.class,
+      resultMap.get(brokenJitGroup.id()).exception());
   }
 }

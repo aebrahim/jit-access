@@ -56,7 +56,12 @@ public enum PolicyPermission {
   /**
    * Export raw policy.
    */
-  EXPORT(VIEW.value + 16);
+  EXPORT(VIEW.value + 16),
+
+  /**
+   * Reconcile groups and IAM bindings with the policy.
+   */
+  RECONCILE(VIEW.value + 32);
 
   private final int value;
 
