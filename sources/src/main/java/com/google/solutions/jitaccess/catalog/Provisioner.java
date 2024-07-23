@@ -195,13 +195,17 @@ public class Provisioner {
     ) throws AccessException, IOException {
       //
       // All groups share a common prefix, so we can search by that.
+      // We might still find some groups that just happen to match
+      // the prefix, so we additionally consult the mapping.
       //
       var query = this.groupsClient.createSearchQueryForPrefix(
         this.mapping.groupPrefix(environmentName));
 
       return this.groupsClient.searchGroups(query, false)
         .stream()
-        .map(g -> this.mapping.jitGroupFromGroup(new GroupId(g.getGroupKey().getId())))
+        .map(grp -> new GroupId(grp.getGroupKey().getId()))
+        .filter(this.mapping::isJitGroup)
+        .map(this.mapping::jitGroupFromGroup)
         .toList();
     }
 

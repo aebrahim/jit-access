@@ -332,6 +332,11 @@ public class TestProvisioner {
         eq("query"),
         eq(false)))
         .thenReturn(List.of(
+          // Invalid groups
+          new Group().setGroupKey(new EntityKey().setId("jit.env-1.invalid@example.com")),
+          new Group().setGroupKey(new EntityKey().setId("jit.env-1.system-1.group-1@invalid.example.com")),
+
+          // Valid groups
           new Group().setGroupKey(new EntityKey().setId("jit.env-1.system-1.group-1@example.com")),
           new Group().setGroupKey(new EntityKey().setId("jit.env-1.system-1.group-2@example.com"))));
 

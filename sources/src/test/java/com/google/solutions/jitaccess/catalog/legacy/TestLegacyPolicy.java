@@ -72,12 +72,11 @@ public class TestLegacyPolicy {
 
   @ParameterizedTest
   @ValueSource(strings = {
-    "roles/owner",
-    "roles/resourcemanager.projectIamAdmin",
-    "roles/resourcemanager.folderAdmin",
-    "roles/resourcemanager.organizationAdmin"
+    "roles/viewer",
+    "roles/iam.roleAdmin",
+    "roles/browser"
   })
-  public void accessControlList_whenRootBindingsNotEmpty(String privilegedRole) {
+  public void accessControlList_whenRootBindingsGrantGetIamPolicy(String privilegedRole) {
     var policy = new LegacyPolicy(
       Duration.ofMinutes(1),
       "",
@@ -104,6 +103,41 @@ public class TestLegacyPolicy {
 
     assertEquals(UserClassId.AUTHENTICATED_USERS, aces.get(1).principal);
     assertEquals(PolicyPermission.VIEW.toMask(), aces.get(1).accessRights);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "roles/owner",
+    "roles/resourcemanager.projectIamAdmin",
+    "roles/resourcemanager.folderAdmin",
+    "roles/resourcemanager.organizationAdmin"
+  })
+  public void accessControlList_whenRootBindingsGrantSetIamPolicy(String privilegedRole) {
+    var policy = new LegacyPolicy(
+      Duration.ofMinutes(1),
+      "",
+      "",
+      List.of(
+        new Binding()
+          .setRole("roles/viewer")
+          .setMembers(List.of("user:admin-1@example.com")),
+        new Binding()
+          .setRole(privilegedRole)
+          .setMembers(List.of("user:admin-1@example.com"))),
+      METADATA);
+    assertFalse(policy.accessControlList().isEmpty());
+
+    var aces = List.copyOf(policy.accessControlList().get().entries());
+    assertEquals(3, aces.size());
+
+    assertEquals(new UserId("admin-1@example.com"), aces.get(0).principal);
+    assertEquals(PolicyPermission.EXPORT.toMask(), aces.get(0).accessRights);
+
+    assertEquals(new UserId("admin-1@example.com"), aces.get(1).principal);
+    assertEquals(PolicyPermission.RECONCILE.toMask(), aces.get(1).accessRights);
+
+    assertEquals(UserClassId.AUTHENTICATED_USERS, aces.get(2).principal);
+    assertEquals(PolicyPermission.VIEW.toMask(), aces.get(2).accessRights);
   }
 
   //---------------------------------------------------------------------------

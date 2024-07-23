@@ -26,6 +26,7 @@ import com.google.api.services.cloudresourcemanager.v3.model.Project;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
+import com.google.common.collect.Streams;
 import com.google.solutions.jitaccess.apis.IamRole;
 import com.google.solutions.jitaccess.apis.ProjectId;
 import com.google.solutions.jitaccess.catalog.EventIds;
@@ -56,7 +57,7 @@ public class LegacyPolicy extends EnvironmentPolicy {
    * resourcemanager.projects.getIamPolicy permission.
    *
    * Principals that have these roles can view the IAM policy,
-   * and should therefore be allowed to export this policy.
+   * and should therefore be allowed to export.
    */
   private static final Set PREDEFINED_ROLES_WITH_GET_POLICY_PERMISSION = Set.of(
     "roles/owner",
@@ -69,6 +70,21 @@ public class LegacyPolicy extends EnvironmentPolicy {
     "roles/iam.roleViewer",
     "roles/iam.securityAdmin",
     "roles/iam.securityReviewer",
+    "roles/resourcemanager.projectIamAdmin",
+    "roles/resourcemanager.folderAdmin",
+    "roles/resourcemanager.organizationAdmin");
+
+
+  /**
+   * Predefined basic, IAM-, and CRM roles that contain the
+   * resourcemanager.projects.setIamPolicy permission.
+   *
+   * Principals that have these roles can modify the IAM policy,
+   * and should therefore be allowed to reconcile.
+   */
+  private static final Set PREDEFINED_ROLES_WITH_SET_POLICY_PERMISSION = Set.of(
+    "roles/owner",
+    "roles/iam.securityAdmin",
     "roles/resourcemanager.projectIamAdmin",
     "roles/resourcemanager.folderAdmin",
     "roles/resourcemanager.organizationAdmin");
@@ -98,10 +114,10 @@ public class LegacyPolicy extends EnvironmentPolicy {
       NAME,
       DESCRIPTION,
       new AccessControlList(
-        Stream
+        Streams
           .concat(
             //
-            // Allow all IAM admins to EXPORT.
+            // Allow users with getIamPolicy permission to EXPORT.
             //
             rootBindings
               .stream()
@@ -111,7 +127,16 @@ public class LegacyPolicy extends EnvironmentPolicy {
               .distinct()
               .map(p -> (AccessControlList.Entry)new AccessControlList.AllowedEntry(p, PolicyPermission.EXPORT.toMask())),
 
-            //TODO: grant RECONCILE
+            //
+            // Allow users with setIamPolicy permission to RECONCILE.
+            //
+            rootBindings
+              .stream()
+              .filter(b -> PREDEFINED_ROLES_WITH_SET_POLICY_PERMISSION.contains(b.getRole()))
+              .filter(b -> b.getCondition() == null || Strings.isNullOrEmpty(b.getCondition().getExpression()))
+              .flatMap(b -> extractPrincipals(b).stream())
+              .distinct()
+              .map(p -> (AccessControlList.Entry)new AccessControlList.AllowedEntry(p, PolicyPermission.RECONCILE.toMask())),
 
             //
             // Allow all users to VIEW.
