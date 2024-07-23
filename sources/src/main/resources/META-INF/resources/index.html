@@ -157,7 +157,7 @@
             </div>
         </div>
 
-        <!-- ReconciliationStatusInfoView -->
+        <!-- EnvironmentStatusInfoView -->
         <div class='jit-view' id='jit-reconciliationstatusinfo-view'>
             <h1>
                 <a class="jit-environment-name"></a>
@@ -683,7 +683,7 @@
             }
         }
 
-        class ReconciliationStatusInfoView extends GroupsViewBase {
+        class EnvironmentStatusInfoView extends GroupsViewBase {
             constructor(model) {
                 super('#jit-reconciliationstatusinfo-view');
 
@@ -742,8 +742,8 @@
                         await view.showAsync();
                         break;
 
-                    case "ReconciliationStatusInfo":
-                        view = new ReconciliationStatusInfoView(model);
+                    case "EnvironmentStatusInfo":
+                        view = new EnvironmentStatusInfoView(model);
                         await view.showAsync();
                         break;
                 }

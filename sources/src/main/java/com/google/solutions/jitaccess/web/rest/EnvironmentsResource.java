@@ -142,7 +142,7 @@ public class EnvironmentsResource {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("environments/{environment}/status")
-  public @NotNull EnvironmentsResource.ReconciliationStatusInfo getStatus(
+  public @NotNull EnvironmentsResource.EnvironmentStatusInfo getStatus(
     @PathParam("environment") @NotNull String environmentName // TODO: test
   ) throws Exception {
     try {
@@ -150,7 +150,7 @@ public class EnvironmentsResource {
         .environment(environmentName)
         .orElseThrow(() -> NOT_FOUND);
 
-      return ReconciliationStatusInfo.create(
+      return EnvironmentStatusInfo.create(
         environment,
         environment
           .reconcile()
@@ -242,16 +242,16 @@ public class EnvironmentsResource {
     }
   }
 
-  public record ReconciliationStatusInfo(
+  public record EnvironmentStatusInfo(
     @NotNull Link self,
     @NotNull EnvironmentInfo environment,
     @NotNull List<ReconciliationIssueInfo> issues
   ) implements MediaInfo {
-    static ReconciliationStatusInfo create(
+    static EnvironmentStatusInfo create(
       @NotNull EnvironmentView environment,
       @NotNull Collection<EnvironmentView.JitGroupCompliance> groups
     ) {
-      return new ReconciliationStatusInfo(
+      return new EnvironmentStatusInfo(
         new Link("environments/%s", environment.policy().name()),
         EnvironmentInfo.createSummary(environment.policy()),
         groups.stream()
