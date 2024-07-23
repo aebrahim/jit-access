@@ -21,7 +21,6 @@
 
 package com.google.solutions.jitaccess.web;
 
-import com.google.common.base.Strings;
 import com.google.solutions.jitaccess.apis.clients.CloudIdentityGroupsClient;
 import com.google.solutions.jitaccess.apis.clients.IamCredentialsClient;
 import com.google.solutions.jitaccess.apis.clients.SecretManagerClient;
@@ -32,18 +31,15 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 class ApplicationConfiguration {
-  static final @NotNull Pattern SERVICE_ACCOUNT_EMAIL_ADDRESS =
-    Pattern.compile("^(.+)@(.+).iam.gserviceaccount.com$");
-
-  static final String ENVIRONMENT_PREFIX = "RESOURCE_ENVIRONMENT_";
+  /**
+   * Pattern for environment service accounts.
+   */
+  static final @NotNull Pattern ENVIRONMENT_SERVICE_ACCOUNT_PATTERN =
+    Pattern.compile("^jit-(.+)@(.+).iam.gserviceaccount.com$");
 
   /**
    * Raw settings data, typically sourced from the environment block.
@@ -152,6 +148,11 @@ class ApplicationConfiguration {
    */
   final @NotNull Setting<Duration> environmentCacheTimeout;
 
+  /**
+   * Comma-separated list of environments.
+   */
+  final @NotNull Setting<String> environments;
+
   final @NotNull Setting<String> legacyCatalog;
   final @NotNull Setting<String> legacyScope;
   final @NotNull Setting<Duration> legacyActivationTimeout;
@@ -213,13 +214,12 @@ class ApplicationConfiguration {
     //
     // Environment settings.
     //
-    // NB. Some environment settings use dynamic key names and
-    // are loaded on demand.
-    //
     this.environmentCacheTimeout = new DurationSetting(
       "RESOURCE_CACHE_TIMEOUT",
       ChronoUnit.SECONDS,
       Duration.ofMinutes(5));
+    this.environments = new StringSetting("RESOURCE_ENVIRONMENTS", "");
+
 
     //
     // Legacy settings.
@@ -256,23 +256,11 @@ class ApplicationConfiguration {
       CloudIdentityGroupsClient.OAUTH_SETTINGS_SCOPE));
   }
 
-  /**
-   * Get policy source.
-   */
-  @NotNull Setting<String> environment(@NotNull String name) {
-    return new StringSetting(ENVIRONMENT_PREFIX + name.replace('-', '_'), null);
-  }
-
-  /**
-   * Names of policy sources.
-   */
-  @NotNull Set<String> environmentNames() { // TODO: Derive names from service accounts instead to avoid hyhen issue!?
-    return this.settingsData.keySet().stream()
-      .filter(key -> key.startsWith(ENVIRONMENT_PREFIX))
-      .filter(key -> !Strings.isNullOrEmpty(this.settingsData.get(key)))
-      .filter(key -> !this.settingsData.get(key).isBlank())
-      .map(key -> key.substring(ENVIRONMENT_PREFIX.length()).replace('_', '-'))
-      .collect(Collectors.toSet());
+  @NotNull Collection<String> environments() {
+    return Arrays.stream(this.environments.value().split(","))
+      .map(String::trim)
+      .filter(s -> !s.isBlank())
+      .toList();
   }
 
   // -------------------------------------------------------------------------

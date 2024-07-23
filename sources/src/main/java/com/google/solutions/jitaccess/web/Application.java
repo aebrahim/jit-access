@@ -55,6 +55,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.time.Duration;
@@ -63,7 +65,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * Entry point for the application. Loads configuration and produces CDI beans.
@@ -387,40 +388,54 @@ public class Application {
     @NotNull GroupMapping groupMapping,
     @NotNull CloudIdentityGroupsClient groupsClient
     ) {
-    var configuredEnvironments = this.configuration.environmentNames()
-      .stream()
-      .filter(name -> configuration.environment(name).isValid())
-      .collect(Collectors.toMap(name -> name, configuration::environment));
-
     //
     // Prepare configuration for all environments, but don't load their
     // policy yet (because that's expensive).
     //
     final var configurations = new HashMap<String, EnvironmentConfiguration>();
-    for (var environment : configuredEnvironments.entrySet()) {
-      var value = environment.getValue().value();
+    for (var environment : this.configuration.environments()) {
+      var matcher = ApplicationConfiguration.ENVIRONMENT_SERVICE_ACCOUNT_PATTERN.matcher(environment);
 
-      var matcher = ApplicationConfiguration.SERVICE_ACCOUNT_EMAIL_ADDRESS.matcher(value);
-      if (value.startsWith("file:")) {
+      if (environment.startsWith("file:")) {
         //
         // Value contains a file path, which is only allowed for development.
         //
         if (!isDebugModeEnabled()) {
           this.logger.warn(
             EventIds.LOAD_ENVIRONMENT,
-            "Environment '%s' uses file-based policy, ignoring environment as " +
-              "file-based policies are only allowed in debug mode",
-            environment.getKey());
+            "File-based policies are only allowed in debug mode, ignoring environment '%s'",
+            environment);
+          break;
+        }
+
+        final File file;
+        String environmentName;
+        try {
+          file = new File(new URL(environment).toURI());
+          environmentName = file.getName();
+
+          if (environmentName.indexOf('.') > 0) {
+            //
+            // Remove suffix (like .yaml)
+            //
+            environmentName = environmentName.substring(0, environmentName.lastIndexOf('.'));
+          }
+        }
+        catch (URISyntaxException  | MalformedURLException e) {
+          this.logger.warn(
+            EventIds.LOAD_ENVIRONMENT,
+            "The file path '%s' is malformed, ignoring environment",
+            environment);
           break;
         }
 
         configurations.put(
-          environment.getKey(),
+          environmentName,
           new EnvironmentConfiguration(
             this.applicationCredentials,
             () -> {
               try {
-                return PolicyDocument.fromFile(new File(new URL(value).toURI())).policy();
+                return PolicyDocument.fromFile(file).policy();
               }
               catch (Exception e) {
                 throw new UncheckedExecutionException(e);
@@ -432,12 +447,29 @@ public class Application {
         //
         // Value contains the email address of a service account.
         //
+        // We derive the name of the environment from the service
+        // account (jit-ENVIRONMENT@...). This approach has the following
+        // advantages
+        //
+        // - It makes the association between an environment and
+        //   a service account fairly static. This is good because
+        //   environment shouldn't be renamed, and shouldn't be
+        //   repurposed.
+        // - It enforces a naming convention among the service
+        //   accounts.
+        // - It ensures that the environment name is alphanumeric
+        //   and satisfies the criteria for valid environment names.
+        //
+        var environmentName = matcher.group(1);
+
+        //
         // Impersonate the service account and use it for:
         //
         //  - Loading the policy from Secret Manager
         //  - Provisioning access
         //
-        var environmentServiceAccountEmail = value;
+        var environmentServiceAccountEmail = environment;
+
         var environmentCredentials = ImpersonatedCredentials.create(
           this.applicationCredentials,
           environmentServiceAccountEmail,
@@ -457,7 +489,7 @@ public class Application {
           matcher.group(1));
 
         configurations.put(
-          environment.getKey(),
+          environmentName,
           new EnvironmentConfiguration(
             environmentCredentials,
             () -> {
@@ -478,7 +510,7 @@ public class Application {
                     "by insufficient IAM permissions. Make sure that the service account '%s' has " +
                     "the roles/iam.serviceAccountTokenCreator role on '%s'.",
                   environmentServiceAccountEmail,
-                  environment.getKey(),
+                  environmentName,
                   this.applicationPrincipal,
                   environmentServiceAccountEmail);
 

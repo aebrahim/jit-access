@@ -31,49 +31,29 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TestApplicationConfiguration {
 
   // -------------------------------------------------------------------------
-  // environmentNames.
+  // environments.
   // -------------------------------------------------------------------------
 
   @Test
-  public void environmentNames_whenNonConfigured() {
+  public void environments_whenNonConfigured() {
     var configuration = new ApplicationConfiguration(Map.of());
-    assertEquals(0, configuration.environmentNames().size());
+    assertEquals(0, configuration.environments().size());
   }
 
   @Test
-  public void environmentNames_whenEmpty() {
+  public void environments_whenEmpty() {
     var configuration = new ApplicationConfiguration(
-      Map.of(
-        ApplicationConfiguration.ENVIRONMENT_PREFIX + "one", " ",
-        ApplicationConfiguration.ENVIRONMENT_PREFIX + "two", ""
-      ));
-    assertEquals(0, configuration.environmentNames().size());
+      Map.of("RESOURCE_ENVIRONMENTS", " "));
+    assertEquals(0, configuration.environments().size());
   }
 
   @Test
-  public void environmentNames() {
+  public void environments() {
     var configuration = new ApplicationConfiguration(
-      Map.of(
-        ApplicationConfiguration.ENVIRONMENT_PREFIX + "one_env", "...",
-        ApplicationConfiguration.ENVIRONMENT_PREFIX + "two_env", "..."
-      ));
-    assertEquals(2, configuration.environmentNames().size());
-    assertTrue(configuration.environmentNames().contains("one-env"));
-    assertTrue(configuration.environmentNames().contains("two-env"));
-  }
-
-  // -------------------------------------------------------------------------
-  // environment.
-  // -------------------------------------------------------------------------
-
-  @Test
-  public void environment_whenNotFound() {
-    var configuration = new ApplicationConfiguration(Map.of());
-    var setting = configuration.environment("not-found");
-
-    assertNotNull(setting);
-    assertFalse(setting.isValid());
-    assertThrows(IllegalStateException.class, () -> setting.value());
+      Map.of("RESOURCE_ENVIRONMENTS", ", one-env  , two-env "));
+    assertEquals(2, configuration.environments().size());
+    assertTrue(configuration.environments().contains("one-env"));
+    assertTrue(configuration.environments().contains("two-env"));
   }
 
   // -------------------------------------------------------------------------
