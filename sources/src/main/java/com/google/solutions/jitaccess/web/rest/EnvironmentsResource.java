@@ -77,7 +77,7 @@ public class EnvironmentsResource {
     catch (Exception e) {
       this.logger.warn(
         EventIds.API_VIEW_ENVIRONMENTS,
-        "Request to access environment details failed",
+        "Listing environments failed",
         e);
 
       throw (Exception)e.fillInStackTrace();
@@ -103,7 +103,7 @@ public class EnvironmentsResource {
     catch (Exception e) {
       this.logger.warn(
         EventIds.API_VIEW_ENVIRONMENTS,
-        "Request to access environment details failed",
+        "Accessing the environment details failed",
         e);
 
       throw (Exception)e.fillInStackTrace();
@@ -129,7 +129,7 @@ public class EnvironmentsResource {
     catch (Exception e) {
       this.logger.warn(
         EventIds.API_VIEW_ENVIRONMENTS,
-        "Request to export the environment policy failed",
+        "Exporting the environment policy failed",
         e);
 
       throw (Exception)e.fillInStackTrace();
@@ -143,7 +143,7 @@ public class EnvironmentsResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("environments/{environment}/status")
   public @NotNull EnvironmentsResource.EnvironmentStatusInfo getStatus(
-    @PathParam("environment") @NotNull String environmentName // TODO: test
+    @PathParam("environment") @NotNull String environmentName
   ) throws Exception {
     try {
       var environment =  this.catalog
@@ -159,7 +159,7 @@ public class EnvironmentsResource {
     catch (Exception e) {
       this.logger.warn(
         EventIds.API_RECONCILE_ENVIRONMENT,
-        "Request to export the environment policy failed",
+        "Reconciling the environment policy failed",
         e);
 
       throw (Exception)e.fillInStackTrace();
@@ -209,10 +209,10 @@ public class EnvironmentsResource {
       return new EnvironmentInfo(
         new Link("environments/%s", environment.policy().name()),
         environment.canExport()
-          ? new Link("environments/%s/policy", environment.policy().name())// TODO: test
+          ? new Link("environments/%s/policy", environment.policy().name())
           : null,
         environment.canReconcile()
-          ? new Link("environments/%s/status", environment.policy().name()) // TODO: test
+          ? new Link("environments/%s/status", environment.policy().name())
           : null,
         environment.policy().name(),
         environment.policy().displayName(),

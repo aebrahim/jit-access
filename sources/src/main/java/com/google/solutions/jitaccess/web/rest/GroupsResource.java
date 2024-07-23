@@ -118,7 +118,7 @@ public class GroupsResource {
     catch (Exception e) {
       this.logger.warn(
         EventIds.API_JOIN_GROUP,
-        "Request to access group details failed",
+        "Accessing group details failed",
         e);
 
       throw (Exception)e.fillInStackTrace();

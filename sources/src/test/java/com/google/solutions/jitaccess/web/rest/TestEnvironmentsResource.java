@@ -22,14 +22,12 @@
 package com.google.solutions.jitaccess.web.rest;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
-import com.google.solutions.jitaccess.catalog.Catalog;
-import com.google.solutions.jitaccess.catalog.CatalogSources;
-import com.google.solutions.jitaccess.catalog.Logger;
-import com.google.solutions.jitaccess.catalog.Subjects;
+import com.google.solutions.jitaccess.catalog.*;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import com.google.solutions.jitaccess.web.EventIds;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -363,5 +361,48 @@ public class TestEnvironmentsResource {
       eq(EventIds.API_RECONCILE_ENVIRONMENT),
       anyString(),
       any(Exception.class));
+  }
+
+  @Nested
+  public static class EnvironmentInfo {
+    @Test
+    public void create_whenExportAndReconcileNotAllowed() {
+      var environment = new EnvironmentPolicy(
+        "env-1",
+        "Env 1",
+        METADATA);
+
+      var environmentView = Mockito.mock(EnvironmentView.class);
+      when(environmentView.policy()).thenReturn(environment);
+      when(environmentView.systems()).thenReturn(List.of());
+
+      when(environmentView.canExport()).thenReturn(false);
+      when(environmentView.canReconcile()).thenReturn(false);
+
+      var info = EnvironmentsResource.EnvironmentInfo.create(environmentView);
+
+      assertNull(info.policy());
+      assertNull(info.reconcile());
+    }
+
+    @Test
+    public void create__whenExportAndReconcileAllowed() {
+      var environment = new EnvironmentPolicy(
+        "env-1",
+        "Env 1",
+        METADATA);
+
+      var environmentView = Mockito.mock(EnvironmentView.class);
+      when(environmentView.policy()).thenReturn(environment);
+      when(environmentView.systems()).thenReturn(List.of());
+
+      when(environmentView.canExport()).thenReturn(true);
+      when(environmentView.canReconcile()).thenReturn(true);
+
+      var info = EnvironmentsResource.EnvironmentInfo.create(environmentView);
+
+      assertNotNull(info.policy());
+      assertNotNull(info.reconcile());
+    }
   }
 }

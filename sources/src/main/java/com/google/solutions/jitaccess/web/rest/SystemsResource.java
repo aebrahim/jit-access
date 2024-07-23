@@ -77,7 +77,7 @@ public class SystemsResource {
     catch (Exception e) {
       this.logger.warn(
         EventIds.API_VIEW_SYSTEMS,
-        "Request to access system details failed",
+        "Accessing system details failed",
         e);
 
       throw (Exception)e.fillInStackTrace();
