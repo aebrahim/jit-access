@@ -486,7 +486,7 @@ public class Application {
         var secretPath = String.format(
           "projects/%s/secrets/jit-%s/versions/latest",
           matcher.group(2),
-          matcher.group(1));
+          environmentName);
 
         configurations.put(
           environmentName,
