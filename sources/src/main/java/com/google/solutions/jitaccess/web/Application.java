@@ -484,7 +484,7 @@ public class Application {
         // The secret path is based on a convention and can't be customized.
         //
         var secretPath = String.format(
-          "projects/%s/secrets/%s/versions/latest",
+          "projects/%s/secrets/jit-%s/versions/latest",
           matcher.group(2),
           matcher.group(1));
 
