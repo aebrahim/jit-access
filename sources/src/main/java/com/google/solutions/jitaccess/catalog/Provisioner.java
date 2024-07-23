@@ -24,13 +24,11 @@ package com.google.solutions.jitaccess.catalog;
 import com.google.api.services.cloudresourcemanager.v3.model.Binding;
 import com.google.api.services.cloudresourcemanager.v3.model.Expr;
 import com.google.api.services.cloudresourcemanager.v3.model.Policy;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.solutions.jitaccess.apis.ProjectId;
 import com.google.solutions.jitaccess.apis.clients.*;
-import com.google.solutions.jitaccess.catalog.auth.GroupId;
-import com.google.solutions.jitaccess.catalog.auth.GroupMapping;
-import com.google.solutions.jitaccess.catalog.auth.IamPrincipalId;
-import com.google.solutions.jitaccess.catalog.auth.UserId;
+import com.google.solutions.jitaccess.catalog.auth.*;
 import com.google.solutions.jitaccess.catalog.policy.IamRoleBinding;
 import com.google.solutions.jitaccess.catalog.policy.JitGroupPolicy;
 import com.google.solutions.jitaccess.util.Coalesce;
@@ -50,24 +48,29 @@ import java.util.stream.Collectors;
  * Provisions access to the resources in an environment.
  */
 public class Provisioner {
+  private final @NotNull String environmentName;
   private final @NotNull GroupProvisioner groupProvisioner;
   private final @NotNull IamProvisioner iamProvisioner;
 
   Provisioner(
+    @NotNull String environmentName,
     @NotNull GroupProvisioner groupProvisioner,
     @NotNull IamProvisioner iamProvisioner
   ) {
+    this.environmentName = environmentName;
     this.groupProvisioner = groupProvisioner;
     this.iamProvisioner = iamProvisioner;
   }
 
   public Provisioner(
+    @NotNull String environmentName,
     @NotNull GroupMapping groupMapping,
     @NotNull CloudIdentityGroupsClient groupsClient,
     @NotNull ResourceManagerClient resourceManagerClient,
     @NotNull Logger logger
   ) {
     this(
+      environmentName,
       new GroupProvisioner(groupMapping, groupsClient, logger),
       new IamProvisioner(groupsClient, resourceManagerClient, logger));
   }
@@ -75,7 +78,7 @@ public class Provisioner {
   /**
    * Provision access to a JIT group.
    */
-  public void provisionAccess(
+  public void provisionMembership(
     @NotNull JitGroupPolicy group,
     @NotNull UserId member,
     @NotNull Instant expiry
@@ -89,7 +92,7 @@ public class Provisioner {
     // Provision IAM role bindings in case they have changed.
     //
     this.iamProvisioner.provisionAccess(
-      mapGroupId(group),
+      provisionedGroupId(group),
       group.privileges()
         .stream().filter(p -> p instanceof IamRoleBinding)
         .map(p -> (IamRoleBinding)p)
@@ -97,13 +100,12 @@ public class Provisioner {
   }
 
   /**
-   * Update group privileges to match those defined by the
-   * policy.
+   * Reconcile a group, ensuring that it matches the policy.
    */
   public void reconcile(
     @NotNull JitGroupPolicy group
-  )  throws AccessException, IOException {
-    var groupId = mapGroupId(group);
+  ) throws AccessException, IOException {
+    var groupId = provisionedGroupId(group);
 
     if (!this.groupProvisioner.isProvisioned(groupId)) {
       //
@@ -126,9 +128,20 @@ public class Provisioner {
   }
 
   /**
+   * Find all groups that have been provisioned for an environment,
+   * including "orphaned groups", i.e., groups that are no longer
+   * covered by any policy.
+   */
+  public Collection<JitGroupId> provisionedGroups() throws AccessException, IOException {
+    return this.groupProvisioner.provisionedGroups(this.environmentName);
+  }
+
+  /**
    * Lookup the Cloud Identity group ID for a group.
    */
-  public @NotNull GroupId mapGroupId(@NotNull JitGroupPolicy group) {
+  public @NotNull GroupId provisionedGroupId(@NotNull JitGroupPolicy group) {
+    Preconditions.checkArgument(group.id().environment().equals(this.environmentName));
+
     return this.groupProvisioner.provisionedGroupId(group);
   }
 
@@ -169,6 +182,26 @@ public class Provisioner {
       catch (ResourceNotFoundException e) {
         return false;
       }
+    }
+
+    /**
+     * Find all groups that have been provisioned for an environment,
+     * including "orphaned group", i.e., groups that are no longer
+     * covered by any policy.
+     */
+    public Collection<JitGroupId> provisionedGroups(
+      @NotNull String environmentName
+    ) throws AccessException, IOException {
+      //
+      // All groups share a common prefix, so we can search by that.
+      //
+      var query = this.groupsClient.createSearchQueryForPrefix(
+        this.mapping.groupPrefix(environmentName));
+
+      return this.groupsClient.searchGroups(query, false)
+        .stream()
+        .map(g -> this.mapping.jitGroupFromGroup(new GroupId(g.getGroupKey().getId())))
+        .toList();
     }
 
     /**

@@ -92,4 +92,14 @@ public class TestGroupMapping {
       new GroupId("jit.a.b.c@example.com"),
       mapping.groupFromJitGroup(new JitGroupId("a", "b", "c")));
   }
+
+  //---------------------------------------------------------------------------
+  // groupPrefix
+  //---------------------------------------------------------------------------
+
+  @Test
+  public void groupPrefix() {
+    var mapping = new GroupMapping("example.com");
+    assertEquals("jit.env-1.", mapping.groupPrefix("env-1"));
+  }
 }

@@ -63,7 +63,7 @@ public class JitGroupView {
    * Resolve the Cloud Identity group that backs this JIT group.
    */
   public @NotNull GroupId cloudIdentityGroupId() {
-    return this.provisioner.mapGroupId(this.policy());
+    return this.provisioner.provisionedGroupId(this.policy());
   }
 
   /**
@@ -196,7 +196,7 @@ public class JitGroupView {
       // Provision group membership.
       //
       var group = JitGroupView.this;
-      group.provisioner.provisionAccess(
+      group.provisioner.provisionMembership(
         group.policy,
         group.subject.user(),
         expiry);

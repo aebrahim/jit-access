@@ -84,6 +84,7 @@ public class LazyCatalogSource implements Catalog.Source {
           return new Entry(
             policy,
             new Provisioner(
+              environmentName,
               groupMapping,
               groupsClient,
               produceResourceManagerClient.apply(policy),

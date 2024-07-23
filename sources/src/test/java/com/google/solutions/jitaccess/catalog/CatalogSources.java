@@ -58,7 +58,7 @@ public class CatalogSources {
         @NotNull String name
       ) {
         var provisioner = Mockito.mock(Provisioner.class);
-        when(provisioner.mapGroupId(any()))
+        when(provisioner.provisionedGroupId(any()))
           .thenAnswer(a -> new GroupId(((JitGroupPolicy)a.getArgument(0)).id() + "@example.com"));
 
         return Optional.of(provisioner);

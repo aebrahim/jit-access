@@ -21,6 +21,7 @@
 
 package com.google.solutions.jitaccess.catalog;
 
+import com.google.api.services.cloudidentity.v1.model.EntityKey;
 import com.google.api.services.cloudidentity.v1.model.Group;
 import com.google.api.services.cloudresourcemanager.v3.model.Binding;
 import com.google.api.services.cloudresourcemanager.v3.model.Policy;
@@ -64,11 +65,11 @@ public class TestProvisioner {
 
 
   //---------------------------------------------------------------------------
-  // provisionAccess.
+  // provisionMembership.
   //---------------------------------------------------------------------------
 
   @Test
-  public void provisionAccess() throws Exception {
+  public void provisionMembership() throws Exception {
     var groupProvisioner = Mockito.mock(Provisioner.GroupProvisioner.class);
     when(groupProvisioner.provisionedGroupId(any()))
       .thenAnswer(a -> SAMPLE_GROUP);
@@ -84,12 +85,13 @@ public class TestProvisioner {
         new IamRoleBinding(SAMPLE_PROJECT_1, SAMPLE_ROLE_2),
         Mockito.mock(Privilege.class)));
 
-    var environment = new Provisioner(
+    var provisioner = new Provisioner(
+      group.id().environment(),
       groupProvisioner,
       iamProvisioner);
 
     var expiry = Instant.now();
-    environment.provisionAccess(
+    provisioner.provisionMembership(
       group,
       SAMPLE_USER_1,
       expiry);
@@ -120,11 +122,12 @@ public class TestProvisioner {
 
     var iamProvisioner = Mockito.mock(Provisioner.IamProvisioner.class);
 
-    var environment = new Provisioner(
+    var provisioner = new Provisioner(
+      group.id().environment(),
       groupProvisioner,
       iamProvisioner);
 
-    environment.reconcile(group);
+    provisioner.reconcile(group);
 
     verify(iamProvisioner, times(0)).provisionAccess(
       any(),
@@ -147,11 +150,12 @@ public class TestProvisioner {
 
     var iamProvisioner = Mockito.mock(Provisioner.IamProvisioner.class);
 
-    var environment = new Provisioner(
+    var provisioner = new Provisioner(
+      group.id().environment(),
       groupProvisioner,
       iamProvisioner);
 
-    environment.reconcile(group);
+    provisioner.reconcile(group);
 
     verify(iamProvisioner, times(1)).provisionAccess(
       eq(SAMPLE_GROUP),
@@ -188,7 +192,7 @@ public class TestProvisioner {
     }
 
     // -------------------------------------------------------------------------
-    // provision.
+    // isProvisioned.
     // -------------------------------------------------------------------------
 
     @Test
@@ -313,6 +317,35 @@ public class TestProvisioner {
         eq(new GroupKey("1")),
         eq(SAMPLE_USER_1),
         eq(expiry));
+    }
+
+    //---------------------------------------------------------------------------
+    // provisionedGroups.
+    //---------------------------------------------------------------------------
+
+    @Test
+    public void provisionedGroups() throws Exception {
+      var groupsClient = Mockito.mock(CloudIdentityGroupsClient.class);
+      when(groupsClient.createSearchQueryForPrefix(eq("jit.env-1.")))
+        .thenReturn("query");
+      when(groupsClient.searchGroups(
+        eq("query"),
+        eq(false)))
+        .thenReturn(List.of(
+          new Group().setGroupKey(new EntityKey().setId("jit.env-1.system-1.group-1@example.com")),
+          new Group().setGroupKey(new EntityKey().setId("jit.env-1.system-1.group-2@example.com"))));
+
+      var mapping = new GroupMapping("example.com");
+
+      var provisioner = new Provisioner.GroupProvisioner(
+        mapping,
+        groupsClient,
+        Mockito.mock(Logger.class));
+
+      var groups = provisioner.provisionedGroups("env-1");
+      assertEquals(2, groups.size());
+      assertTrue(groups.contains(new JitGroupId("env-1", "system-1", "group-1")));
+      assertTrue(groups.contains(new JitGroupId("env-1", "system-1", "group-2")));
     }
   }
   

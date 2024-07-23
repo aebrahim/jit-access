@@ -82,4 +82,11 @@ public class GroupMapping {
 
     return new GroupId(String.format("%s@%s", handle, this.domain));
   }
+
+  /**
+   * Get prefix applied to all groups in an environment.
+   */
+  public @NotNull String groupPrefix(@NotNull String environmentName) {
+    return String.format("%s.%s.", PREFIX, environmentName);
+  }
 }
