@@ -26,10 +26,7 @@ import com.google.api.services.cloudresourcemanager.v3.model.Binding;
 import com.google.api.services.cloudresourcemanager.v3.model.Policy;
 import com.google.solutions.jitaccess.apis.IamRole;
 import com.google.solutions.jitaccess.apis.ProjectId;
-import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
-import com.google.solutions.jitaccess.apis.clients.CloudIdentityGroupsClient;
-import com.google.solutions.jitaccess.apis.clients.GroupKey;
-import com.google.solutions.jitaccess.apis.clients.ResourceManagerClient;
+import com.google.solutions.jitaccess.apis.clients.*;
 import com.google.solutions.jitaccess.catalog.auth.GroupId;
 import com.google.solutions.jitaccess.catalog.auth.GroupMapping;
 import com.google.solutions.jitaccess.catalog.auth.JitGroupId;
@@ -74,7 +71,7 @@ public class TestProvisioner {
   public void provisionAccess() throws Exception {
     var groupProvisioner = Mockito.mock(Provisioner.GroupProvisioner.class);
     when(groupProvisioner.provisionedGroupId(any()))
-      .thenAnswer(a -> new GroupId("group@example.com"));
+      .thenAnswer(a -> SAMPLE_GROUP);
 
     var iamProvisioner = Mockito.mock(Provisioner.IamProvisioner.class);
 
@@ -101,6 +98,64 @@ public class TestProvisioner {
       .provision(eq(group), eq(SAMPLE_USER_1), eq(expiry));
     verify(iamProvisioner, times(1))
       .provisionAccess(eq(new GroupId("group@example.com")), argThat(roles -> roles.size() == 2));
+  }
+
+  //---------------------------------------------------------------------------
+  // reconcile.
+  //---------------------------------------------------------------------------
+
+  @Test
+  public void reconcile_whenGroupNotProvisionedYet() throws Exception {
+    var groupProvisioner = Mockito.mock(Provisioner.GroupProvisioner.class);
+    when(groupProvisioner.provisionedGroupId(any()))
+      .thenAnswer(a -> SAMPLE_GROUP);
+    when(groupProvisioner.isProvisioned(eq(SAMPLE_GROUP)))
+      .thenReturn(false);
+
+    var group = Policies.createJitGroupPolicy(
+      "group",
+      AccessControlList.EMPTY,
+      Map.of(),
+      List.of());
+
+    var iamProvisioner = Mockito.mock(Provisioner.IamProvisioner.class);
+
+    var environment = new Provisioner(
+      groupProvisioner,
+      iamProvisioner);
+
+    environment.reconcile(group);
+
+    verify(iamProvisioner, times(0)).provisionAccess(
+      any(),
+      any());
+  }
+
+  @Test
+  public void reconcile_whenGroupProvisioned() throws Exception {
+    var groupProvisioner = Mockito.mock(Provisioner.GroupProvisioner.class);
+    when(groupProvisioner.provisionedGroupId(any()))
+      .thenAnswer(a -> SAMPLE_GROUP);
+    when(groupProvisioner.isProvisioned(eq(SAMPLE_GROUP)))
+      .thenReturn(true);
+
+    var group = Policies.createJitGroupPolicy(
+      "group",
+      AccessControlList.EMPTY,
+      Map.of(),
+      List.of());
+
+    var iamProvisioner = Mockito.mock(Provisioner.IamProvisioner.class);
+
+    var environment = new Provisioner(
+      groupProvisioner,
+      iamProvisioner);
+
+    environment.reconcile(group);
+
+    verify(iamProvisioner, times(1)).provisionAccess(
+      eq(SAMPLE_GROUP),
+      any());
   }
 
   @Nested
@@ -130,6 +185,42 @@ public class TestProvisioner {
       assertEquals(
         new GroupId("mapped@example.com"),
         provisioner.provisionedGroupId(groupPolicy));
+    }
+
+    // -------------------------------------------------------------------------
+    // provision.
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void isProvisioned_whenGroupNotFound() throws Exception {
+      var groupsClient = Mockito.mock(CloudIdentityGroupsClient.class);
+      when(groupsClient
+        .getGroup(eq(SAMPLE_GROUP)))
+        .thenThrow(new ResourceNotFoundException("mock"));
+
+      var logger = Mockito.mock(Logger.class);
+      var provisioner = new Provisioner.GroupProvisioner(
+        Mockito.mock(GroupMapping.class),
+        groupsClient,
+        logger);
+
+      assertFalse(provisioner.isProvisioned(SAMPLE_GROUP));
+    }
+
+    @Test
+    public void isProvisioned_whenGroupFound() throws Exception {
+      var groupsClient = Mockito.mock(CloudIdentityGroupsClient.class);
+      when(groupsClient
+        .getGroup(eq(SAMPLE_GROUP)))
+        .thenReturn(new Group());
+
+      var logger = Mockito.mock(Logger.class);
+      var provisioner = new Provisioner.GroupProvisioner(
+        Mockito.mock(GroupMapping.class),
+        groupsClient,
+        logger);
+
+      assertTrue(provisioner.isProvisioned(SAMPLE_GROUP));
     }
 
     // -------------------------------------------------------------------------

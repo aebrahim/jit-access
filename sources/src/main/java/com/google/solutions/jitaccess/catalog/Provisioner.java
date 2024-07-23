@@ -26,10 +26,7 @@ import com.google.api.services.cloudresourcemanager.v3.model.Expr;
 import com.google.api.services.cloudresourcemanager.v3.model.Policy;
 import com.google.common.base.Strings;
 import com.google.solutions.jitaccess.apis.ProjectId;
-import com.google.solutions.jitaccess.apis.clients.AccessException;
-import com.google.solutions.jitaccess.apis.clients.CloudIdentityGroupsClient;
-import com.google.solutions.jitaccess.apis.clients.GroupKey;
-import com.google.solutions.jitaccess.apis.clients.ResourceManagerClient;
+import com.google.solutions.jitaccess.apis.clients.*;
 import com.google.solutions.jitaccess.catalog.auth.GroupId;
 import com.google.solutions.jitaccess.catalog.auth.GroupMapping;
 import com.google.solutions.jitaccess.catalog.auth.IamPrincipalId;
@@ -100,6 +97,35 @@ public class Provisioner {
   }
 
   /**
+   * Update group privileges to match those defined by the
+   * policy.
+   */
+  public void reconcile(
+    @NotNull JitGroupPolicy group
+  )  throws AccessException, IOException {
+    var groupId = mapGroupId(group);
+
+    if (!this.groupProvisioner.isProvisioned(groupId)) {
+      //
+      // If the group hasn't been provisioned yet, then
+      // nothing can be out of sync.
+      //
+      return;
+    }
+
+    //
+    // Re-provision IAM role bindings to ensure that they're
+    // in sync with the policy.
+    //
+    this.iamProvisioner.provisionAccess(
+      groupId,
+      group.privileges()
+        .stream().filter(p -> p instanceof IamRoleBinding)
+        .map(p -> (IamRoleBinding)p)
+        .collect(Collectors.toSet()));
+  }
+
+  /**
    * Lookup the Cloud Identity group ID for a group.
    */
   public @NotNull GroupId mapGroupId(@NotNull JitGroupPolicy group) {
@@ -128,6 +154,21 @@ public class Provisioner {
      */
     public @NotNull GroupId provisionedGroupId(@NotNull JitGroupPolicy group) {
       return this.mapping.groupFromJitGroup(group.id());
+    }
+
+    /**
+     * Check if a group has been provisioned yet.
+     */
+    public boolean isProvisioned(
+      @NotNull GroupId groupId
+    ) throws AccessException, IOException {
+      try {
+        this.groupsClient.getGroup(groupId);
+        return true;
+      }
+      catch (ResourceNotFoundException e) {
+        return false;
+      }
     }
 
     /**
