@@ -111,6 +111,8 @@ public class LegacyPolicy extends EnvironmentPolicy {
               .distinct()
               .map(p -> (AccessControlList.Entry)new AccessControlList.AllowedEntry(p, PolicyPermission.EXPORT.toMask())),
 
+            //TODO: grant RECONCILE
+
             //
             // Allow all users to VIEW.
             //

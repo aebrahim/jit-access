@@ -23,6 +23,7 @@ package com.google.solutions.jitaccess.catalog;
 
 import com.google.common.base.Preconditions;
 import com.google.solutions.jitaccess.apis.clients.AccessException;
+import com.google.solutions.jitaccess.catalog.auth.GroupId;
 import com.google.solutions.jitaccess.catalog.auth.JitGroupId;
 import com.google.solutions.jitaccess.catalog.auth.Subject;
 import com.google.solutions.jitaccess.catalog.policy.EnvironmentPolicy;
@@ -104,12 +105,14 @@ public class EnvironmentView {
     var result = new LinkedList<JitGroupCompliance>();
 
     for (var groupId : this.provisioner.provisionedGroups()) {
+      var cloudIdentityGroupId = this.provisioner.provisionedGroupId(groupId);
+
       var policy =  this.policy.system(groupId.system()).flatMap(sys -> sys.group(groupId.name()));
       if (policy.isEmpty()) {
         //
         // There's no policy for this group, making this an orphaned group.
         //
-        result.add(new JitGroupCompliance(groupId, null, null));
+        result.add(new JitGroupCompliance(groupId, cloudIdentityGroupId, null, null));
       }
       else {
         //
@@ -117,10 +120,10 @@ public class EnvironmentView {
         //
         try {
           this.provisioner.reconcile(policy.get());
-          result.add(new JitGroupCompliance(groupId, policy.get(), null));
+          result.add(new JitGroupCompliance(groupId, cloudIdentityGroupId, policy.get(), null));
         }
         catch (AccessException | IOException e) {
-          result.add(new JitGroupCompliance(groupId, policy.get(), e));
+          result.add(new JitGroupCompliance(groupId, cloudIdentityGroupId, policy.get(), e));
         }
       }
     }
@@ -157,16 +160,19 @@ public class EnvironmentView {
    */
   public static class JitGroupCompliance {
     private final @NotNull JitGroupId groupId;
+    private final @NotNull GroupId cloudIdentityGroupId;
 
     private final @Nullable JitGroupPolicy policy;
     private final @Nullable Exception exception;
 
     private JitGroupCompliance(
       @NotNull JitGroupId groupId,
+      @NotNull GroupId cloudIdentityGroupId,
       @Nullable JitGroupPolicy policy,
       @Nullable Exception exception
     ) {
       this.groupId = groupId;
+      this.cloudIdentityGroupId = cloudIdentityGroupId;
       this.policy = policy;
       this.exception = exception;
     }
@@ -175,11 +181,15 @@ public class EnvironmentView {
       return groupId;
     }
 
-    boolean isCompliant() {
+    public GroupId cloudIdentityGroupId() {
+      return cloudIdentityGroupId;
+    }
+
+    public boolean isCompliant() {
       return this.exception == null && this.policy != null;
     }
 
-    boolean isOrphaned() {
+    public boolean isOrphaned() {
       return this.exception == null && this.policy == null;
     }
 

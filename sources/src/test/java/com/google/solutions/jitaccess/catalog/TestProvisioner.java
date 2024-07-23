@@ -188,7 +188,7 @@ public class TestProvisioner {
 
       assertEquals(
         new GroupId("mapped@example.com"),
-        provisioner.provisionedGroupId(groupPolicy));
+        provisioner.provisionedGroupId(groupPolicy.id()));
     }
 
     // -------------------------------------------------------------------------

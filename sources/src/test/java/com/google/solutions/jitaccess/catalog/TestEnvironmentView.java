@@ -23,6 +23,7 @@ package com.google.solutions.jitaccess.catalog;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
 import com.google.solutions.jitaccess.apis.clients.AccessException;
+import com.google.solutions.jitaccess.catalog.auth.GroupId;
 import com.google.solutions.jitaccess.catalog.auth.JitGroupId;
 import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
@@ -228,6 +229,8 @@ public class TestEnvironmentView {
     systemPolicy.add(brokenJitGroup);
 
     var provisioner = Mockito.mock(Provisioner.class);
+    when(provisioner.provisionedGroupId(any()))
+      .thenReturn(new GroupId("provisioned-id@example.com"));
     when(provisioner.provisionedGroups())
       .thenReturn(List.of(orphanedJitGroupId, compliantJitGroup.id(), brokenJitGroup.id()));
     doNothing().when(provisioner).reconcile(eq(compliantJitGroup));

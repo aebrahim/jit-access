@@ -22,6 +22,7 @@
 package com.google.solutions.jitaccess.catalog;
 
 import com.google.solutions.jitaccess.catalog.auth.GroupId;
+import com.google.solutions.jitaccess.catalog.auth.JitGroupId;
 import com.google.solutions.jitaccess.catalog.policy.EnvironmentPolicy;
 import com.google.solutions.jitaccess.catalog.policy.JitGroupPolicy;
 import com.google.solutions.jitaccess.catalog.policy.PolicyHeader;
@@ -59,7 +60,7 @@ public class CatalogSources {
       ) {
         var provisioner = Mockito.mock(Provisioner.class);
         when(provisioner.provisionedGroupId(any()))
-          .thenAnswer(a -> new GroupId(((JitGroupPolicy)a.getArgument(0)).id() + "@example.com"));
+          .thenAnswer(a -> new GroupId(((JitGroupId)a.getArgument(0)) + "@example.com"));
 
         return Optional.of(provisioner);
       }

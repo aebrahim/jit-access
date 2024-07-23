@@ -27,6 +27,7 @@ package com.google.solutions.jitaccess.web;
 public class EventIds {
   public static final String API_CHECK_HEALTH = "api.health.check";
   public static final String API_VIEW_ENVIRONMENTS = "api.environments.view";
+  public static final String API_RECONCILE_ENVIRONMENT = "api.environments.reconcile";
   public static final String API_VIEW_SYSTEMS = "api.systems.view";
   public static final String API_VIEW_GROUPS = "api.groups.view";
   public static final String API_JOIN_GROUP = "api.groups.join";

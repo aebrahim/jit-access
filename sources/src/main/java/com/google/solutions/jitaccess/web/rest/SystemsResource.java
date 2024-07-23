@@ -47,6 +47,9 @@ import java.util.List;
 @RequireIapPrincipal
 @LogRequest
 public class SystemsResource {
+  private final AccessDeniedException NOT_FOUND = new AccessDeniedException(
+    "The system does not exist or access is denied");
+
   @Inject
   Catalog catalog;
 
@@ -69,8 +72,7 @@ public class SystemsResource {
         .environment(environment)
         .flatMap(env -> env.system(system))
         .map(sys -> SystemInfo.create(sys))
-        .orElseThrow(() -> new AccessDeniedException(
-          "The system does not exist or access is denied"));
+        .orElseThrow(() -> NOT_FOUND);
     }
     catch (Exception e) {
       this.logger.warn(

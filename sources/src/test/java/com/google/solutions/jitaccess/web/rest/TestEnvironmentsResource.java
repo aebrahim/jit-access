@@ -114,7 +114,7 @@ public class TestEnvironmentsResource {
   }
 
   @Test
-  public void get_whenAccessToEnvironmentDenied() {
+  public void get_whenPermissionsInsufficient() {
     var environment = new EnvironmentPolicy(
       "env-1",
       "Env 1",
@@ -245,7 +245,7 @@ public class TestEnvironmentsResource {
   }
 
   @Test
-  public void getPolicy_whenAccessToEnvironmentDenied() {
+  public void getPolicy_whenPermissionsInsufficient() {
     var environment = new EnvironmentPolicy(
       "env-1",
       "Env 1",
@@ -295,5 +295,73 @@ public class TestEnvironmentsResource {
     assertNull(policy.environment().systems());
     assertEquals(environment.metadata().source(), policy.source());
     assertEquals(environment.metadata().lastModified().getEpochSecond(), policy.lastModified());
+  }
+
+  //---------------------------------------------------------------------------
+  // getStatus.
+  //---------------------------------------------------------------------------
+
+  @Test
+  public void getStatus_whenEnvironmentInvalid() throws Exception {
+    var environment = new EnvironmentPolicy(
+      "env-1",
+      "Env 1",
+      new Policy.Metadata("test", Instant.EPOCH));
+
+    var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
+    resource.catalog = new Catalog(
+      Subjects.create(SAMPLE_USER),
+      CatalogSources.create(environment));
+
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> resource.getStatus(null));
+  }
+
+  @Test
+  public void getStatus_whenEnvironmentNotFound() throws Exception {
+    var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
+    resource.catalog = new Catalog(
+      Subjects.create(SAMPLE_USER),
+      CatalogSources.create(List.of()));
+
+    assertThrows(
+      AccessDeniedException.class,
+      () ->  resource.getStatus("unknown"));
+
+    verify(resource.logger, times(1)).warn(
+      eq(EventIds.API_RECONCILE_ENVIRONMENT),
+      anyString(),
+      any(Exception.class));
+  }
+
+  @Test
+  public void getStatus_whenPermissionsInsufficient() {
+    var subject = Subjects.create(SAMPLE_USER);
+
+    var environment = new EnvironmentPolicy(
+      "env-1",
+      "Env 1",
+      new AccessControlList(List.of(
+        new AccessControlList.AllowedEntry(subject.user(), PolicyPermission.VIEW.toMask()))),
+      Map.of(),
+      METADATA);
+
+    var resource = new EnvironmentsResource();
+    resource.logger = Mockito.mock(Logger.class);
+    resource.catalog = new Catalog(
+      subject,
+      CatalogSources.create(environment));
+
+    assertThrows(
+      AccessDeniedException.class,
+      () ->  resource.getStatus(environment.name()));
+
+    verify(resource.logger, times(1)).warn(
+      eq(EventIds.API_RECONCILE_ENVIRONMENT),
+      anyString(),
+      any(Exception.class));
   }
 }

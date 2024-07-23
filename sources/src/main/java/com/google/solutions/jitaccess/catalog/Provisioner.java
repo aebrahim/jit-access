@@ -92,7 +92,7 @@ public class Provisioner {
     // Provision IAM role bindings in case they have changed.
     //
     this.iamProvisioner.provisionAccess(
-      provisionedGroupId(group),
+      provisionedGroupId(group.id()),
       group.privileges()
         .stream().filter(p -> p instanceof IamRoleBinding)
         .map(p -> (IamRoleBinding)p)
@@ -105,7 +105,7 @@ public class Provisioner {
   public void reconcile(
     @NotNull JitGroupPolicy group
   ) throws AccessException, IOException {
-    var groupId = provisionedGroupId(group);
+    var groupId = provisionedGroupId(group.id());
 
     if (!this.groupProvisioner.isProvisioned(groupId)) {
       //
@@ -139,10 +139,10 @@ public class Provisioner {
   /**
    * Lookup the Cloud Identity group ID for a group.
    */
-  public @NotNull GroupId provisionedGroupId(@NotNull JitGroupPolicy group) {
-    Preconditions.checkArgument(group.id().environment().equals(this.environmentName));
+  public @NotNull GroupId provisionedGroupId(@NotNull JitGroupId groupId) {
+    Preconditions.checkArgument(groupId.environment().equals(this.environmentName));
 
-    return this.groupProvisioner.provisionedGroupId(group);
+    return this.groupProvisioner.provisionedGroupId(groupId);
   }
 
   /**
@@ -162,11 +162,12 @@ public class Provisioner {
       this.groupsClient = groupsClient;
       this.logger = logger;
     }
+
     /**
      * Lookup the Cloud Identity group ID for a group.
      */
-    public @NotNull GroupId provisionedGroupId(@NotNull JitGroupPolicy group) {
-      return this.mapping.groupFromJitGroup(group.id());
+    public @NotNull GroupId provisionedGroupId(@NotNull JitGroupId groupId) {
+      return this.mapping.groupFromJitGroup(groupId);
     }
 
     /**

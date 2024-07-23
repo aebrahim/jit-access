@@ -45,10 +45,15 @@
                 </div>
             </div>
             <div class="jit-card-subsection">
-                <a class="mdc-button mdc-button--outlined mdc-button--icon-leading" href="#">
+                <a class="mdc-button mdc-button--outlined mdc-button--icon-leading jit-button-policy" href="#">
                     <span class="mdc-button__ripple"></span>
                     <i class="material-icons mdc-button__icon" aria-hidden="true">edit</i>
                     <span class="mdc-button__label">View policy</span>
+                </a>
+                <a class="mdc-button mdc-button--outlined mdc-button--icon-leading jit-button-reconcile" href="#">
+                    <span class="mdc-button__ripple"></span>
+                    <i class="material-icons mdc-button__icon" aria-hidden="true">sync</i>
+                    <span class="mdc-button__label">Reconcile</span>
                 </a>
             </div>
         </div>
@@ -152,6 +157,35 @@
             </div>
         </div>
 
+        <!-- ReconciliationStatusInfoView -->
+        <div class='jit-view' id='jit-reconciliationstatusinfo-view'>
+            <h1>
+                <a class="jit-environment-name"></a>
+                <span class="jit-material-icons">chevron_right</span>
+                Status
+            </h1>
+            <div class="jit-card-subsection">
+                The following issues were detected that require manual reconciliation:
+            </div>
+            <div class="mdc-data-table">
+                <div class="mdc-data-table__table-container">
+                    <table class="mdc-data-table__table">
+                        <thead>
+                            <tr class="mdc-data-table__header-row">
+                                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Group</th>
+                                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">System</th>
+                                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Environment</th>
+                                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Email</th>
+                                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="mdc-data-table__content">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- WaitDialog -->
         <div class="mdc-dialog" id="jit-wait-dialog">
             <div class="mdc-dialog__container">
@@ -228,9 +262,12 @@
                 this.select('h1').text(model.content.displayName);
                 this.select('.jit-environment-description').text(model.content.description);
 
-                this.select('.mdc-button')
+                this.select('.jit-button-policy')
                     .prop('href', `#!/${model.content.policy != null ? model.content.policy.href : '#'}`)
                     .toggle(model.content.policy != null);
+                this.select('.jit-button-reconcile')
+                    .prop('href', `#!/${model.content.reconcile != null ? model.content.reconcile.href : '#'}`)
+                    .toggle(model.content.reconcile != null);
 
                 if (model.content.systems) {
                     model.content.systems.forEach(item => {
@@ -646,6 +683,36 @@
             }
         }
 
+        class ReconciliationStatusInfoView extends GroupsViewBase {
+            constructor(model) {
+                super('#jit-reconciliationstatusinfo-view');
+
+                console.assert(model);
+
+                this.table = new mdc.dataTable.MDCDataTable(this.select('table').get(0));
+                this.table.clearRows();
+
+                this.select('.jit-environment-name')
+                    .text(model.content.environment.displayName)
+                    .prop('href', `#!/${model.content.environment.self.href}`);
+
+                if (model.content.issues) {
+                    model.content.issues.forEach(item => {
+                        this.table.addRow(
+                            item.id,
+                            [
+                                { text: item.group, icon: 'group' },
+                                { text: item.system },
+                                { text: item.environment },
+                                { text: item.cloudIdentityGroupId },
+                                { text: item.details, maxLength: 40 }
+                            ],
+                            false);
+                    });
+                }
+            }
+        }
+
         async function routeToView() {
             let view;
             try {
@@ -672,6 +739,11 @@
 
                     case "PolicyInfo":
                         view = new PolicyInfoView(model);
+                        await view.showAsync();
+                        break;
+
+                    case "ReconciliationStatusInfo":
+                        view = new ReconciliationStatusInfoView(model);
                         await view.showAsync();
                         break;
                 }

@@ -37,6 +37,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +47,9 @@ import java.util.stream.Collectors;
 @RequireIapPrincipal
 @LogRequest
 public class EnvironmentsResource {
+  private final AccessDeniedException NOT_FOUND = new AccessDeniedException(
+    "The environment does not exist or access is denied");
+
   @Inject
   Catalog catalog;
 
@@ -88,14 +92,13 @@ public class EnvironmentsResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("environments/{environment}")
   public @NotNull EnvironmentInfo get(
-    @PathParam("environment") @NotNull String environment
+    @PathParam("environment") @NotNull String environmentName
   ) throws Exception {
     try {
       return this.catalog
-        .environment(environment)
+        .environment(environmentName)
         .map(env -> EnvironmentInfo.create(env))
-        .orElseThrow(() -> new AccessDeniedException(
-          "The environment does not exist or access is denied"));
+        .orElseThrow(() -> NOT_FOUND);
     }
     catch (Exception e) {
       this.logger.warn(
@@ -114,19 +117,48 @@ public class EnvironmentsResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("environments/{environment}/policy")
   public @NotNull PolicyInfo getPolicy(
-    @PathParam("environment") @NotNull String environment
+    @PathParam("environment") @NotNull String environmentName
   ) throws Exception {
     try {
       return this.catalog
-        .environment(environment)
+        .environment(environmentName)
         .flatMap(EnvironmentView::export)
         .map(doc -> PolicyInfo.create(doc))
-        .orElseThrow(() -> new AccessDeniedException(
-          "The environment does not exist or access is denied"));
+        .orElseThrow(() -> NOT_FOUND);
     }
     catch (Exception e) {
       this.logger.warn(
         EventIds.API_VIEW_ENVIRONMENTS,
+        "Request to export the environment policy failed",
+        e);
+
+      throw (Exception)e.fillInStackTrace();
+    }
+  }
+
+  /**
+   * Get policy source.
+   */
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("environments/{environment}/status")
+  public @NotNull EnvironmentsResource.ReconciliationStatusInfo getStatus(
+    @PathParam("environment") @NotNull String environmentName // TODO: test
+  ) throws Exception {
+    try {
+      var environment =  this.catalog
+        .environment(environmentName)
+        .orElseThrow(() -> NOT_FOUND);
+
+      return ReconciliationStatusInfo.create(
+        environment,
+        environment
+          .reconcile()
+          .orElseThrow(() -> NOT_FOUND));
+    }
+    catch (Exception e) {
+      this.logger.warn(
+        EventIds.API_RECONCILE_ENVIRONMENT,
         "Request to export the environment policy failed",
         e);
 
@@ -147,6 +179,7 @@ public class EnvironmentsResource {
   public record EnvironmentInfo(
     @NotNull Link self,
     @Nullable Link policy,
+    @Nullable Link reconcile,
     @NotNull String name,
     @NotNull String displayName,
     @NotNull String description,
@@ -162,6 +195,7 @@ public class EnvironmentsResource {
       return new EnvironmentInfo(
         new Link("environments/%s", policy.name()),
         null,
+        null,
         policy.name(),
         policy.name(),
         policy.description(),
@@ -175,7 +209,10 @@ public class EnvironmentsResource {
       return new EnvironmentInfo(
         new Link("environments/%s", environment.policy().name()),
         environment.canExport()
-          ? new Link("environments/%s/policy", environment.policy().name())
+          ? new Link("environments/%s/policy", environment.policy().name())// TODO: test
+          : null,
+        environment.canReconcile()
+          ? new Link("environments/%s/status", environment.policy().name()) // TODO: test
           : null,
         environment.policy().name(),
         environment.policy().displayName(),
@@ -202,6 +239,61 @@ public class EnvironmentsResource {
         doc.toString(),
         doc.policy().metadata().source(),
         doc.policy().metadata().lastModified().getEpochSecond());
+    }
+  }
+
+  public record ReconciliationStatusInfo(
+    @NotNull Link self,
+    @NotNull EnvironmentInfo environment,
+    @NotNull List<ReconciliationIssueInfo> issues
+  ) implements MediaInfo {
+    static ReconciliationStatusInfo create(
+      @NotNull EnvironmentView environment,
+      @NotNull Collection<EnvironmentView.JitGroupCompliance> groups
+    ) {
+      return new ReconciliationStatusInfo(
+        new Link("environments/%s", environment.policy().name()),
+        EnvironmentInfo.createSummary(environment.policy()),
+        groups.stream()
+          .filter(g -> !g.isCompliant())
+          .map(ReconciliationIssueInfo::create)
+          .toList());
+    }
+  }
+
+  public record ReconciliationIssueInfo(
+    @NotNull String environment,
+    @NotNull String system,
+    @NotNull String group,
+    @NotNull String cloudIdentityGroupId,
+    @NotNull String details
+    ) {
+    static ReconciliationIssueInfo create(EnvironmentView.JitGroupCompliance compliance) {
+      if (compliance.isOrphaned()) {
+        return new ReconciliationIssueInfo(
+          compliance.groupId().environment(),
+          compliance.groupId().system(),
+          compliance.groupId().name(),
+          compliance.cloudIdentityGroupId().email,
+          "The group is orphaned. A group exists in Cloud Identity, but it is not covered by a policy.");
+
+      }
+      else if (!compliance.isCompliant()) {
+        return new ReconciliationIssueInfo(
+          compliance.groupId().environment(),
+          compliance.groupId().system(),
+          compliance.groupId().name(),
+          compliance.cloudIdentityGroupId().email,
+          compliance.exception().getMessage());
+      }
+      else {
+        return new ReconciliationIssueInfo(
+          compliance.groupId().environment(),
+          compliance.groupId().system(),
+          compliance.groupId().name(),
+          compliance.cloudIdentityGroupId().email,
+          "OK");
+      }
     }
   }
 }

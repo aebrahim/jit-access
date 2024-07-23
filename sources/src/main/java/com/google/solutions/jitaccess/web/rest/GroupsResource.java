@@ -53,6 +53,9 @@ import java.util.Optional;
 @RequireIapPrincipal
 @LogRequest
 public class GroupsResource {
+  private final AccessDeniedException NOT_FOUND = new AccessDeniedException(
+    "The group does not exist or access is denied");
+
   @Inject
   Catalog catalog;
 
@@ -77,7 +80,7 @@ public class GroupsResource {
       return this.catalog
         .group(groupId)
         .map(GroupInfo::create)
-        .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
+        .orElseThrow(() -> NOT_FOUND);
     }
     catch (Exception e) {
       this.logger.warn(
@@ -110,7 +113,7 @@ public class GroupsResource {
 
       group = this.catalog
         .group(groupId)
-        .orElseThrow(() -> new AccessDeniedException("The group does not exist or access is denied"));
+        .orElseThrow(() -> NOT_FOUND);
     }
     catch (Exception e) {
       this.logger.warn(
