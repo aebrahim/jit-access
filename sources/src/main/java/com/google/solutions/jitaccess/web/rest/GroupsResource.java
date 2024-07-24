@@ -27,6 +27,7 @@ import com.google.solutions.jitaccess.catalog.Catalog;
 import com.google.solutions.jitaccess.catalog.JitGroupView;
 import com.google.solutions.jitaccess.catalog.Logger;
 import com.google.solutions.jitaccess.catalog.auth.JitGroupId;
+import com.google.solutions.jitaccess.catalog.auth.Principal;
 import com.google.solutions.jitaccess.catalog.policy.PolicyAnalysis;
 import com.google.solutions.jitaccess.catalog.policy.Privilege;
 import com.google.solutions.jitaccess.catalog.policy.Property;
@@ -157,20 +158,7 @@ public class GroupsResource {
 
         return GroupInfo.create(
           group,
-          new JoinInfo(
-            JoinStatusInfo.JOIN_APPROVED,
-            new MembershipInfo(
-              true,
-              Optional.ofNullable(principal.expiry())
-                .map(Instant::getEpochSecond)
-                .get()),
-            List.of(), // Don't repeat constraints
-            List.of(), // Don't repeat constraints
-            joinOp.input()
-              .stream()
-              .sorted(Comparator.comparing(p -> p.name()))
-              .map(InputInfo::fromProperty)
-              .toList()));
+          JoinInfo.forSuccessfulJoin(principal, joinOp.input()));
       }
     }
     catch (PolicyAnalysis.ConstraintFailedException e) {
@@ -233,7 +221,7 @@ public class GroupsResource {
 
       return create(
         g,
-        JoinInfo.fromAnalysis(
+        JoinInfo.forAnalysis(
           status,
           analysis));
     }
@@ -278,7 +266,7 @@ public class GroupsResource {
     @NotNull List<ConstraintInfo> unsatisfiedConstraints,
     @NotNull List<InputInfo> input
   ) {
-    static @NotNull  JoinInfo fromAnalysis(
+    static @NotNull JoinInfo forAnalysis(
       @NotNull JoinStatusInfo status,
       @NotNull PolicyAnalysis.Result analysis
     ) {
@@ -296,6 +284,26 @@ public class GroupsResource {
           .map(c -> new ConstraintInfo(c.name(), c.displayName()))
           .toList(),
         analysis.input().stream()
+          .sorted(Comparator.comparing(p -> p.name()))
+          .map(InputInfo::fromProperty)
+          .toList());
+    }
+
+    static @NotNull JoinInfo forSuccessfulJoin(
+      @NotNull Principal principal,
+      @NotNull List<Property> input
+    ) {
+      return new JoinInfo(
+        JoinStatusInfo.JOIN_APPROVED,
+        new MembershipInfo(
+          true,
+          Optional.ofNullable(principal.expiry())
+            .map(Instant::getEpochSecond)
+            .get()),
+        List.of(), // Don't repeat constraints
+        List.of(), // Don't repeat constraints
+        input
+          .stream()
           .sorted(Comparator.comparing(p -> p.name()))
           .map(InputInfo::fromProperty)
           .toList());
