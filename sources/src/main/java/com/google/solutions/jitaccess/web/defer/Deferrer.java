@@ -21,28 +21,45 @@
 
 package com.google.solutions.jitaccess.web.defer;
 
+import com.google.auth.oauth2.TokenVerifier;
+import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.Deferral;
 import com.google.solutions.jitaccess.catalog.JitGroupView;
+import com.google.solutions.jitaccess.catalog.auth.UserId;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Set;
+
+/**
+ * Handles deferred join requests, for example by sending an email.
+ */
 public interface Deferrer {
   /**
    * Express the intent to join a group and solicit approval
    * from an authorized user.
    */
-  @NotNull DeferralToken defer(@NotNull JitGroupView.JoinOperation op);
+  @NotNull DeferralToken defer(
+    @NotNull JitGroupView.JoinOperation op,
+    @NotNull Set<UserId> deferees
+  ) throws AccessException, IOException;
 
   /**
    * Pick up a deferral in order to approve a join request
    */
-  @NotNull Deferral<JitGroupView.JoinOperation> pickup(DeferralToken token);
+  @NotNull Deferral<JitGroupView.JoinOperation> pickup(
+    @NotNull DeferralToken token
+  ) throws TokenVerifier.VerificationException;
 
   /**
    * Token encoding of a deferral, suitable to be passed
    * in URLs and/or email messages.
    */
   record DeferralToken(
-    @NotNull String value
+    @NotNull String value,
+    @Nullable Instant expiryTime
   ) {
     @Override
     public String toString() {

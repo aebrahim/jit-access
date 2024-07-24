@@ -23,10 +23,7 @@ package com.google.solutions.jitaccess.catalog;
 
 import com.google.solutions.jitaccess.apis.clients.AccessDeniedException;
 import com.google.solutions.jitaccess.apis.clients.AccessException;
-import com.google.solutions.jitaccess.catalog.auth.GroupId;
-import com.google.solutions.jitaccess.catalog.auth.Principal;
-import com.google.solutions.jitaccess.catalog.auth.Subject;
-import com.google.solutions.jitaccess.catalog.auth.UserId;
+import com.google.solutions.jitaccess.catalog.auth.*;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -119,6 +116,21 @@ public class JitGroupView {
     ) {
       this.requiresApproval = requiresApproval;
       this.analysis = analysis;
+    }
+
+    /**
+     * Get user that is performing the operation.
+     * @return
+     */
+    public @NotNull UserId user() {
+      return JitGroupView.this.subject.user();
+    }
+
+    /**
+     * Get group that the user is trying to join.
+     */
+    public @NotNull JitGroupId group() {
+      return JitGroupView.this.policy.id();
     }
 
     /**

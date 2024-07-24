@@ -34,7 +34,7 @@ import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ITestTokenSigner {
+public class ITestServiceAccountSigner {
   private static final UserId SAMPLE_USER_1 = new UserId("user-1@example.com");
   private static final UserId SAMPLE_USER_2 = new UserId("user-2@example.com");
   private static final UserId SAMPLE_USER_3 = new UserId("user-3@example.com");
@@ -51,8 +51,8 @@ public class ITestTokenSigner {
       HttpTransport.Options.DEFAULT);
     var serviceAccount = ITestEnvironment.NO_ACCESS_USER;
 
-    var tokenSignerOptions = new TokenSigner.Options(serviceAccount, Duration.ofMinutes(5));
-    var tokenSigner = new TokenSigner(
+    var tokenSignerOptions = new ServiceAccountSigner.Options(serviceAccount, Duration.ofMinutes(5));
+    var tokenSigner = new ServiceAccountSigner(
       credentialsAdapter,
       tokenSignerOptions);
 
@@ -94,9 +94,9 @@ public class ITestTokenSigner {
       HttpTransport.Options.DEFAULT);
     var serviceAccount = ITestEnvironment.NO_ACCESS_USER;
 
-    var tokenSigner = new TokenSigner(
+    var tokenSigner = new ServiceAccountSigner(
       credentialsAdapter,
-      new TokenSigner.Options(serviceAccount, Duration.ofMinutes(5)));
+      new ServiceAccountSigner.Options(serviceAccount, Duration.ofMinutes(5)));
 
     var payload = new JsonWebToken.Payload()
       .setIssuer(serviceAccount.email);
@@ -114,9 +114,9 @@ public class ITestTokenSigner {
       HttpTransport.Options.DEFAULT);
     var serviceAccount = ITestEnvironment.NO_ACCESS_USER;
 
-    var tokenSigner = new TokenSigner(
+    var tokenSigner = new ServiceAccountSigner(
       credentialsAdapter,
-      new TokenSigner.Options(serviceAccount, Duration.ofMinutes(5)));
+      new ServiceAccountSigner.Options(serviceAccount, Duration.ofMinutes(5)));
 
     var payload = new JsonWebToken.Payload()
       .setAudience(serviceAccount.email);
@@ -135,9 +135,9 @@ public class ITestTokenSigner {
       HttpTransport.Options.DEFAULT);
     var serviceAccount = ITestEnvironment.TEMPORARY_ACCESS_USER;
 
-    var tokenSigner = new TokenSigner(
+    var tokenSigner = new ServiceAccountSigner(
       credentialsAdapter,
-      new TokenSigner.Options(serviceAccount, Duration.ofMinutes(5)));
+      new ServiceAccountSigner.Options(serviceAccount, Duration.ofMinutes(5)));
 
     var payload = new JsonWebToken.Payload()
       .setAudience(serviceAccount.email)
@@ -157,9 +157,9 @@ public class ITestTokenSigner {
       HttpTransport.Options.DEFAULT);
     var serviceAccount = ITestEnvironment.NO_ACCESS_USER;
 
-    var tokenSigner = new TokenSigner(
+    var tokenSigner = new ServiceAccountSigner(
       credentialsAdapter,
-      new TokenSigner.Options(serviceAccount, Duration.ofMinutes(5)));
+      new ServiceAccountSigner.Options(serviceAccount, Duration.ofMinutes(5)));
 
     var inputPayload = new JsonWebToken.Payload()
       .setJwtId("sample-1");

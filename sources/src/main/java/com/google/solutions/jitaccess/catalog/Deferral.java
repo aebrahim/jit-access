@@ -26,6 +26,8 @@ import com.google.solutions.jitaccess.catalog.policy.Property;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface Deferral<TOperation> {
   /**
@@ -34,9 +36,14 @@ public interface Deferral<TOperation> {
   @NotNull UserId deferrer();
 
   /**
+   * Users that the operation was deferred to.
+   */
+  @NotNull Set<UserId> assignees();
+
+  /**
    * Input provided by deferring user.
    */
-  @NotNull List<Property> input();
+  @NotNull Map<String, String> input();
 
   /**
    * Invoked when the deferral was completed successfully.
