@@ -26,6 +26,7 @@ import com.google.solutions.jitaccess.apis.clients.AccessException;
 import com.google.solutions.jitaccess.catalog.auth.GroupId;
 import com.google.solutions.jitaccess.catalog.auth.Principal;
 import com.google.solutions.jitaccess.catalog.auth.Subject;
+import com.google.solutions.jitaccess.catalog.auth.UserId;
 import com.google.solutions.jitaccess.catalog.policy.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -102,10 +103,13 @@ public class JitGroupView {
         .applyConstraints(Policy.ConstraintClass.JOIN));
   }
 
-  // public ApprovalOperation approve(@NotNull String token)
-  //   verify different users
+  public ApprovalOperation approve(@NotNull Deferral<JitGroupView.JoinOperation> deferral) {
+    //   verify different users
+    throw new UnsupportedOperationException("NIY");
+  }
 
-  public class JoinOperation {
+
+  public class JoinOperation { // TODO: rename to Intent?
     private final boolean requiresApproval;
     private final @NotNull PolicyAnalysis analysis;
 
@@ -125,7 +129,7 @@ public class JitGroupView {
     }
 
     /**
-     * @return input required to evaluate constraints.
+     * Input to use for evaluating constraints.
      */
     public @NotNull List<Property> input() {
       return this.analysis.input();
