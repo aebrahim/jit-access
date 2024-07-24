@@ -1,4 +1,4 @@
-package com.google.solutions.jitaccess.catalog.eventing;
+package com.google.solutions.jitaccess.catalog.notification;
 
 import com.google.api.client.json.GenericJson;
 import com.google.api.services.pubsub.model.PubsubMessage;

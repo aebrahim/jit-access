@@ -19,7 +19,7 @@
 // under the License.
 //
 
-package com.google.solutions.jitaccess.catalog.eventing;
+package com.google.solutions.jitaccess.catalog.notification;
 
 import com.google.solutions.jitaccess.apis.clients.PubSubClient;
 import com.google.solutions.jitaccess.apis.clients.PubSubTopic;
