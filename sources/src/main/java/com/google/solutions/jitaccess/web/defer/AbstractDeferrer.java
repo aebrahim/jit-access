@@ -9,6 +9,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public abstract class AbstractDeferrer implements Deferrer {
+  private final @NotNull TokenSigner tokenSigner;
+
+  protected AbstractDeferrer(@NotNull TokenSigner tokenSigner) {
+    this.tokenSigner = tokenSigner;
+  }
+
   /**
    * Notify relevant users about a deferred join operation.
    * @param operation
@@ -27,11 +33,15 @@ public abstract class AbstractDeferrer implements Deferrer {
 
   @Override
   public @NotNull DeferralToken defer(JitGroupView.@NotNull JoinOperation op) {
+    // encode claims
+    // sign
     throw new UnsupportedOperationException("NIY");
   }
 
   @Override
   public @NotNull Deferral<JitGroupView.JoinOperation> pickup(DeferralToken token) {
+    // verify
+    // decode claims
     throw new UnsupportedOperationException("NIY");
   }
 
