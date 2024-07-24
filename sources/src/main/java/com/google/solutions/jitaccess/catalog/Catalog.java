@@ -102,13 +102,16 @@ public class Catalog {
     /**
      * Get policy for an environment.
      */
-    @NotNull Optional<EnvironmentPolicy> environmentPolicy(@NotNull String name);
+    @NotNull Optional<EnvironmentPolicy> environmentPolicy(
+      @NotNull String environmentName
+    );
 
     /**
      * Get provisioner for an environment
      */
     @NotNull Optional<Provisioner> provisioner(
       @NotNull Catalog catalog,
-      @NotNull String name);
+      @NotNull String environmentName
+    );
   }
 }

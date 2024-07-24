@@ -142,7 +142,7 @@ public class JitGroupView {
       return this.analysis.execute();
     }
 
-    public @NotNull ApprovalOperation delegateForApproval() throws AccessException { // TODO: test
+    public @NotNull ApprovalOperation deferForApproval() throws AccessException { // TODO: test
       if (!this.requiresApproval) {
         throw new AccessDeniedException("The join operation does not require approval");
       }
